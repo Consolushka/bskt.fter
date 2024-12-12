@@ -1,9 +1,9 @@
 package main
 
 import (
-	ftercommands "NBATrueEfficency/internal/fter/commands"
-	pdfcommands "NBATrueEfficency/internal/pdf/commands"
-	"NBATrueEfficency/internal/statistics/factories"
+	ftercommands "FTER/internal/fter/commands"
+	pdfcommands "FTER/internal/pdf/commands"
+	"FTER/internal/statistics/factories"
 	"log"
 )
 
@@ -13,7 +13,7 @@ func main() {
 
 // gamePdf takes sportRadar gameId and generates pdf with players FTER
 func gamePdf() {
-	gameId := "2a51502e-cd49-4806-b324-ea98752da37b"
+	gameId := "2aa29340-f4ca-4e43-be10-02a7415eece4"
 
 	repo, err := factories.NewStatsRepository()
 	if err != nil {

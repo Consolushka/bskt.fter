@@ -1,8 +1,8 @@
 package factories
 
 import (
-	"NBATrueEfficency/internal/statistics/repositories"
-	"NBATrueEfficency/internal/statistics/repositories/sport_radar/repository"
+	"FTER/internal/statistics/repositories"
+	"FTER/internal/statistics/repositories/sport_radar/repository"
 	"errors"
 )
 

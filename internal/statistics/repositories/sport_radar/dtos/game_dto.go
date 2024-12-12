@@ -1,8 +1,8 @@
 package dtos
 
 import (
-	"NBATrueEfficency/internal/enums"
-	"NBATrueEfficency/internal/fter/models"
+	"FTER/internal/enums"
+	"FTER/internal/fter/models"
 )
 
 type GameDTO struct {
@@ -27,10 +27,20 @@ type GameDTO struct {
 
 // ToFterModel converts a GameDTO to a models.GameModel which is neccessary for FTER package
 func (dto GameDTO) ToFterModel() *models.GameModel {
+	league := enums.NBA
+	duration := 0
+	if dto.Quarter > 4 {
+		duration = 4 * league.QuarterDuration()
+		for i := 0; i < dto.Quarter-4; i++ {
+			duration += league.OvertimeDuration()
+		}
+	}
+
 	return &models.GameModel{
-		Scheduled: dto.Scheduled,
-		Home:      dto.Home.ToFterModel(),
-		Away:      dto.Away.ToFterModel(),
-		League:    enums.NBA,
+		Scheduled:    dto.Scheduled,
+		FullGameTime: duration,
+		Home:         dto.Home.ToFterModel(),
+		Away:         dto.Away.ToFterModel(),
+		League:       enums.NBA,
 	}
 }

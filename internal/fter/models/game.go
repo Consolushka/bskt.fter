@@ -1,7 +1,7 @@
 package models
 
 import (
-	"NBATrueEfficency/internal/enums"
+	"FTER/internal/enums"
 )
 
 type TeamGameResultModel struct {
@@ -11,9 +11,10 @@ type TeamGameResultModel struct {
 }
 
 type GameModel struct {
-	Id        string
-	Scheduled string
-	Home      TeamGameResultModel
-	Away      TeamGameResultModel
-	League    enums.League
+	Id           string
+	Scheduled    string
+	Home         TeamGameResultModel
+	Away         TeamGameResultModel
+	FullGameTime int
+	League       enums.League
 }

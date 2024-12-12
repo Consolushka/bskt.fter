@@ -1,9 +1,9 @@
 package queries
 
 import (
-	"NBATrueEfficency/internal/fter"
-	"NBATrueEfficency/internal/fter/models"
-	"NBATrueEfficency/internal/utils"
+	"FTER/internal/fter"
+	"FTER/internal/fter/models"
+	"FTER/internal/utils"
 )
 
 func PlayerFTRE(playerModel models.PlayerModel, finalDiff int, fullGameTime int) float64 {

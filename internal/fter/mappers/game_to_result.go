@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"NBATrueEfficency/internal/fter/models"
-	"NBATrueEfficency/internal/fter/results"
+	"FTER/internal/fter/models"
+	"FTER/internal/fter/results"
 )
 
 func GameToResult(game *models.GameModel, home *results.TeamResults, away *results.TeamResults) *results.GameResult {

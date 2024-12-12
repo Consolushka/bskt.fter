@@ -1,10 +1,11 @@
 package commands
 
 import (
-	"NBATrueEfficency/internal/fter/results"
-	"NBATrueEfficency/internal/pdf/mappers"
+	"FTER/internal/fter/results"
+	"FTER/internal/pdf/mappers"
+	"log"
 )
-import "NBATrueEfficency/internal/pdf"
+import "FTER/internal/pdf"
 
 // PrintGame takes game results and prints it to pdf file
 // saves in ./outputs directory
@@ -20,7 +21,11 @@ func PrintGame(game *results.GameResult) {
 	pdfFile.PrintLn(game.Away.Title)
 	pdfFile.PrintTable(toTableMapperSlice(game.Away.Players))
 
-	pdfFile.Save()
+	err := pdfFile.Save()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 }
 
 // toTableMapperSlice converts slice of PlayerFterResult to slice of TableMapper

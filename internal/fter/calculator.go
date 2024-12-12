@@ -1,7 +1,8 @@
 package fter
 
-import "NBATrueEfficency/internal/calculations"
+import "FTER/internal/calculations"
 
+// todo: calculate not for full time, but for sample
 func Calculate(playedTime float64, plsMin int, finalDiff int, fullGameTime int) float64 {
 	onCourtEffPerMinute := float64(plsMin) / playedTime
 	onCourtPerFullTime := onCourtEffPerMinute * float64(fullGameTime)

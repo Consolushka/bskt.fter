@@ -1,9 +1,9 @@
 package queries
 
 import (
-	"NBATrueEfficency/internal/fter/mappers"
-	"NBATrueEfficency/internal/fter/models"
-	"NBATrueEfficency/internal/fter/results"
+	"FTER/internal/fter/mappers"
+	"FTER/internal/fter/models"
+	"FTER/internal/fter/results"
 )
 
 func FullTeamFter(players []models.PlayerModel, finalDiff int, fullGameTime int) []results.PlayerFterResult {

@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"NBATrueEfficency/internal/statistics/repositories/sport_radar/dtos"
+	"FTER/internal/statistics/repositories/sport_radar/dtos"
 )
 
 type StatsRepository interface {

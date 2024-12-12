@@ -7,12 +7,23 @@ const (
 	MLBL
 )
 
-func (l League) FullGameDuration() int {
+func (l League) QuarterDuration() int {
 	switch l {
 	case NBA:
-		return 48
+		return 12
 	case MLBL:
-		return 40
+		return 10
+	default:
+		return 0
+	}
+}
+
+func (l League) OvertimeDuration() int {
+	switch l {
+	case NBA:
+		return 6
+	case MLBL:
+		return 5
 	default:
 		return 0
 	}

@@ -1,7 +1,7 @@
 package pdf
 
 import (
-	"NBATrueEfficency/internal/pdf/mappers"
+	"FTER/internal/pdf/mappers"
 	"github.com/go-pdf/fpdf"
 )
 

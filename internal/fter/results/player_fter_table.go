@@ -1,8 +1,8 @@
 package results
 
 import (
-	"NBATrueEfficency/internal/fter/models"
-	"NBATrueEfficency/internal/pdf/mappers"
+	"FTER/internal/fter/models"
+	"FTER/internal/pdf/mappers"
 	"strconv"
 )
 

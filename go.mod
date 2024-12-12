@@ -1,4 +1,4 @@
-module NBATrueEfficency
+module FTER
 
 go 1.23.4
 

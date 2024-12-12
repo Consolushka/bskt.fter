@@ -1,8 +1,8 @@
 package dtos
 
 import (
-	models2 "NBATrueEfficency/internal/fter/models"
-	"NBATrueEfficency/internal/utils/arrays"
+	models2 "FTER/internal/fter/models"
+	"FTER/internal/utils/arrays"
 )
 
 type TeamStatsDTO struct {

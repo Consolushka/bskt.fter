@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"NBATrueEfficency/internal/statistics/repositories/sport_radar/client"
-	"NBATrueEfficency/internal/statistics/repositories/sport_radar/dtos"
+	"FTER/internal/statistics/repositories/sport_radar/client"
+	"FTER/internal/statistics/repositories/sport_radar/dtos"
 	"encoding/json"
 )
 

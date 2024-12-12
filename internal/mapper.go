@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"NBATrueEfficency/internal/statistics/repositories/sport_radar/dtos"
-	"NBATrueEfficency/internal/true_efficiency/models"
+	"FTER/internal/statistics/repositories/sport_radar/dtos"
+	"FTER/internal/true_efficiency/models"
 )
 
 func DTOToPlayerStats(dto dtos.PlayerStatsDTO) *models.PlayerStatsModel {
