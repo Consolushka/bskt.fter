@@ -1,10 +1,10 @@
 package repositories
 
 import (
-	"FTER/internal/statistics/repositories/sport_radar/dtos"
+	"FTER/internal/models"
 )
 
 type StatsRepository interface {
-	// GetGame returns game data from stats provider
-	GetGame(gameId string) (*dtos.GameDTO, error)
+	// GameBoxScore returns game data from stats provider
+	GameBoxScore(gameId string) (*models.GameModel, error)
 }

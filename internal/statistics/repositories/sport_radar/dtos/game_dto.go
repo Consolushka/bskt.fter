@@ -2,10 +2,10 @@ package dtos
 
 import (
 	"FTER/internal/enums"
-	"FTER/internal/fter/models"
+	"FTER/internal/models"
 )
 
-type GameDTO struct {
+type GameBoxScoreDTO struct {
 	ID           string       `json:"id"`
 	Status       string       `json:"status"`
 	Coverage     string       `json:"coverage"`
@@ -25,8 +25,8 @@ type GameDTO struct {
 	Away         TeamStatsDTO `json:"away"`
 }
 
-// ToFterModel converts a GameDTO to a models.GameModel which is neccessary for FTER package
-func (dto GameDTO) ToFterModel() *models.GameModel {
+// ToFterModel converts a GameBoxScoreDTO to a models.GameModel which is neccessary for FTER package
+func (dto GameBoxScoreDTO) ToFterModel() *models.GameModel {
 	league := enums.NBA
 	duration := 0
 	if dto.Quarter > 4 {

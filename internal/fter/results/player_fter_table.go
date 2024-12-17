@@ -1,7 +1,7 @@
 package results
 
 import (
-	"FTER/internal/fter/models"
+	"FTER/internal/models"
 	"FTER/internal/pdf/mappers"
 	"strconv"
 )

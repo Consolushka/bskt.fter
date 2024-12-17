@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	models2 "FTER/internal/fter/models"
+	models2 "FTER/internal/models"
 	"FTER/internal/utils/arrays"
 )
 
@@ -30,12 +30,8 @@ func gameDtoToPlayers(players []PlayerDTO) []models2.PlayerModel {
 	playersModels := make([]models2.PlayerModel, len(players))
 
 	for i, player := range players {
-
-		playersModels[i] = models2.PlayerModel{
-			FullName:      player.FullName,
-			MinutesPlayed: player.Statistics.Minutes,
-			PlsMin:        player.Statistics.PlsMin,
-		}
+		playersModels[i] = player.ToFterModel()
 	}
+
 	return playersModels
 }

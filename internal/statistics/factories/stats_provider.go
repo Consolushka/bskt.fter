@@ -2,21 +2,25 @@ package factories
 
 import (
 	"FTER/internal/statistics/repositories"
-	"FTER/internal/statistics/repositories/sport_radar/repository"
+	nbaRepository "FTER/internal/statistics/repositories/nba/repository"
+	sportRadarRepository "FTER/internal/statistics/repositories/sport_radar/repository"
 	"errors"
 )
 
 const (
 	SPORTRADAR = "SPORTRADAR"
+	NBA        = "NBA"
 )
 
 // NewStatsRepository based on provider returns repository for statistics
 func NewStatsRepository() (repositories.StatsRepository, error) {
-	provider := "SPORTRADAR"
+	provider := "NBA"
 
 	switch provider {
 	case SPORTRADAR:
-		return repository.NewSportRadarRepository(), nil
+		return sportRadarRepository.NewSportRadarRepository(), nil
+	case NBA:
+		return nbaRepository.NewNbaRepository(), nil
 	default:
 		return nil, errors.New("unknown stats provider")
 	}

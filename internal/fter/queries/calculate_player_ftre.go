@@ -2,7 +2,7 @@ package queries
 
 import (
 	"FTER/internal/fter"
-	"FTER/internal/fter/models"
+	"FTER/internal/models"
 	"FTER/internal/utils"
 )
 

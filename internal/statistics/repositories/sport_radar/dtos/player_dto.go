@@ -1,5 +1,7 @@
 package dtos
 
+import "FTER/internal/models"
+
 type PlayerDTO struct {
 	FullName        string         `json:"full_name"`
 	JerseyNumber    string         `json:"jersey_number"`
@@ -15,4 +17,13 @@ type PlayerDTO struct {
 	SrID            string         `json:"sr_id"`
 	Reference       string         `json:"reference"`
 	Statistics      PlayerStatsDTO `json:"statistics"`
+}
+
+func (p *PlayerDTO) ToFterModel() models.PlayerModel {
+	return models.PlayerModel{
+		FullName:      p.FullName,
+		MinutesPlayed: p.Statistics.Minutes,
+		PlsMin:        p.Statistics.PlsMin,
+	}
+
 }
