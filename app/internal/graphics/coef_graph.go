@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// todo: make coef graph
 func DrawCoefGraph() {
 	line := charts.NewLine()
 

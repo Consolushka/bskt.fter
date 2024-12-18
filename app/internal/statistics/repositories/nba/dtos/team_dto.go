@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	"FTER/internal/models"
+	models2 "FTER/internal/models"
 	"FTER/internal/utils/arrays"
 )
 
@@ -16,9 +16,9 @@ type TeamDTO struct {
 	Players           []PlayerDTO `json:"players"`
 }
 
-func (dto TeamDTO) ToFterModel() models.TeamGameResultModel {
-	return models.TeamGameResultModel{
-		Team: models.TeamModel{
+func (dto TeamDTO) ToFterModel() models2.TeamGameResultModel {
+	return models2.TeamGameResultModel{
+		Team: models2.TeamModel{
 			FullName: dto.TeamTricode,
 			Alias:    dto.TeamTricode,
 		},
@@ -27,12 +27,12 @@ func (dto TeamDTO) ToFterModel() models.TeamGameResultModel {
 	}
 }
 
-func gameDtoToPlayers(players []PlayerDTO) []models.PlayerModel {
+func gameDtoToPlayers(players []PlayerDTO) []models2.PlayerModel {
 	players = arrays.Filter(players, func(p PlayerDTO) bool {
 		return p.Played == "1"
 	})
 
-	playersModels := make([]models.PlayerModel, len(players))
+	playersModels := make([]models2.PlayerModel, len(players))
 
 	for i, player := range players {
 		playersModels[i] = player.ToFterModel()

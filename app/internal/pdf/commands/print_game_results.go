@@ -2,10 +2,10 @@ package commands
 
 import (
 	"FTER/internal/fter/results"
+	"FTER/internal/pdf"
 	"FTER/internal/pdf/mappers"
 	"log"
 )
-import "FTER/internal/pdf"
 
 // PrintGame takes game results and prints it to pdf file
 // saves in ./outputs directory

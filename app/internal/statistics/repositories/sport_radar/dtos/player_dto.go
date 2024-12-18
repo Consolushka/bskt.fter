@@ -1,6 +1,8 @@
 package dtos
 
-import "FTER/internal/models"
+import (
+	"FTER/internal/models"
+)
 
 type PlayerDTO struct {
 	FullName        string         `json:"full_name"`

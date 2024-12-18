@@ -1,6 +1,8 @@
 package fter
 
-import "FTER/internal/calculations"
+import (
+	"FTER/internal/calculations"
+)
 
 func Calculate(playedTime float64, plsMin int, finalDiff int, fullGameTime int) float64 {
 	onCourtEffPerMinute := float64(plsMin) / playedTime
