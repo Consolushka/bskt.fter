@@ -46,7 +46,7 @@ func (p *Builder) PrintTable(data []mappers.TableMapper) {
 
 // Save saves the PDF file to the specified file name.
 func (p *Builder) Save() error {
-	err := p.pdf.OutputFileAndClose("outputs/" + p.fileName + ".pdf")
+	err := p.pdf.OutputFileAndClose("../outputs/" + p.fileName + ".pdf")
 
 	return err
 }
