@@ -14,12 +14,14 @@ services:
       - TEST_DATABASE_HOST=${TEST_DB_HOST}
       - TEST_DATABASE_PORT=${TEST_DB_PORT}
     tty: true
-    build: .
+    build:
+      context: .
+      dockerfile: docker/local/Dockerfile
     ports:
       - 8000:8080
     restart: on-failure
     volumes:
-      - .:/app
+      - ./:/app
     depends_on:
       - db
     networks:

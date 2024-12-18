@@ -1,9 +1,6 @@
 # Start from golang base image
 FROM golang:alpine
 
-# Add Maintainer info
-LABEL maintainer="Agus Wibawantara"
-
 # Install git.
 # Git is required for fetching the dependencies.
 RUN apk update && apk add --no-cache git && apk add --no-cach bash && apk add build-base
@@ -13,8 +10,8 @@ RUN mkdir /app
 WORKDIR /app
 
 # Copy the source from the current directory to the working Directory inside the container
-COPY . .
-COPY .env .
+COPY ../.. .
+COPY ../../.env .
 
 # Download all the dependencies
 RUN go get -d -v ./...
