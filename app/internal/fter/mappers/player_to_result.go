@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"FTER/internal/fter/results"
-	"FTER/internal/models"
+	"FTER/app/internal/fter/results"
+	"FTER/app/internal/models"
 )
 
 func PlayerToResult(player models.PlayerModel, fter float64) results.PlayerFterResult {

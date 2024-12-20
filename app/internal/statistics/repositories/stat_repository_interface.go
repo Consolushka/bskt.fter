@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"FTER/internal/models"
+	"FTER/app/internal/models"
 )
 
 type StatsRepository interface {

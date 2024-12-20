@@ -1,7 +1,7 @@
 package fter
 
 import (
-	"FTER/internal/calculations"
+	"FTER/app/internal/calculations"
 )
 
 func Calculate(playedTime float64, plsMin int, finalDiff int, fullGameTime int) float64 {

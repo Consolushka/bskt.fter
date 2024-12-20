@@ -1,9 +1,9 @@
 package commands
 
 import (
-	"FTER/internal/fter/results"
-	"FTER/internal/pdf"
-	"FTER/internal/pdf/mappers"
+	"FTER/app/internal/fter/results"
+	"FTER/app/internal/pdf"
+	"FTER/app/internal/pdf/mappers"
 	"log"
 )
 

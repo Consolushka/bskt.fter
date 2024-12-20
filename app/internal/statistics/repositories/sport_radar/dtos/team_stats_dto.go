@@ -1,8 +1,8 @@
 package dtos
 
 import (
-	"FTER/internal/models"
-	"FTER/internal/utils/arrays"
+	"FTER/app/internal/models"
+	"FTER/app/internal/utils/arrays"
 )
 
 type TeamStatsDTO struct {

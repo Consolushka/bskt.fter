@@ -8,11 +8,15 @@ ENV_FILE := $(ROOT_DIR)/.env
 
 .DEFAULT_GOAL := help
 
+# create outputs folder
+
 setup: ## copy env
-	@[ -f $(ENV_FILE) ] && echo .env exists || cp .env.example .env
+	@[ -f $(ENV_FILE) ] && echo .env exists || cp .example.env .env
+	mkdir -p outputs
+	mkdir -p app/db/migrations
 
 build: ## build
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) build
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) build --no-cache --progress=plain
 
 up: ## up
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up
@@ -27,7 +31,7 @@ down: ## down all services
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
 
 sh: ## Enter Golang container sh
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) sh -c "cd app && sh"
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) sh
 
 install: ## first time installation
 	make setup

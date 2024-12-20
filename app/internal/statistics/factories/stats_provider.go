@@ -1,9 +1,9 @@
 package factories
 
 import (
-	"FTER/internal/statistics/repositories"
-	nbaRepository "FTER/internal/statistics/repositories/nba/repository"
-	sportRadarRepository "FTER/internal/statistics/repositories/sport_radar/repository"
+	"FTER/app/internal/statistics/repositories"
+	nbaRepository "FTER/app/internal/statistics/repositories/nba/repository"
+	sportRadarRepository "FTER/app/internal/statistics/repositories/sport_radar/repository"
 	"errors"
 )
 

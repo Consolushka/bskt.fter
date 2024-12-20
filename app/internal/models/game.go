@@ -1,7 +1,7 @@
 package models
 
 import (
-	"FTER/internal/enums"
+	"FTER/app/internal/enums"
 )
 
 type TeamGameResultModel struct {

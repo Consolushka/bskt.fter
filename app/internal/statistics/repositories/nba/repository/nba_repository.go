@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"FTER/internal/models"
-	"FTER/internal/statistics/repositories/nba/client"
-	"FTER/internal/statistics/repositories/nba/dtos"
+	"FTER/app/internal/models"
+	"FTER/app/internal/statistics/repositories/nba/client"
+	"FTER/app/internal/statistics/repositories/nba/dtos"
 	"encoding/json"
 )
 

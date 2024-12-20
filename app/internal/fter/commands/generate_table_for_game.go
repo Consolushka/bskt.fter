@@ -1,10 +1,10 @@
 package commands
 
 import (
-	"FTER/internal/fter/mappers"
-	"FTER/internal/fter/queries"
-	"FTER/internal/fter/results"
-	"FTER/internal/models"
+	"FTER/app/internal/fter/mappers"
+	"FTER/app/internal/fter/queries"
+	"FTER/app/internal/fter/results"
+	"FTER/app/internal/models"
 )
 
 // CalculateFullGame evaluates FTER for every player in each team

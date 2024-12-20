@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	"FTER/internal/models"
+	"FTER/app/internal/models"
 )
 
 type PlayerDTO struct {

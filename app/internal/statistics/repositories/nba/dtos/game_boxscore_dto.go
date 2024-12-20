@@ -1,8 +1,8 @@
 package dtos
 
 import (
-	"FTER/internal/enums"
-	"FTER/internal/models"
+	"FTER/app/internal/enums"
+	"FTER/app/internal/models"
 	"time"
 )
 

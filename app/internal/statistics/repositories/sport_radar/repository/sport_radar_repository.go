@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"FTER/internal/models"
-	"FTER/internal/statistics/repositories/sport_radar/client"
-	"FTER/internal/statistics/repositories/sport_radar/dtos"
+	"FTER/app/internal/models"
+	"FTER/app/internal/statistics/repositories/sport_radar/client"
+	"FTER/app/internal/statistics/repositories/sport_radar/dtos"
 	"encoding/json"
 )
 
