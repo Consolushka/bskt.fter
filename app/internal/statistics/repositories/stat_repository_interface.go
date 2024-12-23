@@ -5,6 +5,8 @@ import (
 )
 
 type StatsRepository interface {
-	// GameBoxScore returns game data from stats provider
+	// GameBoxScore returns boxscore data from stats provider
 	GameBoxScore(gameId string) (*models.GameModel, error)
+	// TodayGames returns date in string format and id's of games
+	TodayGames() (string, []string, error)
 }

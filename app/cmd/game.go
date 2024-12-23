@@ -35,5 +35,5 @@ func GamePdf(gameId string) {
 	game, err := repo.GameBoxScore(gameId)
 
 	gameRes := ftercommands.CalculateFullGame(game)
-	pdfcommands.PrintGame(gameRes)
+	pdfcommands.PrintGame(gameRes, nil)
 }

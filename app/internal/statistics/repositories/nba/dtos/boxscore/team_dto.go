@@ -1,4 +1,4 @@
-package dtos
+package boxscore
 
 import (
 	models2 "FTER/app/internal/models"

@@ -9,3 +9,11 @@ func Filter[T any](array []T, callback func(T) bool) []T {
 	}
 	return filtered
 }
+
+func Map[T any, R any](array []T, callback func(T) R) []R {
+	mapped := make([]R, 0)
+	for _, item := range array {
+		mapped = append(mapped, callback(item))
+	}
+	return mapped
+}

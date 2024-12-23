@@ -1,4 +1,4 @@
-package dtos
+package boxscore
 
 type PlayerEfficiencyDTO struct {
 	Assists                 int     `json:"assists"`

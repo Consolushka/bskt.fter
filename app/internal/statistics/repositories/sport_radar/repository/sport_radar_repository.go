@@ -11,6 +11,10 @@ type SportRadarRepository struct {
 	client *client.SportRadarClient
 }
 
+func (r SportRadarRepository) TodayGames() (string, []string, error) {
+	panic("implement me")
+}
+
 func (r SportRadarRepository) GameBoxScore(gameId string) (*models.GameModel, error) {
 	var gameDto dtos.GameBoxScoreDTO
 

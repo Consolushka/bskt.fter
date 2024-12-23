@@ -8,10 +8,14 @@ import (
 	"strings"
 )
 
-// PrintGame takes game results and prints it to pdf file
-// saves in ./outputs directory
-func PrintGame(game *results.GameResult) {
-	pdfFile := pdf.NewBuilder(game.Title, &strings.Split(game.Schedule, " ")[0])
+// PrintGame takes boxscore results and prints it to pdf file
+// saves in ./outputs/{innerFolder} directory
+// innerFolder - optional, if not provided, will be set to date of the game
+func PrintGame(game *results.GameResult, innerFolder *string) {
+	if innerFolder == nil {
+		innerFolder = &strings.Split(game.Schedule, " ")[0]
+	}
+	pdfFile := pdf.NewBuilder(game.Title, innerFolder)
 
 	pdfFile.PrintLn(game.GameId)
 	pdfFile.PrintLn(game.Schedule)

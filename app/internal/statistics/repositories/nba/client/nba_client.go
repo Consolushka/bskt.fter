@@ -8,6 +8,7 @@ import (
 )
 
 const boxScoreEndpointPattern = "/boxscore/boxscore_%v.json"
+const todaysGamesEndpoint = "/scoreboard/todaysScoreboard_00.json"
 
 type NbaClient struct {
 	baseUrl string
@@ -20,9 +21,19 @@ func NewNbaClient() *NbaClient {
 }
 
 func (c NbaClient) BoxScore(gameId string) map[string]interface{} {
-	var result map[string]interface{}
+	result := get(c.baseUrl + fmt.Sprintf(boxScoreEndpointPattern, gameId))
 
-	url := c.baseUrl + fmt.Sprintf(boxScoreEndpointPattern, gameId)
+	return result["game"].(map[string]interface{})
+}
+
+func (c NbaClient) TodaysGames() map[string]interface{} {
+	result := get(c.baseUrl + todaysGamesEndpoint)
+
+	return result["scoreboard"].(map[string]interface{})
+}
+
+func get(url string) map[string]interface{} {
+	var result map[string]interface{}
 
 	req, _ := http.NewRequest("GET", url, nil)
 
@@ -43,5 +54,5 @@ func (c NbaClient) BoxScore(gameId string) map[string]interface{} {
 		panic(err)
 	}
 
-	return result["game"].(map[string]interface{})
+	return result
 }
