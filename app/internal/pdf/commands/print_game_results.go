@@ -5,12 +5,13 @@ import (
 	"FTER/app/internal/pdf"
 	"FTER/app/internal/pdf/mappers"
 	"log"
+	"strings"
 )
 
 // PrintGame takes game results and prints it to pdf file
 // saves in ./outputs directory
 func PrintGame(game *results.GameResult) {
-	pdfFile := pdf.NewBuilder(game.Title)
+	pdfFile := pdf.NewBuilder(game.Title, &strings.Split(game.Schedule, " ")[0])
 
 	pdfFile.PrintLn(game.GameId)
 	pdfFile.PrintLn(game.Schedule)

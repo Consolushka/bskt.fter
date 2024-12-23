@@ -15,8 +15,8 @@ var generateGameCmd = &cobra.Command{
 	Long:  "Generate file with FTER indicator for every player played in the given game",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		gamePdf(args[0])
-		fmt.Print("Game results file successfully generated")
+		GamePdf(args[0])
+		fmt.Println("Game results file successfully generated")
 	},
 }
 
@@ -24,8 +24,8 @@ func init() {
 	rootCmd.AddCommand(generateGameCmd)
 }
 
-// gamePdf takes sportRadar gameId and generates pdf with players FTER
-func gamePdf(gameId string) {
+// GamePdf takes sportRadar gameId and generates pdf with players FTER
+func GamePdf(gameId string) {
 	//gameId := "2aa29340-f4ca-4e43-be10-02a7415eece4"
 	repo, err := factories.NewStatsRepository()
 	if err != nil {

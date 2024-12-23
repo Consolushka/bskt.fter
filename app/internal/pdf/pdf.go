@@ -3,18 +3,21 @@ package pdf
 import (
 	"FTER/app/internal/pdf/mappers"
 	"github.com/go-pdf/fpdf"
+	"os"
 )
 
 type Builder struct {
-	pdf      fpdf.Fpdf
-	fileName string
+	pdf         fpdf.Fpdf
+	innerFolder *string
+	fileName    string
 }
 
 // NewBuilder creates a new PDF builder based on fpdf file with default settings and font.
-func NewBuilder(fileName string) *Builder {
+func NewBuilder(fileName string, innerFolder *string) *Builder {
 	pdf := &Builder{
-		pdf:      *fpdf.New("P", "mm", "A4", ""),
-		fileName: fileName,
+		pdf:         *fpdf.New("P", "mm", "A4", ""),
+		innerFolder: innerFolder,
+		fileName:    fileName,
 	}
 	pdf.pdf.AddPage()
 	pdf.pdf.SetFont("Arial", "", 12)
@@ -46,7 +49,15 @@ func (p *Builder) PrintTable(data []mappers.TableMapper) {
 
 // Save saves the PDF file to the specified file name.
 func (p *Builder) Save() error {
-	err := p.pdf.OutputFileAndClose("outputs/" + p.fileName + ".pdf")
+	path := "outputs/"
+	if p.innerFolder != nil {
+		if err := os.MkdirAll(path+*p.innerFolder, 0755); err != nil {
+			return err
+		}
+
+		path += *p.innerFolder + "/"
+	}
+	err := p.pdf.OutputFileAndClose(path + p.fileName + ".pdf")
 
 	return err
 }

@@ -1,22 +1,24 @@
 package calculations
 
-import "math"
+import (
+	"FTER/app/internal/fter/enums"
+	"math"
+)
 
-const lowerEdgeCoef = 0.3125
-const sampleGameTimeCoef = 0.79
+const lowerEdgeCoef = 0.3947
 
-func CalculateReliability(minutesPlayed float64, fullGameTime float64) float64 {
-	lowerEdge := lowerEdgeCoef * fullGameTime
-	sampleGameTime := sampleGameTimeCoef * fullGameTime
+func CalculateReliability(minutesPlayed float64, timeBase enums.TimeBasedImpCoefficient) float64 {
+	timeBaseMinutes := float64(timeBase.Minutes())
+	lowerEdge := lowerEdgeCoef * timeBaseMinutes
 
 	if minutesPlayed < lowerEdge {
-		return 0.00012 * math.Pow(minutesPlayed, 3)
+		return timeBase.InsufficientDistanceCoef() * math.Pow(minutesPlayed, timeBase.InsufficientDistancePower())
 	}
 
-	if minutesPlayed < sampleGameTime {
-		return 0.405 + (math.Pow(minutesPlayed-lowerEdge, 0.6))/(math.Pow(sampleGameTime-lowerEdge, 0.6))*(1-0.405)
-
+	if minutesPlayed < timeBaseMinutes {
+		return timeBase.SufficientDistanceOffset() + (math.Pow(minutesPlayed-lowerEdge, timeBase.SufficientDistancePower()))/(math.Pow(timeBaseMinutes-lowerEdge, timeBase.SufficientDistancePower()))*(1-timeBase.SufficientDistanceOffset())
 	}
 
-	return 1 - (math.Pow(minutesPlayed-sampleGameTime, 3))/(math.Pow(sampleGameTime-lowerEdge, 3))
+	res := 1 - (math.Pow(minutesPlayed-timeBaseMinutes, timeBase.OverSufficientDistanceUpperPower()))/(math.Pow(timeBaseMinutes-lowerEdge, timeBase.OverSufficientDistanceLowerPower()))
+	return res
 }

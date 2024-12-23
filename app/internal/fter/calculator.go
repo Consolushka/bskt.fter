@@ -1,16 +1,17 @@
 package fter
 
-import (
-	"FTER/app/internal/calculations"
-)
-
 func Calculate(playedTime float64, plsMin int, finalDiff int, fullGameTime int) float64 {
-	onCourtEffPerMinute := float64(plsMin) / playedTime
-	onCourtPerFullTime := onCourtEffPerMinute * float64(fullGameTime)
+	//onCourtEffPerMinute := float64(plsMin) / playedTime
+	//sampleGameTime := float64(38)
+	//onCourtPerFullTime := onCourtEffPerMinute * sampleGameTime
 
-	rawValue := onCourtPerFullTime - float64(finalDiff)
+	playerImpPerMinute := float64(plsMin) / playedTime
+	fullGameImpPerMinute := float64(finalDiff) / float64(fullGameTime)
 
-	reliability := calculations.CalculateReliability(playedTime, float64(fullGameTime))
+	rawValue := playerImpPerMinute - fullGameImpPerMinute
 
-	return rawValue * reliability
+	//reliability := calculations.CalculateReliability(playedTime, float64(fullGameTime), sampleGameTime)
+
+	//return rawValue * reliability
+	return rawValue
 }

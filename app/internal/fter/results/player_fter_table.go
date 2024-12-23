@@ -1,6 +1,7 @@
 package results
 
 import (
+	"FTER/app/internal/fter/enums"
 	"FTER/app/internal/models"
 	"FTER/app/internal/pdf/mappers"
 	"strconv"
@@ -8,19 +9,29 @@ import (
 
 type PlayerFterResult struct {
 	mappers.TableMapper
-	Player models.PlayerModel
-	FTER   float64
+	Player         models.PlayerModel
+	TimeBases      []enums.TimeBasedImpCoefficient
+	ImpPersResults []float64
 }
 
 // Headers returns headers for table
 func (t *PlayerFterResult) Headers() []string {
-	return []string{"Player", "Minutes Played", "FTER"}
+	res := []string{"Player", "Minutes Played"}
+
+	for _, timeBase := range t.TimeBases {
+		res = append(res, "Imp"+timeBase.Title())
+	}
+
+	return res
 }
 
 func (t *PlayerFterResult) ToTable() []string {
-	return []string{
-		t.Player.FullName,
-		t.Player.MinutesPlayed,
-		strconv.FormatFloat(t.FTER, 'f', 2, 64),
+	result := []string{t.Player.FullName, t.Player.MinutesPlayed}
+
+	for _, impValue := range t.ImpPersResults {
+		result = append(result, strconv.FormatFloat(impValue, 'f', 2, 64))
 	}
+
+	return result
+
 }

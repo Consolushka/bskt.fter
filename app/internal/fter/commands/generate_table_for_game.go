@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"FTER/app/internal/enums"
 	"FTER/app/internal/fter/mappers"
 	"FTER/app/internal/fter/queries"
 	"FTER/app/internal/fter/results"
@@ -12,13 +13,13 @@ import (
 func CalculateFullGame(game *models.GameModel) *results.GameResult {
 	return mappers.GameToResult(
 		game,
-		teamResults(game.Home, game.Away.TotalPoints, game.FullGameTime),
-		teamResults(game.Away, game.Home.TotalPoints, game.FullGameTime),
+		teamResults(game.Home, game.Away.TotalPoints, game.League),
+		teamResults(game.Away, game.Home.TotalPoints, game.League),
 	)
 }
 
-func teamResults(team models.TeamGameResultModel, oppPoints int, fullGameTime int) *results.TeamResults {
-	playersFter := queries.FullTeamFter(team.Players, team.TotalPoints-oppPoints, fullGameTime)
+func teamResults(team models.TeamGameResultModel, oppPoints int, league enums.League) *results.TeamResults {
+	playersFter := queries.FullTeamFter(team.Players, team.TotalPoints-oppPoints, league)
 
 	return mappers.TeamToResult(team, playersFter)
 }
