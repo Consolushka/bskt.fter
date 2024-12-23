@@ -19,7 +19,7 @@ func FullTeamFter(players []models.PlayerModel, finalDiff int, league enums.Leag
 		if err != nil {
 		}
 
-		bases := enums2.NbaTimeBases()
+		bases := enums2.TimeBasesByLeague(league)
 		impPers := make([]float64, len(bases))
 		for i, timeBase := range bases {
 			reliability := calculations.CalculateReliability(minutes, timeBase)

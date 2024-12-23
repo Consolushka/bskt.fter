@@ -1,6 +1,9 @@
 package enums
 
-import "strconv"
+import (
+	"FTER/app/internal/enums"
+	"strconv"
+)
 
 type TimeBasedImpCoefficient int
 
@@ -16,19 +19,22 @@ const (
 	Per48 TimeBasedImpCoefficient = 48
 )
 
-func NbaTimeBases() []TimeBasedImpCoefficient {
-	return []TimeBasedImpCoefficient{
-		Per24,
-		Per38,
-		Per48,
-	}
-}
-
-func EuroLeagueTimeBases() []TimeBasedImpCoefficient {
-	return []TimeBasedImpCoefficient{
-		Per20,
-		Per30,
-		Per40,
+func TimeBasesByLeague(league enums.League) []TimeBasedImpCoefficient {
+	switch league {
+	case enums.NBA:
+		return []TimeBasedImpCoefficient{
+			Per24,
+			Per38,
+			Per48,
+		}
+	case enums.MLBL:
+		return []TimeBasedImpCoefficient{
+			Per20,
+			Per30,
+			Per40,
+		}
+	default:
+		return []TimeBasedImpCoefficient{}
 	}
 }
 
