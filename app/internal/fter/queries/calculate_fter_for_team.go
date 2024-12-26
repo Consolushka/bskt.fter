@@ -7,7 +7,7 @@ import (
 	"FTER/app/internal/fter/mappers"
 	"FTER/app/internal/fter/results"
 	"FTER/app/internal/models"
-	"FTER/app/internal/utils"
+	"FTER/app/internal/utils/time"
 )
 
 func FullTeamFter(players []models.PlayerModel, finalDiff int, league enums.League) []results.PlayerFterResult {
@@ -15,7 +15,7 @@ func FullTeamFter(players []models.PlayerModel, finalDiff int, league enums.Leag
 	for i, player := range players {
 		fullGameTime := league.FullGameTime()
 		imp := PlayerFTRE(&player, finalDiff, fullGameTime)
-		minutes, err := utils.TimeToDecimal(player.MinutesPlayed)
+		minutes, err := time.FromFormatToDecimal(player.MinutesPlayed)
 		if err != nil {
 		}
 

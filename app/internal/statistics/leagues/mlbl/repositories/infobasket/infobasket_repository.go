@@ -26,7 +26,6 @@ func (i Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 }
 
 func (i Repository) TodayGames() (string, []string, error) {
-	//TODO implement me
 	panic("implement me")
 }
 

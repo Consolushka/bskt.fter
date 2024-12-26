@@ -1,5 +1,6 @@
 package fter
 
+// todo: refactor package
 func Calculate(playedTime float64, plsMin int, finalDiff int, fullGameTime int) float64 {
 	//onCourtEffPerMinute := float64(plsMin) / playedTime
 	//sampleGameTime := float64(38)

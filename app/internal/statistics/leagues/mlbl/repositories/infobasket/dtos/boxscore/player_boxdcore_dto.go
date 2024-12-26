@@ -2,7 +2,7 @@ package boxscore
 
 import (
 	"FTER/app/internal/models"
-	"FTER/app/internal/utils"
+	"FTER/app/internal/utils/time"
 	gt "github.com/bas24/googletranslatefree"
 )
 
@@ -68,7 +68,7 @@ func (p *PlayerBoxscore) ToFterModel() models.PlayerModel {
 
 	return models.PlayerModel{
 		FullName:      personName,
-		MinutesPlayed: utils.SecondsToFormat(p.Seconds),
+		MinutesPlayed: time.SecondsToFormat(p.Seconds, time.PlayedTimeFormat),
 		PlsMin:        p.PlusMinus,
 	}
 }

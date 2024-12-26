@@ -1,4 +1,4 @@
-package utils
+package time
 
 import (
 	"fmt"
@@ -6,7 +6,11 @@ import (
 	"strings"
 )
 
-func TimeToDecimal(time string) (float64, error) {
+const (
+	PlayedTimeFormat = "%d:%02d"
+)
+
+func FromFormatToDecimal(time string) (float64, error) {
 	splitted := strings.Split(time, ":")
 	minutes, err := strconv.Atoi(splitted[0])
 	if err != nil {
@@ -20,8 +24,9 @@ func TimeToDecimal(time string) (float64, error) {
 
 }
 
-func SecondsToFormat(totalSeconds int) string {
+func SecondsToFormat(totalSeconds int, format string) string {
 	minutes := totalSeconds / 60
 	seconds := totalSeconds % 60
-	return fmt.Sprintf("%d:%02d", minutes, seconds)
+
+	return fmt.Sprintf(format, minutes, seconds)
 }
