@@ -40,3 +40,14 @@ func (l League) OvertimeDuration() int {
 		return 0
 	}
 }
+
+func FromString(league string) League {
+	switch league {
+	case "NBA":
+		return NBA
+	case "MLBL":
+		return MLBL
+	default:
+		return NBA
+	}
+}

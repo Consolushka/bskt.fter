@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -17,4 +18,10 @@ func TimeToDecimal(time string) (float64, error) {
 	}
 	return float64(minutes) + (float64(seconds) / 60), nil
 
+}
+
+func SecondsToFormat(totalSeconds int) string {
+	minutes := totalSeconds / 60
+	seconds := totalSeconds % 60
+	return fmt.Sprintf("%d:%02d", minutes, seconds)
 }

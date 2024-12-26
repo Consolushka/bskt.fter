@@ -3,7 +3,7 @@ package cmd
 import (
 	ftercommands "FTER/app/internal/fter/commands"
 	pdfcommands "FTER/app/internal/pdf/commands"
-	"FTER/app/internal/statistics/factories"
+	"FTER/app/internal/statistics/leagues/nba/repositories_factory"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log"
@@ -24,12 +24,8 @@ func init() {
 
 // todayGamesPdf fetches id's of today games. And then generates pdf files for each game
 func todayGamesPdf() {
-	repo, err := factories.NewStatsRepository()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	date, gamesIds, err := repo.TodayGames()
+	repo := repositories_factory.NewNbaStatsRepository()
+	date, gamesIds, _ := repo.TodayGames()
 
 	for _, gameId := range gamesIds {
 		game, err := repo.GameBoxScore(gameId)

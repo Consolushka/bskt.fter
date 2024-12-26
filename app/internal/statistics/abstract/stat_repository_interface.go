@@ -1,4 +1,4 @@
-package repositories
+package abstract
 
 import (
 	"FTER/app/internal/models"
