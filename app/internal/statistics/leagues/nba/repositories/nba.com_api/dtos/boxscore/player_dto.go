@@ -2,6 +2,7 @@ package boxscore
 
 import (
 	"FTER/app/internal/models"
+	"FTER/app/internal/utils/time"
 	"fmt"
 	"math"
 	"strconv"
@@ -27,11 +28,12 @@ type PlayerDTO struct {
 func (p *PlayerDTO) ToFterModel() models.PlayerModel {
 	return models.PlayerModel{
 		FullName:      p.Name,
-		MinutesPlayed: minutesStrToCorrectFormat(p.Statistics.Minutes),
+		SecondsPlayed: time.FromFormatedMinutesToSeconds(minutesStrToCorrectFormat(p.Statistics.Minutes), ":"),
 		PlsMin:        p.Statistics.Plus - p.Statistics.Minus,
 	}
 }
 
+// todo: try to extract method to time utils
 func minutesStrToCorrectFormat(minutesStr string) string {
 	timeStr := strings.Trim(minutesStr, "PTS")
 	parts := strings.Split(timeStr, "M")

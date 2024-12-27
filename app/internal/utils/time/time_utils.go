@@ -10,17 +10,19 @@ const (
 	PlayedTimeFormat = "%d:%02d"
 )
 
-func FromFormatToDecimal(time string) (float64, error) {
-	splitted := strings.Split(time, ":")
+func FromFormatedMinutesToSeconds(minutesFormat string, separator string) int {
+	splitted := strings.Split(minutesFormat, separator)
+
 	minutes, err := strconv.Atoi(splitted[0])
 	if err != nil {
-		return 0, err
+		panic("can't convert " + splitted[0] + " to int")
 	}
+
 	seconds, err := strconv.Atoi(splitted[1])
 	if err != nil {
-		return 0, err
+		panic("can't convert " + splitted[1] + " to int")
 	}
-	return float64(minutes) + (float64(seconds) / 60), nil
+	return minutes*60 + seconds
 
 }
 

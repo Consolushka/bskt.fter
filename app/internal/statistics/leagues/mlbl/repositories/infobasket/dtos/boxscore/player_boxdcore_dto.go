@@ -2,7 +2,6 @@ package boxscore
 
 import (
 	"FTER/app/internal/models"
-	"FTER/app/internal/utils/time"
 	gt "github.com/bas24/googletranslatefree"
 )
 
@@ -68,11 +67,12 @@ func (p *PlayerBoxscore) ToFterModel() models.PlayerModel {
 
 	return models.PlayerModel{
 		FullName:      personName,
-		MinutesPlayed: time.SecondsToFormat(p.Seconds, time.PlayedTimeFormat),
+		SecondsPlayed: p.Seconds,
 		PlsMin:        p.PlusMinus,
 	}
 }
 
+// todo: move to another module
 func translateName(name string) string {
 	// you can use "auto" for source language
 	// so, translator will detect language

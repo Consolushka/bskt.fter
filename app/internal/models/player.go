@@ -2,6 +2,6 @@ package models
 
 type PlayerModel struct {
 	FullName      string
-	MinutesPlayed string
+	SecondsPlayed int
 	PlsMin        int
 }

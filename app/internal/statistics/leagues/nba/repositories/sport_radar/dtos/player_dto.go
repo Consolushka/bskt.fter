@@ -2,6 +2,7 @@ package dtos
 
 import (
 	"FTER/app/internal/models"
+	"FTER/app/internal/utils/time"
 )
 
 type PlayerDTO struct {
@@ -24,7 +25,7 @@ type PlayerDTO struct {
 func (p *PlayerDTO) ToFterModel() models.PlayerModel {
 	return models.PlayerModel{
 		FullName:      p.FullName,
-		MinutesPlayed: p.Statistics.Minutes,
+		SecondsPlayed: time.FromFormatedMinutesToSeconds(p.Statistics.Minutes, ":"),
 		PlsMin:        p.Statistics.PlsMin,
 	}
 

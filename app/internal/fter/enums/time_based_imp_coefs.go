@@ -61,6 +61,10 @@ func (t TimeBasedImpCoefficient) Minutes() int {
 	}
 }
 
+func (t TimeBasedImpCoefficient) Seconds() int {
+	return t.Minutes() * 60
+}
+
 func (t TimeBasedImpCoefficient) InsufficientDistanceCoef() float64 {
 	switch t {
 	case Per20:

@@ -1,5 +1,7 @@
 package enums
 
+import "strings"
+
 type League int
 
 const (
@@ -7,7 +9,7 @@ const (
 	MLBL
 )
 
-func (l League) FullGameTime() int {
+func (l League) FullGameTimeMinutes() int {
 	switch l {
 	case NBA:
 		return 48
@@ -16,7 +18,10 @@ func (l League) FullGameTime() int {
 	default:
 		return 0
 	}
+}
 
+func (l League) FullGameTimeSeconds() int {
+	return l.FullGameTimeMinutes() * 60
 }
 
 func (l League) QuarterDuration() int {
@@ -42,6 +47,7 @@ func (l League) OvertimeDuration() int {
 }
 
 func FromString(league string) League {
+	league = strings.ToUpper(league)
 	switch league {
 	case "NBA":
 		return NBA
