@@ -2,6 +2,7 @@ package time
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -10,20 +11,27 @@ const (
 	PlayedTimeFormat = "%d:%02d"
 )
 
-func FromFormatedMinutesToSeconds(minutesFormat string, separator string) int {
-	splitted := strings.Split(minutesFormat, separator)
+func FormattedMinutesToSeconds(timeStr string, pattern string) int {
+	// Заменяем спецсимволы на regex паттерны
+	regexPattern := strings.NewReplacer(
+		"%m", `(\d+)`,
+		"%s", `(\d+)`,
+	).Replace(pattern)
 
-	minutes, err := strconv.Atoi(splitted[0])
-	if err != nil {
-		panic("can't convert " + splitted[0] + " to int")
+	// Экранируем остальные символы в паттерне
+	regexPattern = regexp.QuoteMeta(regexPattern)
+
+	re := regexp.MustCompile(regexPattern)
+	matches := re.FindStringSubmatch(timeStr)
+
+	if len(matches) != 3 {
+		return 0
 	}
 
-	seconds, err := strconv.Atoi(splitted[1])
-	if err != nil {
-		panic("can't convert " + splitted[1] + " to int")
-	}
+	minutes, _ := strconv.Atoi(matches[1])
+	seconds, _ := strconv.Atoi(matches[2])
+
 	return minutes*60 + seconds
-
 }
 
 func SecondsToFormat(totalSeconds int, format string) string {

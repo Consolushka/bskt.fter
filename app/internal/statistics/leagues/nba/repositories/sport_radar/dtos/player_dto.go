@@ -5,6 +5,8 @@ import (
 	"FTER/app/internal/utils/time"
 )
 
+const playedTimeFormat = "%m:%s"
+
 type PlayerDTO struct {
 	FullName        string         `json:"full_name"`
 	JerseyNumber    string         `json:"jersey_number"`
@@ -25,7 +27,7 @@ type PlayerDTO struct {
 func (p *PlayerDTO) ToFterModel() models.PlayerModel {
 	return models.PlayerModel{
 		FullName:      p.FullName,
-		SecondsPlayed: time.FromFormatedMinutesToSeconds(p.Statistics.Minutes, ":"),
+		SecondsPlayed: time.FormattedMinutesToSeconds(p.Statistics.Minutes, playedTimeFormat),
 		PlsMin:        p.Statistics.PlsMin,
 	}
 

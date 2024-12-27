@@ -3,11 +3,9 @@ package boxscore
 import (
 	"FTER/app/internal/models"
 	"FTER/app/internal/utils/time"
-	"fmt"
-	"math"
-	"strconv"
-	"strings"
 )
+
+const playedTimeFormat = "PTS%mM%sS"
 
 type PlayerDTO struct {
 	Status     string              `json:"status"`
@@ -28,27 +26,7 @@ type PlayerDTO struct {
 func (p *PlayerDTO) ToFterModel() models.PlayerModel {
 	return models.PlayerModel{
 		FullName:      p.Name,
-		SecondsPlayed: time.FromFormatedMinutesToSeconds(minutesStrToCorrectFormat(p.Statistics.Minutes), ":"),
+		SecondsPlayed: time.FormattedMinutesToSeconds(p.Statistics.Minutes, playedTimeFormat),
 		PlsMin:        p.Statistics.Plus - p.Statistics.Minus,
 	}
-}
-
-// todo: try to extract method to time utils
-func minutesStrToCorrectFormat(minutesStr string) string {
-	timeStr := strings.Trim(minutesStr, "PTS")
-	parts := strings.Split(timeStr, "M")
-	if len(parts) != 2 {
-		return "0:00"
-	}
-
-	minutes := parts[0]
-	secondsFloat, _ := strconv.ParseFloat(parts[1], 64)
-	seconds := fmt.Sprintf("%.0f", math.Floor(secondsFloat))
-
-	// Ensure seconds are padded with leading zero if needed
-	if len(seconds) == 1 {
-		seconds = "0" + seconds
-	}
-
-	return fmt.Sprintf("%s:%s", minutes, seconds)
 }
