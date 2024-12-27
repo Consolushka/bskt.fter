@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"FTER/app/internal/enums"
-	ftercommands "FTER/app/internal/fter/commands"
-	pdfcommands "FTER/app/internal/pdf/commands"
-	"FTER/app/internal/statistics/factory"
+	ftercommands "FTER/app/internal/modules/imp/commands"
+	pdfcommands "FTER/app/internal/modules/pdf/commands"
+	"FTER/app/internal/modules/statistics/enums"
+	"FTER/app/internal/modules/statistics/factory"
 	"fmt"
 	"github.com/spf13/cobra"
 )
