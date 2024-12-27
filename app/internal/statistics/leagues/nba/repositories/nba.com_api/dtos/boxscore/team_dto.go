@@ -2,7 +2,7 @@ package boxscore
 
 import (
 	models2 "FTER/app/internal/models"
-	"FTER/app/internal/utils/arrays"
+	"FTER/app/internal/utils/array_utils"
 )
 
 type TeamDTO struct {
@@ -28,7 +28,7 @@ func (dto TeamDTO) ToFterModel() models2.TeamGameResultModel {
 }
 
 func gameDtoToPlayers(players []PlayerDTO) []models2.PlayerModel {
-	players = arrays.Filter(players, func(p PlayerDTO) bool {
+	players = array_utils.Filter(players, func(p PlayerDTO) bool {
 		return p.Played == "1"
 	})
 

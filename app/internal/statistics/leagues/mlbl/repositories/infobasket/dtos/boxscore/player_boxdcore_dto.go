@@ -2,7 +2,8 @@ package boxscore
 
 import (
 	"FTER/app/internal/models"
-	gt "github.com/bas24/googletranslatefree"
+	"FTER/app/internal/translator"
+	"FTER/app/internal/utils/string_utils"
 )
 
 type PlayerBoxscore struct {
@@ -61,8 +62,8 @@ type PlayerBoxscore struct {
 
 func (p *PlayerBoxscore) ToFterModel() models.PlayerModel {
 	personName := p.PersonNameEn
-	if hasNonLatinCharacters(personName) {
-		personName = translateName(personName)
+	if string_utils.HasNonLanguageChars(personName, string_utils.Latin) {
+		personName = translator.Translate(personName, nil, "en")
 	}
 
 	return models.PlayerModel{
@@ -70,21 +71,4 @@ func (p *PlayerBoxscore) ToFterModel() models.PlayerModel {
 		SecondsPlayed: p.Seconds,
 		PlsMin:        p.PlusMinus,
 	}
-}
-
-// todo: move to another module
-func translateName(name string) string {
-	// you can use "auto" for source language
-	// so, translator will detect language
-	result, _ := gt.Translate(name, "auto", "en")
-	return result
-}
-
-func hasNonLatinCharacters(text string) bool {
-	for _, r := range text {
-		if r > 127 {
-			return true
-		}
-	}
-	return false
 }

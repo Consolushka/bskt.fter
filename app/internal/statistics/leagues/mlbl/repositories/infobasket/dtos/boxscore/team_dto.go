@@ -2,7 +2,7 @@ package boxscore
 
 import (
 	models2 "FTER/app/internal/models"
-	"FTER/app/internal/utils/arrays"
+	"FTER/app/internal/utils/array_utils"
 )
 
 type TeamBoxscore struct {
@@ -44,9 +44,9 @@ type TeamBoxscore struct {
 	Seconds          int      `json:"Seconds"`
 	PlayedTime       string   `json:"PlayedTime"`
 	PlusMinus        *int     `json:"PlusMinus"`
-	//Coach            map[string]interface{} `json:"Coach"`
+	//Coach            map[string_utils]interface{} `json:"Coach"`
 	Players []PlayerBoxscore `json:"Players"`
-	//Coaches          map[string]interface{} `json:"Coaches"`
+	//Coaches          map[string_utils]interface{} `json:"Coaches"`
 }
 
 func (dto TeamBoxscore) ToFterModel() models2.TeamGameResultModel {
@@ -61,7 +61,7 @@ func (dto TeamBoxscore) ToFterModel() models2.TeamGameResultModel {
 }
 
 func gameDtoToPlayers(players []PlayerBoxscore) []models2.PlayerModel {
-	players = arrays.Filter(players, func(p PlayerBoxscore) bool {
+	players = array_utils.Filter(players, func(p PlayerBoxscore) bool {
 		return p.Seconds > 0
 	})
 

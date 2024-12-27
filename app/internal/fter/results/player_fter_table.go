@@ -4,7 +4,7 @@ import (
 	"FTER/app/internal/fter/enums"
 	"FTER/app/internal/models"
 	"FTER/app/internal/pdf/mappers"
-	"FTER/app/internal/utils/time"
+	"FTER/app/internal/utils/time_utils"
 	"strconv"
 )
 
@@ -27,7 +27,7 @@ func (t *PlayerFterResult) Headers() []string {
 }
 
 func (t *PlayerFterResult) ToTable() []string {
-	result := []string{t.Player.FullName, time.SecondsToFormat(t.Player.SecondsPlayed, time.PlayedTimeFormat)}
+	result := []string{t.Player.FullName, time_utils.SecondsToFormat(t.Player.SecondsPlayed, time_utils.PlayedTimeFormat)}
 
 	for _, impValue := range t.ImpPersResults {
 		result = append(result, strconv.FormatFloat(impValue, 'f', 2, 64))

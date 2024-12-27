@@ -2,7 +2,7 @@ package dtos
 
 import (
 	"FTER/app/internal/models"
-	"FTER/app/internal/utils/arrays"
+	"FTER/app/internal/utils/array_utils"
 )
 
 type TeamStatsDTO struct {
@@ -23,7 +23,7 @@ func (dto TeamStatsDTO) ToFterModel() models.TeamGameResultModel {
 }
 
 func gameDtoToPlayers(players []PlayerDTO) []models.PlayerModel {
-	players = arrays.Filter(players, func(p PlayerDTO) bool {
+	players = array_utils.Filter(players, func(p PlayerDTO) bool {
 		return p.Played
 	})
 

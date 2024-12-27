@@ -5,7 +5,7 @@ import (
 	"FTER/app/internal/statistics/leagues/nba/repositories/nba.com_api/client"
 	"FTER/app/internal/statistics/leagues/nba/repositories/nba.com_api/dtos/boxscore"
 	"FTER/app/internal/statistics/leagues/nba/repositories/nba.com_api/dtos/todays_games"
-	"FTER/app/internal/utils/arrays"
+	"FTER/app/internal/utils/array_utils"
 	"encoding/json"
 )
 
@@ -25,7 +25,7 @@ func (n *Repository) TodayGames() (string, []string, error) {
 		return "", nil, err
 	}
 
-	return scoreboard.GameDate, arrays.Map(scoreboard.Games, func(game todays_games.GameDTO) string {
+	return scoreboard.GameDate, array_utils.Map(scoreboard.Games, func(game todays_games.GameDTO) string {
 		return game.GameId
 	}), nil
 }

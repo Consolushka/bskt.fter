@@ -1,4 +1,4 @@
-package arrays
+package array_utils
 
 func Filter[T any](array []T, callback func(T) bool) []T {
 	filtered := make([]T, 0)
