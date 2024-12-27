@@ -1,9 +1,9 @@
-package commands
+package queries
 
 import (
+	"FTER/app/internal/modules/imp"
 	mappers2 "FTER/app/internal/modules/imp/mappers"
 	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/imp/queries"
 	"FTER/app/internal/modules/imp/results"
 	"FTER/app/internal/modules/statistics/enums"
 )
@@ -19,7 +19,7 @@ func CalculateFullGame(game *models.GameModel) *results.GameResult {
 }
 
 func teamResults(team models.TeamGameResultModel, oppPoints int, league enums.League) *results.TeamResults {
-	playersFter := queries.FullTeamFter(team.Players, team.TotalPoints-oppPoints, league)
+	playersFter := imp.CalculateTeam(team.Players, team.TotalPoints-oppPoints, league)
 
 	return mappers2.TeamToResult(team, playersFter)
 }

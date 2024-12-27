@@ -5,7 +5,7 @@ import (
 	"FTER/app/internal/utils/time_utils"
 )
 
-const playedTimeFormat = "PTS%mM%sS"
+const playedTimeFormat = "PT%mM%sS"
 
 type PlayerDTO struct {
 	Status     string              `json:"status"`

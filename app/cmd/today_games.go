@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	ftercommands "FTER/app/internal/modules/imp/commands"
+	ftercommands "FTER/app/internal/modules/imp/queries"
 	pdfcommands "FTER/app/internal/modules/pdf/commands"
 	"FTER/app/internal/modules/statistics/leagues/nba/repositories_factory"
 	"fmt"
@@ -11,10 +11,10 @@ import (
 
 var generateTodayGamesCmd = &cobra.Command{
 	Use:   "generate:today",
-	Short: "Generate today games results",
+	Short: "Generate pdf files for every today games",
 	Long:  "Generate files with IMP indicator for every todays games for each player who played in the given game",
 	Run: func(cmd *cobra.Command, args []string) {
-		todayGamesPdf()
+		TodayGamesPdf()
 	},
 }
 
@@ -22,8 +22,8 @@ func init() {
 	rootCmd.AddCommand(generateTodayGamesCmd)
 }
 
-// todayGamesPdf fetches id's of today games. And then generates pdf files for each game
-func todayGamesPdf() {
+// TodayGamesPdf fetches id's of today games. And then generates pdf files for each game
+func TodayGamesPdf() {
 	repo := repositories_factory.NewNbaStatsRepository()
 	date, gamesIds, _ := repo.TodayGames()
 
