@@ -1,9 +1,9 @@
 package infobasket
 
 import (
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/statistics/leagues/mlbl/repositories/infobasket/client"
-	boxscore2 "FTER/app/internal/modules/statistics/leagues/mlbl/repositories/infobasket/dtos/boxscore"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/statistics/leagues/mlbl/repositories/infobasket/client"
+	boxscore2 "IMP/app/internal/modules/statistics/leagues/mlbl/repositories/infobasket/dtos/boxscore"
 	"encoding/json"
 )
 

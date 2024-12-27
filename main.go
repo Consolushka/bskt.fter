@@ -1,6 +1,6 @@
 package main
 
-import "FTER/app/cmd"
+import "IMP/app/cmd"
 
 func main() {
 	//cmd.TodayGamesPdf()

@@ -1,7 +1,7 @@
 package client
 
 import (
-	"FTER/app/internal/abstract"
+	"IMP/app/internal/abstract"
 )
 
 const (

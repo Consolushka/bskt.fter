@@ -1,7 +1,7 @@
 package enums
 
 import (
-	"FTER/app/internal/modules/statistics/enums"
+	"IMP/app/internal/modules/statistics/enums"
 	"strconv"
 )
 

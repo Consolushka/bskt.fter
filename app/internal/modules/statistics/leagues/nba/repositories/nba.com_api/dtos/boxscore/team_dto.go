@@ -1,8 +1,8 @@
 package boxscore
 
 import (
-	models2 "FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/utils/array_utils"
+	models2 "IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/utils/array_utils"
 )
 
 type TeamDTO struct {

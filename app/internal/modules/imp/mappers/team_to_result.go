@@ -1,8 +1,8 @@
 package mappers
 
 import (
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/imp/results"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/imp/results"
 	"strconv"
 )
 

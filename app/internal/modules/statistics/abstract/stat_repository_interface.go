@@ -1,7 +1,7 @@
 package abstract
 
 import (
-	"FTER/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/imp/models"
 )
 
 type StatsRepository interface {

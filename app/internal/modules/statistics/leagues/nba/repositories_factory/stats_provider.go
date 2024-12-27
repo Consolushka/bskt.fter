@@ -1,9 +1,9 @@
 package repositories_factory
 
 import (
-	"FTER/app/internal/modules/statistics/abstract"
-	"FTER/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api"
-	"FTER/app/internal/modules/statistics/leagues/nba/repositories/sport_radar"
+	"IMP/app/internal/modules/statistics/abstract"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/sport_radar"
 )
 
 const (

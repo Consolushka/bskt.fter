@@ -1,8 +1,8 @@
 package dtos
 
 import (
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/utils/time_utils"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/utils/time_utils"
 )
 
 const playedTimeFormat = "%m:%s"

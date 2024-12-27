@@ -1,7 +1,7 @@
 package pdf
 
 import (
-	"FTER/app/internal/modules/pdf/mappers"
+	"IMP/app/internal/modules/pdf/mappers"
 	"github.com/go-pdf/fpdf"
 	"os"
 )

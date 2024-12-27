@@ -1,8 +1,8 @@
 package boxscore
 
 import (
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/statistics/enums"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/statistics/enums"
 	"time"
 )
 

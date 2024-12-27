@@ -1,11 +1,11 @@
 package nba_com_api
 
 import (
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/client"
-	"FTER/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/boxscore"
-	todays_games2 "FTER/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/todays_games"
-	"FTER/app/internal/utils/array_utils"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/client"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/boxscore"
+	todays_games2 "IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/todays_games"
+	"IMP/app/internal/utils/array_utils"
 	"encoding/json"
 )
 

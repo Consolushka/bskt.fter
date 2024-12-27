@@ -1,8 +1,8 @@
 package repositories_factory
 
 import (
-	"FTER/app/internal/modules/statistics/abstract"
-	"FTER/app/internal/modules/statistics/leagues/mlbl/repositories/infobasket"
+	"IMP/app/internal/modules/statistics/abstract"
+	"IMP/app/internal/modules/statistics/leagues/mlbl/repositories/infobasket"
 )
 
 const (

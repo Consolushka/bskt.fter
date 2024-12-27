@@ -1,4 +1,4 @@
-module FTER
+module IMP
 
 go 1.23.4
 

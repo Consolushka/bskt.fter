@@ -1,12 +1,12 @@
 package imp
 
 import (
-	"FTER/app/internal/modules/calculations"
-	enums2 "FTER/app/internal/modules/imp/enums"
-	"FTER/app/internal/modules/imp/mappers"
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/imp/results"
-	"FTER/app/internal/modules/statistics/enums"
+	"IMP/app/internal/modules/calculations"
+	enums2 "IMP/app/internal/modules/imp/enums"
+	"IMP/app/internal/modules/imp/mappers"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/imp/results"
+	"IMP/app/internal/modules/statistics/enums"
 )
 
 // calculatePlayerImpPerMinute calculates IMPPerMinute for player

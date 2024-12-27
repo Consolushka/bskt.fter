@@ -1,10 +1,10 @@
 package results
 
 import (
-	"FTER/app/internal/modules/imp/enums"
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/pdf/mappers"
-	"FTER/app/internal/utils/time_utils"
+	"IMP/app/internal/modules/imp/enums"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/pdf/mappers"
+	"IMP/app/internal/utils/time_utils"
 	"strconv"
 )
 

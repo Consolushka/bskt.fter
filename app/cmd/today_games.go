@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	ftercommands "FTER/app/internal/modules/imp/queries"
-	pdfcommands "FTER/app/internal/modules/pdf/commands"
-	"FTER/app/internal/modules/statistics/leagues/nba/repositories_factory"
+	ftercommands "IMP/app/internal/modules/imp/queries"
+	pdfcommands "IMP/app/internal/modules/pdf/commands"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories_factory"
 	"fmt"
 	"github.com/spf13/cobra"
 	"log"

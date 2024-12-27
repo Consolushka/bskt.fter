@@ -1,9 +1,9 @@
 package sport_radar
 
 import (
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/statistics/leagues/nba/repositories/sport_radar/client"
-	"FTER/app/internal/modules/statistics/leagues/nba/repositories/sport_radar/dtos"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/sport_radar/client"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/sport_radar/dtos"
 	"encoding/json"
 )
 

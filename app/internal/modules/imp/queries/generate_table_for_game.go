@@ -1,11 +1,11 @@
 package queries
 
 import (
-	"FTER/app/internal/modules/imp"
-	mappers2 "FTER/app/internal/modules/imp/mappers"
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/modules/imp/results"
-	"FTER/app/internal/modules/statistics/enums"
+	"IMP/app/internal/modules/imp"
+	mappers2 "IMP/app/internal/modules/imp/mappers"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/imp/results"
+	"IMP/app/internal/modules/statistics/enums"
 )
 
 // CalculateFullGame evaluates FTER for every player in each team

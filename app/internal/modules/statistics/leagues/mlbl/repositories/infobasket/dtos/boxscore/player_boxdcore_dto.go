@@ -1,9 +1,9 @@
 package boxscore
 
 import (
-	"FTER/app/internal/infrastructure/translator"
-	"FTER/app/internal/modules/imp/models"
-	"FTER/app/internal/utils/string_utils"
+	"IMP/app/internal/infrastructure/translator"
+	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/utils/string_utils"
 )
 
 type PlayerBoxscore struct {

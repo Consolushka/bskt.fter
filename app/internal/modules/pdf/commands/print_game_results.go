@@ -1,9 +1,9 @@
 package commands
 
 import (
-	results2 "FTER/app/internal/modules/imp/results"
-	"FTER/app/internal/modules/pdf"
-	"FTER/app/internal/modules/pdf/mappers"
+	results2 "IMP/app/internal/modules/imp/results"
+	"IMP/app/internal/modules/pdf"
+	"IMP/app/internal/modules/pdf/mappers"
 	"log"
 	"strings"
 )

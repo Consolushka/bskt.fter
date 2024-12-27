@@ -1,7 +1,7 @@
 package calculations
 
 import (
-	"FTER/app/internal/modules/imp/enums"
+	"IMP/app/internal/modules/imp/enums"
 	"math"
 )
 
