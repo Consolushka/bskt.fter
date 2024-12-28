@@ -26,7 +26,7 @@ func (r Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 		return nil, err
 	}
 
-	return gameDto.ToFterModel(), nil
+	return gameDto.ToImpModel(), nil
 }
 
 func NewRepository() *Repository {

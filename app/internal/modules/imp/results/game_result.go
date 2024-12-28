@@ -3,7 +3,7 @@ package results
 type TeamResults struct {
 	Title string
 
-	Players []PlayerFterResult
+	Players []PlayerImpResult
 }
 
 type GameResult struct {

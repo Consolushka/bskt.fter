@@ -33,8 +33,8 @@ func PrintGame(game *results2.GameResult, innerFolder *string) {
 	}
 }
 
-// toTableMapperSlice converts slice of PlayerFterResult to slice of TableMapper
-func toTableMapperSlice(players []results2.PlayerFterResult) []mappers.TableMapper {
+// toTableMapperSlice converts slice of PlayerImpResult to slice of TableMapper
+func toTableMapperSlice(players []results2.PlayerImpResult) []mappers.TableMapper {
 	result := make([]mappers.TableMapper, len(players))
 	for i, player := range players {
 		result[i] = &player

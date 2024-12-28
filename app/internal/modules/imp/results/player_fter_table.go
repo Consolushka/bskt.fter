@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-type PlayerFterResult struct {
+type PlayerImpResult struct {
 	mappers.TableMapper
 	Player         models.PlayerModel
 	TimeBases      []enums.TimeBasedImpCoefficient
@@ -16,7 +16,7 @@ type PlayerFterResult struct {
 }
 
 // Headers returns headers for table
-func (t *PlayerFterResult) Headers() []string {
+func (t *PlayerImpResult) Headers() []string {
 	res := []string{"Player", "Minutes Played"}
 
 	for _, timeBase := range t.TimeBases {
@@ -26,7 +26,7 @@ func (t *PlayerFterResult) Headers() []string {
 	return res
 }
 
-func (t *PlayerFterResult) ToTable() []string {
+func (t *PlayerImpResult) ToTable() []string {
 	result := []string{t.Player.FullName, time_utils.SecondsToFormat(t.Player.SecondsPlayed, time_utils.PlayedTimeFormat)}
 
 	for _, impValue := range t.ImpPersResults {

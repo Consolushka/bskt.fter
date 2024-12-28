@@ -22,7 +22,7 @@ func (i Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 		return nil, err
 	}
 
-	return gameDto.ToFterModel(), nil
+	return gameDto.ToImpModel(), nil
 }
 
 func (i Repository) TodayGames() (string, []string, error) {

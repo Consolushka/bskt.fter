@@ -3,14 +3,14 @@ FROM golang:alpine
 RUN apk update && apk add --no-cache git && apk add --no-cach bash && apk add build-base
 
 # Change WORKDIR to match your module name
-WORKDIR /FTER
+WORKDIR /IMP
 
 # Copy the app contents preserving the module structure
-COPY ./app /FTER/app
-COPY go.mod /FTER/
-COPY go.sum /FTER/
-COPY main.go /FTER/
-COPY .env /FTER/
+COPY ./app /IMP/app
+COPY go.mod /IMP/
+COPY go.sum /IMP/
+COPY main.go /IMP/
+COPY .env /IMP/
 
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 

@@ -1,24 +1,31 @@
-# FTER
+# IMP
 
 
 ## About
-Service that evaluates player Full Time Efficiency Rating (FTER). Based on:
+Service that evaluates player Impact on the final result (IMP). Based on:
 <ul>
     <li>Minutes Played</li>
     <li>Plus-Minus</li>
     <li>Final Game Score</li>
 </ul>
 
-FTER provides deep analysis of player performance considering actual playing time volume.
+IMP provides deep analysis of player performance considering actual playing time volume.
 
 ## Features
 
 ### Full Game Analysis
 
-Provides FTER for all players who played the game in .pdf format
+Provides IMP for all players who played the game in .pdf format
 
 ## Providers
 
 ### NBA
 
-In Current version service works only with SportRadar API
+<ul>
+    <li>SportRadar API</li>
+    <li>NBA CDN API</li>
+</ul>
+
+### MLBL
+
+In current version supports only Tambov region

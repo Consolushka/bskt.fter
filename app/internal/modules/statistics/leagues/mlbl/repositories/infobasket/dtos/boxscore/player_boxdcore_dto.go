@@ -60,7 +60,7 @@ type PlayerBoxscore struct {
 	StartMark        string      `json:"StartMark"`
 }
 
-func (p *PlayerBoxscore) ToFterModel() models.PlayerModel {
+func (p *PlayerBoxscore) ToImpModel() models.PlayerModel {
 	personName := p.PersonNameEn
 	if string_utils.HasNonLanguageChars(personName, string_utils.Latin) {
 		personName = translator.Translate(personName, nil, "en")

@@ -11,7 +11,7 @@ type TeamStatsDTO struct {
 	Players []PlayerDTO `json:"players"`
 }
 
-func (dto TeamStatsDTO) ToFterModel() models.TeamGameResultModel {
+func (dto TeamStatsDTO) ToImpModel() models.TeamGameResultModel {
 	return models.TeamGameResultModel{
 		Team: models.TeamModel{
 			FullName: dto.Alias,
@@ -30,7 +30,7 @@ func gameDtoToPlayers(players []PlayerDTO) []models.PlayerModel {
 	playersModels := make([]models.PlayerModel, len(players))
 
 	for i, player := range players {
-		playersModels[i] = player.ToFterModel()
+		playersModels[i] = player.ToImpModel()
 	}
 
 	return playersModels

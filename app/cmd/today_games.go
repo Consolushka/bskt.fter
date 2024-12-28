@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	ftercommands "IMP/app/internal/modules/imp/queries"
+	"IMP/app/internal/modules/imp/queries"
 	pdfcommands "IMP/app/internal/modules/pdf/commands"
 	"IMP/app/internal/modules/statistics/leagues/nba/repositories_factory"
 	"fmt"
@@ -34,7 +34,7 @@ func TodayGamesPdf() {
 			return
 		}
 
-		gameRes := ftercommands.CalculateFullGame(game)
+		gameRes := queries.CalculateFullGame(game)
 		pdfcommands.PrintGame(gameRes, &date)
 
 		fmt.Println(gameRes.Title + " Game results file successfully generated")

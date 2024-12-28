@@ -20,8 +20,8 @@ func calculatePlayerImpPerMinute(playedTime float64, plsMin int, finalDiff int, 
 }
 
 // CalculateTeam calculates IMP for every player in the team for league time bases
-func CalculateTeam(players []models.PlayerModel, finalDiff int, league enums.League) []results.PlayerFterResult {
-	tableData := make([]results.PlayerFterResult, len(players))
+func CalculateTeam(players []models.PlayerModel, finalDiff int, league enums.League) []results.PlayerImpResult {
+	tableData := make([]results.PlayerImpResult, len(players))
 	for i, player := range players {
 		fullGameTime := league.FullGameTimeMinutes()
 		playedMinutes := float64(player.SecondsPlayed) / 60

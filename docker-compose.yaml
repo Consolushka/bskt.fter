@@ -16,11 +16,11 @@ services:
       - 8000:8080
     restart: on-failure
     volumes:
-      - ./:/FTER
+      - ./:/IMP
     depends_on:
       - db
     networks:
-      - fter
+      - imp
     # forever read special empty linux file
     # added because golang container always stops after up
     command: tail -f /dev/null
@@ -38,12 +38,12 @@ services:
     volumes:
       - ./_db/pg_data:/var/lib/postgresql/data
     networks:
-      - fter
+      - imp
 
 volumes:
   pg_data:
 
 # Networks to be created to facilitate communication between containers
 networks:
-  fter:
+  imp:
     driver: bridge

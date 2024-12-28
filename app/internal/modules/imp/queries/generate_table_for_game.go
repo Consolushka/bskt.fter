@@ -8,7 +8,7 @@ import (
 	"IMP/app/internal/modules/statistics/enums"
 )
 
-// CalculateFullGame evaluates FTER for every player in each team
+// CalculateFullGame evaluates IMP for every player in each team
 // and returns results.GameResult
 func CalculateFullGame(game *models.GameModel) *results.GameResult {
 	return mappers2.GameToResult(
@@ -19,7 +19,7 @@ func CalculateFullGame(game *models.GameModel) *results.GameResult {
 }
 
 func teamResults(team models.TeamGameResultModel, oppPoints int, league enums.League) *results.TeamResults {
-	playersFter := imp.CalculateTeam(team.Players, team.TotalPoints-oppPoints, league)
+	playersImps := imp.CalculateTeam(team.Players, team.TotalPoints-oppPoints, league)
 
-	return mappers2.TeamToResult(team, playersFter)
+	return mappers2.TeamToResult(team, playersImps)
 }

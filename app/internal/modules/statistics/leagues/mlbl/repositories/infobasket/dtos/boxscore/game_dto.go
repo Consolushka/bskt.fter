@@ -28,8 +28,8 @@ type GameInfo struct {
 	Is3x3             bool           `json:"Is3x3"`
 }
 
-// ToFterModel converts a GameBoxScoreDTO to a models.GameModel which is neccessary for FTER package
-func (dto GameInfo) ToFterModel() *models.GameModel {
+// ToImpModel converts a GameBoxScoreDTO to a models.GameModel which is neccessary for IMP package
+func (dto GameInfo) ToImpModel() *models.GameModel {
 	league := enums.MLBL
 	duration := 0
 
@@ -41,8 +41,8 @@ func (dto GameInfo) ToFterModel() *models.GameModel {
 	return &models.GameModel{
 		Scheduled:    dto.GameDate + " " + dto.GameTime,
 		FullGameTime: duration,
-		Home:         dto.GameTeams[0].ToFterModel(),
-		Away:         dto.GameTeams[1].ToFterModel(),
+		Home:         dto.GameTeams[0].ToImpModel(),
+		Away:         dto.GameTeams[1].ToImpModel(),
 		League:       enums.MLBL,
 	}
 }

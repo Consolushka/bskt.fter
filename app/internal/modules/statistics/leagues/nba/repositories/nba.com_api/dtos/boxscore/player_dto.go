@@ -23,7 +23,7 @@ type PlayerDTO struct {
 	FamilyName string              `json:"familyName"`
 }
 
-func (p *PlayerDTO) ToFterModel() models.PlayerModel {
+func (p *PlayerDTO) ToImpModel() models.PlayerModel {
 	return models.PlayerModel{
 		FullName:      p.Name,
 		SecondsPlayed: time_utils.FormattedMinutesToSeconds(p.Statistics.Minutes, playedTimeFormat),

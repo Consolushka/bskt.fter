@@ -24,7 +24,7 @@ type PlayerDTO struct {
 	Statistics      PlayerStatsDTO `json:"statistics"`
 }
 
-func (p *PlayerDTO) ToFterModel() models.PlayerModel {
+func (p *PlayerDTO) ToImpModel() models.PlayerModel {
 	return models.PlayerModel{
 		FullName:      p.FullName,
 		SecondsPlayed: time_utils.FormattedMinutesToSeconds(p.Statistics.Minutes, playedTimeFormat),

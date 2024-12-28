@@ -6,8 +6,8 @@ import (
 	"IMP/app/internal/modules/imp/results"
 )
 
-func PlayerToResult(player models.PlayerModel, timeBases []enums.TimeBasedImpCoefficient, impPersResults []float64) results.PlayerFterResult {
-	return results.PlayerFterResult{
+func PlayerToResult(player models.PlayerModel, timeBases []enums.TimeBasedImpCoefficient, impPersResults []float64) results.PlayerImpResult {
+	return results.PlayerImpResult{
 		Player:         player,
 		TimeBases:      timeBases,
 		ImpPersResults: impPersResults,

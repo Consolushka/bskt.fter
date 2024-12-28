@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	ftercommands "IMP/app/internal/modules/imp/queries"
+	"IMP/app/internal/modules/imp/queries"
 	pdfcommands "IMP/app/internal/modules/pdf/commands"
 	"IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/statistics/factory"
@@ -29,6 +29,6 @@ func GamePdf(leagueName string, gameId string) {
 	repo := factory.NewLeagueRepository(enums.FromString(leagueName))
 	model, _ := repo.GameBoxScore(gameId)
 
-	gameRes := ftercommands.CalculateFullGame(model)
+	gameRes := queries.CalculateFullGame(model)
 	pdfcommands.PrintGame(gameRes, nil)
 }

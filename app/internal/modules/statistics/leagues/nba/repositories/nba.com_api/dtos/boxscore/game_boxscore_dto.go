@@ -26,8 +26,8 @@ type GameDTO struct {
 	AwayTeam          TeamDTO   `json:"awayTeam"`
 }
 
-// ToFterModel converts a GameBoxScoreDTO to a models.GameModel which is neccessary for FTER package
-func (dto GameDTO) ToFterModel() *models.GameModel {
+// ToImpModel converts a GameBoxScoreDTO to a models.GameModel which is neccessary for IMP package
+func (dto GameDTO) ToImpModel() *models.GameModel {
 	league := enums.NBA
 	duration := 0
 
@@ -39,8 +39,8 @@ func (dto GameDTO) ToFterModel() *models.GameModel {
 	return &models.GameModel{
 		Scheduled:    dto.GameTimeUTC.Format("2006-01-02 15:04:05"),
 		FullGameTime: duration,
-		Home:         dto.HomeTeam.ToFterModel(),
-		Away:         dto.AwayTeam.ToFterModel(),
+		Home:         dto.HomeTeam.ToImpModel(),
+		Away:         dto.AwayTeam.ToImpModel(),
 		League:       enums.NBA,
 	}
 }
