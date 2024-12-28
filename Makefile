@@ -31,7 +31,7 @@ down: ## down all services
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
 
 sh: ## Enter Golang container sh
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) sh
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) bash
 
 install: ## first time installation
 	make setup

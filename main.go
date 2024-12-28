@@ -1,8 +1,11 @@
 package main
 
-import "IMP/app/cmd"
+import (
+	"IMP/app/cmd"
+)
 
 func main() {
 	//cmd.TodayGamesPdf()
 	cmd.Execute()
+	//leagues.Seed()
 }
