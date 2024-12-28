@@ -3,6 +3,8 @@ package boxscore
 import (
 	"IMP/app/internal/modules/imp/models"
 	"IMP/app/internal/modules/statistics/enums"
+	"fmt"
+	"strings"
 )
 
 type GameInfo struct {
@@ -38,8 +40,15 @@ func (dto GameInfo) ToImpModel() *models.GameModel {
 		duration += league.OvertimeDuration()
 	}
 
+	// Convert date from dd.mm.yyyy to yyyy-mm-dd
+	dateParts := strings.Split(dto.GameDate, ".")
+	formattedDate := dto.GameDate
+	if len(dateParts) == 3 {
+		formattedDate = fmt.Sprintf("%s-%s-%s", dateParts[2], dateParts[1], dateParts[0])
+	}
+
 	return &models.GameModel{
-		Scheduled:    dto.GameDate + " " + dto.GameTime,
+		Scheduled:    formattedDate + " " + dto.GameTime,
 		FullGameTime: duration,
 		Home:         dto.GameTeams[0].ToImpModel(),
 		Away:         dto.GameTeams[1].ToImpModel(),
