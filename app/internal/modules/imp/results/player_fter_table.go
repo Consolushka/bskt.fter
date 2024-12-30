@@ -3,13 +3,11 @@ package results
 import (
 	"IMP/app/internal/modules/imp/enums"
 	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/modules/pdf/mappers"
 	"IMP/app/internal/utils/time_utils"
 	"strconv"
 )
 
 type PlayerImpResult struct {
-	mappers.TableMapper
 	Player         models.PlayerModel
 	TimeBases      []enums.TimeBasedImpCoefficient
 	ImpPersResults []float64
