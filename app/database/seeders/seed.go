@@ -1,8 +1,8 @@
 package seeders
 
 import (
-	"IMP/app/db/seeders/abstract"
-	"IMP/app/db/seeders/leagues"
+	"IMP/app/database/seeders/abstract"
+	"IMP/app/database/seeders/leagues"
 	"reflect"
 	"strings"
 )

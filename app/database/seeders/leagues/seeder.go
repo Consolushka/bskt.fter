@@ -1,7 +1,7 @@
 package leagues
 
 import (
-	"IMP/app/db"
+	"IMP/app/database"
 	"IMP/app/internal/modules/leagues/models"
 )
 
@@ -13,7 +13,7 @@ func (l Seeder) Model() interface{} {
 }
 
 func (l Seeder) Seed() {
-	db := db.Connect()
+	dbConnection := database.Connect()
 
 	nbaLeague := &models.League{
 		NameLocal:        "National Basketball Association",
@@ -35,6 +35,6 @@ func (l Seeder) Seed() {
 		OvertimeDuration: 5,
 	}
 
-	db.FirstOrCreate(nbaLeague, models.League{AliasEn: "NBA"})
-	db.FirstOrCreate(mlblLeague, models.League{AliasEn: "MLBL"})
+	dbConnection.FirstOrCreate(nbaLeague, models.League{AliasEn: "NBA"})
+	dbConnection.FirstOrCreate(mlblLeague, models.League{AliasEn: "MLBL"})
 }

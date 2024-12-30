@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"IMP/app/db/seeders"
+	"IMP/app/database/seeders"
 	"fmt"
 	"github.com/spf13/cobra"
 	"reflect"
