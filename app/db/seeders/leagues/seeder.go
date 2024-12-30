@@ -5,7 +5,14 @@ import (
 	"IMP/app/internal/modules/leagues/models"
 )
 
-func Seed() {
+type Seeder struct {
+}
+
+func (l Seeder) Model() interface{} {
+	return models.League{}
+}
+
+func (l Seeder) Seed() {
 	db := db.Connect()
 
 	nbaLeague := &models.League{

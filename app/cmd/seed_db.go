@@ -2,18 +2,19 @@ package cmd
 
 import (
 	"IMP/app/db/seeders"
+	"fmt"
 	"github.com/spf13/cobra"
 	"strings"
 )
 
 var seedDbCmd = &cobra.Command{
-	Use:   "seed",
+	Use:   "seed:db",
 	Short: "",
 	Long:  "",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		seeders := strings.Split(args[0], ",")
-		Seed(seeders)
+		seed(seeders)
 	},
 }
 
@@ -21,9 +22,14 @@ func init() {
 	rootCmd.AddCommand(seedDbCmd)
 }
 
-// GamePdf takes gameId and generates file with IMP indicators for each player played in the given game
-func Seed(seederModels []string) {
+// seed math seeders for given models and then seed model
+func seed(seederModels []string) {
 	for _, seederModel := range seederModels {
-		seeders.SeedModel(seederModel)
+		seeder := seeders.FindSeeder(seederModel)
+		if seeder == nil {
+			fmt.Print("Seeder not found for model: " + seederModel)
+			continue
+		}
+		(*seeder).Seed()
 	}
 }
