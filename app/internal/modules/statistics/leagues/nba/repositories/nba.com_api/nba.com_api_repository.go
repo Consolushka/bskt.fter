@@ -1,10 +1,14 @@
 package nba_com_api
 
 import (
+	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/leagues"
+	"IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/client"
 	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/boxscore"
 	todays_games2 "IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/todays_games"
+	"IMP/app/internal/modules/teams"
 	"IMP/app/internal/utils/array_utils"
 	"encoding/json"
 )
@@ -41,7 +45,57 @@ func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 		return nil, err
 	}
 
+	saveGame(gameDto)
+
 	return gameDto.ToImpModel(), nil
+}
+
+func getNbaLeagueId() int {
+	league, _ := leagues.NewRepository().LeagueByAliasEn("nba")
+
+	return league.ID
+}
+
+func saveTeam(dto boxscore.TeamDTO, leagueId int) teams.TeamModel {
+	teamModel, err := teams.FirstOrCreate(teams.TeamModel{
+		Alias:    dto.TeamTricode,
+		LeagueID: leagueId,
+		Name:     dto.TeamName,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return teamModel
+}
+
+func saveGame(gameDto boxscore.GameDTO) games.GameModel {
+	league := enums.NBA
+
+	leagueId := getNbaLeagueId()
+
+	homeTeamModel := saveTeam(gameDto.HomeTeam, leagueId)
+
+	awayTeamModel := saveTeam(gameDto.AwayTeam, leagueId)
+
+	duration := 0
+
+	duration = 4 * league.QuarterDuration()
+	for i := 5; i < gameDto.Period; i++ {
+		duration += league.OvertimeDuration()
+	}
+
+	model, _ := games.FirstOrCreate(games.GameModel{
+		HomeTeamID:    homeTeamModel.ID,
+		AwayTeamID:    awayTeamModel.ID,
+		LeagueID:      leagueId,
+		ScheduledAt:   gameDto.GameTimeUTC,
+		PlayedMinutes: duration,
+	})
+
+	panic(model.ID)
+	return model
 }
 
 func NewRepository() *Repository {

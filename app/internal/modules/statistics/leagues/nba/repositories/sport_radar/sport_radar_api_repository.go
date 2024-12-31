@@ -26,6 +26,7 @@ func (r Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 		return nil, err
 	}
 
+	//todo: save to db
 	return gameDto.ToImpModel(), nil
 }
 

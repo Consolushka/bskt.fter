@@ -18,5 +18,7 @@ EXECUTE FUNCTION trigger_set_timestamp();
 
 -- +goose Down
 -- +goose StatementBegin
+DROP TRIGGER update_games_updated_at ON games;
+
 DROP TABLE IF EXISTS games;
 -- +goose StatementEnd
