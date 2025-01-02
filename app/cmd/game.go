@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"IMP/app/internal/infrastructure/balldontlie"
 	"IMP/app/internal/modules/imp/queries"
 	pdfcommands "IMP/app/internal/modules/pdf/commands"
 	"IMP/app/internal/modules/statistics/enums"
@@ -26,6 +27,8 @@ func init() {
 
 // GamePdf takes gameId and generates file with IMP indicators for each player played in the given game
 func GamePdf(leagueName string, gameId string) {
+
+	balldontlie.NewClient().GetAllPlayers("Stephen", "Curry")
 	repo := factory.NewLeagueRepository(enums.FromString(leagueName))
 	model, _ := repo.GameBoxScore(gameId)
 

@@ -1,4 +1,4 @@
-package client
+package infobasket
 
 import (
 	"IMP/app/internal/abstract"
@@ -9,20 +9,20 @@ const (
 	boxScoreEndpointPattern = "/GetOnline/%v?format=json&lang=ru"
 )
 
-type InfobasketClient struct {
+type Client struct {
 	baseUrl string
 
 	httpClient *abstract.HttpClient
 }
 
-func (c InfobasketClient) BoxScore(gameId string) map[string]interface{} {
-	result := c.httpClient.Get(c.baseUrl + fmt.Sprintf(boxScoreEndpointPattern, gameId))
+func (c Client) BoxScore(gameId string) map[string]interface{} {
+	result := c.httpClient.Get(c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
 
 	return result
 }
 
-func NewInfobasketClient() *InfobasketClient {
-	return &InfobasketClient{
+func NewInfobasketClient() *Client {
+	return &Client{
 		baseUrl:    "https://reg.infobasket.su/Widget",
 		httpClient: abstract.NewHttpClient(),
 	}

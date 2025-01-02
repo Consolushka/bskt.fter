@@ -13,12 +13,15 @@ func NewHttpClient() *HttpClient {
 }
 
 // Get send GET request to given url w/o body and headers (yet)
-func (c *HttpClient) Get(url string) map[string]interface{} {
+func (c *HttpClient) Get(url string, apiKey *string) map[string]interface{} {
 	var result map[string]interface{}
 
 	req, _ := http.NewRequest("GET", url, nil)
 
 	req.Header.Add("accept", "application/json")
+	if apiKey != nil {
+		req.Header.Add("Authorization", *apiKey)
+	}
 
 	res, _ := http.DefaultClient.Do(req)
 

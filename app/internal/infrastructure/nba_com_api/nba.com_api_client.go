@@ -1,4 +1,4 @@
-package client
+package nba_com_api
 
 import (
 	"IMP/app/internal/abstract"
@@ -8,27 +8,27 @@ import (
 const boxScoreEndpointPattern = "/boxscore/boxscore_%v.json"
 const todaysGamesEndpoint = "/scoreboard/todaysScoreboard_00.json"
 
-type NbaComApiClient struct {
+type Client struct {
 	baseUrl string
 
 	httpClient *abstract.HttpClient
 }
 
-func NewNbaComApiClient() *NbaComApiClient {
-	return &NbaComApiClient{
+func NewNbaComApiClient() *Client {
+	return &Client{
 		baseUrl:    "https://cdn.nba.com/static/json/liveData",
 		httpClient: abstract.NewHttpClient(),
 	}
 }
 
-func (c NbaComApiClient) BoxScore(gameId string) map[string]interface{} {
-	result := c.httpClient.Get(c.baseUrl + fmt.Sprintf(boxScoreEndpointPattern, gameId))
+func (c Client) BoxScore(gameId string) map[string]interface{} {
+	result := c.httpClient.Get(c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
 
 	return result["game"].(map[string]interface{})
 }
 
-func (c NbaComApiClient) TodaysGames() map[string]interface{} {
-	result := c.httpClient.Get(c.baseUrl + todaysGamesEndpoint)
+func (c Client) TodaysGames() map[string]interface{} {
+	result := c.httpClient.Get(c.baseUrl+todaysGamesEndpoint, nil)
 
 	return result["scoreboard"].(map[string]interface{})
 }

@@ -1,14 +1,14 @@
 package nba_com_api
 
 import (
+	"IMP/app/internal/infrastructure/nba_com_api"
+	boxscore2 "IMP/app/internal/infrastructure/nba_com_api/dtos/boxscore"
+	"IMP/app/internal/infrastructure/nba_com_api/dtos/todays_games"
 	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/imp/models"
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/statistics/enums"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/client"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/boxscore"
-	todays_games2 "IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/todays_games"
 	"IMP/app/internal/modules/teams"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/internal/utils/time_utils"
@@ -19,11 +19,11 @@ import (
 const playedTimeFormat = "PT%mM%sS"
 
 type Repository struct {
-	client *client.NbaComApiClient
+	client *nba_com_api.Client
 }
 
 func (n *Repository) TodayGames() (string, []string, error) {
-	var scoreboard todays_games2.ScoreboardDTO
+	var scoreboard todays_games.ScoreboardDTO
 
 	scoreBoardJson := n.client.TodaysGames()
 	raw, _ := json.Marshal(scoreBoardJson)
@@ -34,13 +34,13 @@ func (n *Repository) TodayGames() (string, []string, error) {
 		return "", nil, err
 	}
 
-	return scoreboard.GameDate, array_utils.Map(scoreboard.Games, func(game todays_games2.GameDTO) string {
+	return scoreboard.GameDate, array_utils.Map(scoreboard.Games, func(game todays_games.GameDTO) string {
 		return game.GameId
 	}), nil
 }
 
 func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
-	var gameDto boxscore.GameDTO
+	var gameDto boxscore2.GameDTO
 
 	homeJSON := n.client.BoxScore(gameId)
 	homeRaw, _ := json.Marshal(homeJSON)
@@ -61,7 +61,7 @@ func getNbaLeagueId() int {
 	return league.ID
 }
 
-func saveTeam(dto boxscore.TeamDTO, leagueId int) teams.TeamModel {
+func saveTeam(dto boxscore2.TeamDTO, leagueId int) teams.TeamModel {
 	teamModel, err := teams.FirstOrCreate(teams.TeamModel{
 		Alias:    dto.TeamTricode,
 		LeagueID: leagueId,
@@ -75,7 +75,7 @@ func saveTeam(dto boxscore.TeamDTO, leagueId int) teams.TeamModel {
 	return teamModel
 }
 
-func saveGame(gameDto boxscore.GameDTO) games.GameModel {
+func saveGame(gameDto boxscore2.GameDTO) games.GameModel {
 	league := enums.NBA
 
 	leagueId := getNbaLeagueId()
@@ -131,6 +131,6 @@ func saveGame(gameDto boxscore.GameDTO) games.GameModel {
 
 func NewRepository() *Repository {
 	return &Repository{
-		client: client.NewNbaComApiClient(),
+		client: nba_com_api.NewNbaComApiClient(),
 	}
 }

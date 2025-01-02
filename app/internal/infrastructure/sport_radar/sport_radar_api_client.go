@@ -1,4 +1,4 @@
-package client
+package sport_radar
 
 import (
 	"IMP/app/internal/abstract"
@@ -8,7 +8,7 @@ const (
 	gameSummaryEndpoint = "summary.json"
 )
 
-type SportRadarApiClient struct {
+type Client struct {
 	baseUrl string
 	version string
 	lang    string
@@ -17,8 +17,8 @@ type SportRadarApiClient struct {
 	httpClient *abstract.HttpClient
 }
 
-func NewSportRadarApiClient() *SportRadarApiClient {
-	return &SportRadarApiClient{
+func NewSportRadarApiClient() *Client {
+	return &Client{
 		baseUrl:    "https://api.sportradar.com/nba/trial/v8",
 		version:    "v8",
 		lang:       "en",
@@ -27,8 +27,8 @@ func NewSportRadarApiClient() *SportRadarApiClient {
 	}
 }
 
-func (c SportRadarApiClient) GameSummary(gameId string) map[string]interface{} {
-	result := c.httpClient.Get(c.baseUrl + "/" + c.lang + "/games/" + gameId + "/" + gameSummaryEndpoint + "?api_key=" + c.apiKey)
+func (c Client) GameSummary(gameId string) map[string]interface{} {
+	result := c.httpClient.Get(c.baseUrl+"/"+c.lang+"/games/"+gameId+"/"+gameSummaryEndpoint+"?api_key="+c.apiKey, nil)
 
 	return result
 }

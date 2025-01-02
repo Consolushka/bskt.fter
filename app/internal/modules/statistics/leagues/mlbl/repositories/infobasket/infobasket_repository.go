@@ -1,14 +1,14 @@
 package infobasket
 
 import (
+	"IMP/app/internal/infrastructure/infobasket"
+	boxscore2 "IMP/app/internal/infrastructure/infobasket/dtos/boxscore"
 	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/modules/statistics/leagues/mlbl/repositories/infobasket/client"
-	boxscore2 "IMP/app/internal/modules/statistics/leagues/mlbl/repositories/infobasket/dtos/boxscore"
 	"encoding/json"
 )
 
 type Repository struct {
-	client *client.InfobasketClient
+	client *infobasket.Client
 }
 
 func (i Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
@@ -32,6 +32,6 @@ func (i Repository) TodayGames() (string, []string, error) {
 
 func NewRepository() *Repository {
 	return &Repository{
-		client: client.NewInfobasketClient(),
+		client: infobasket.NewInfobasketClient(),
 	}
 }

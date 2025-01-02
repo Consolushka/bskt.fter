@@ -1,14 +1,14 @@
 package sport_radar
 
 import (
+	"IMP/app/internal/infrastructure/sport_radar"
+	"IMP/app/internal/infrastructure/sport_radar/dtos"
 	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/sport_radar/client"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/sport_radar/dtos"
 	"encoding/json"
 )
 
 type Repository struct {
-	client *client.SportRadarApiClient
+	client *sport_radar.Client
 }
 
 func (r Repository) TodayGames() (string, []string, error) {
@@ -32,6 +32,6 @@ func (r Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 
 func NewRepository() *Repository {
 	return &Repository{
-		client: client.NewSportRadarApiClient(),
+		client: sport_radar.NewSportRadarApiClient(),
 	}
 }
