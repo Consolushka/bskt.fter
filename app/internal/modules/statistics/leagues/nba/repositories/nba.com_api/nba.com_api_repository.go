@@ -4,14 +4,19 @@ import (
 	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/imp/models"
 	"IMP/app/internal/modules/leagues"
+	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/client"
 	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/boxscore"
 	todays_games2 "IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api/dtos/todays_games"
 	"IMP/app/internal/modules/teams"
 	"IMP/app/internal/utils/array_utils"
+	"IMP/app/internal/utils/time_utils"
 	"encoding/json"
+	"time"
 )
+
+const playedTimeFormat = "PT%mM%sS"
 
 type Repository struct {
 	client *client.NbaComApiClient
@@ -86,7 +91,7 @@ func saveGame(gameDto boxscore.GameDTO) games.GameModel {
 		duration += league.OvertimeDuration()
 	}
 
-	model, _ := games.FirstOrCreate(games.GameModel{
+	gameModel, _ := games.FirstOrCreate(games.GameModel{
 		HomeTeamID:    homeTeamModel.ID,
 		AwayTeamID:    awayTeamModel.ID,
 		LeagueID:      leagueId,
@@ -94,8 +99,34 @@ func saveGame(gameDto boxscore.GameDTO) games.GameModel {
 		PlayedMinutes: duration,
 	})
 
-	panic(model.ID)
-	return model
+	for _, player := range gameDto.HomeTeam.Players {
+		playerModel, _ := players.FirstOrCreate(players.Player{FullName: player.Name, BirthDate: time.Now()})
+
+		players.CreateStatisticInGame(players.PlayerGameStats{
+			PlayerID:      playerModel.ID,
+			GameID:        gameModel.ID,
+			TeamID:        homeTeamModel.ID,
+			PlayedSeconds: time_utils.FormattedMinutesToSeconds(player.Statistics.Minutes, playedTimeFormat),
+			PlsMin:        player.Statistics.Plus - player.Statistics.Minus,
+			IsBench:       player.Starter != "1",
+		})
+	}
+
+	for _, player := range gameDto.AwayTeam.Players {
+		playerModel, _ := players.FirstOrCreate(players.Player{FullName: player.Name, BirthDate: time.Now()})
+
+		players.CreateStatisticInGame(players.PlayerGameStats{
+			PlayerID:      playerModel.ID,
+			GameID:        gameModel.ID,
+			TeamID:        awayTeamModel.ID,
+			PlayedSeconds: time_utils.FormattedMinutesToSeconds(player.Statistics.Minutes, playedTimeFormat),
+			PlsMin:        player.Statistics.Plus - player.Statistics.Minus,
+			IsBench:       player.Starter != "1",
+		})
+	}
+
+	panic(gameModel.ID)
+	return gameModel
 }
 
 func NewRepository() *Repository {
