@@ -24,6 +24,9 @@ func (p *PersistenceService) savePlayerModel(player boxscore2.PlayerDTO) players
 	}
 	if string_utils.HasNonLanguageChars(player.FamilyName, string_utils.Latin) {
 		player.FamilyName = translator.Translate(player.FamilyName, nil, "en")
+		if player.FamilyName == "Chancar" {
+			player.FamilyName = "Cancar"
+		}
 	}
 
 	// fetch player info from balldontlie to get draft year
