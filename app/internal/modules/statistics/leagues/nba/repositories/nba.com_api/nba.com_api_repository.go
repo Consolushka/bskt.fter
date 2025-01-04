@@ -4,28 +4,22 @@ import (
 	"IMP/app/internal/infrastructure/nba_com_api"
 	boxscore2 "IMP/app/internal/infrastructure/nba_com_api/dtos/boxscore"
 	"IMP/app/internal/infrastructure/nba_com_api/dtos/todays_games"
-	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/modules/leagues"
-	"IMP/app/internal/modules/players"
-	"IMP/app/internal/modules/statistics/enums"
-	"IMP/app/internal/modules/teams"
 	"IMP/app/internal/utils/array_utils"
-	"IMP/app/internal/utils/time_utils"
 	"encoding/json"
-	"time"
 )
 
 const playedTimeFormat = "PT%mM%sS"
 
 type Repository struct {
-	client *nba_com_api.Client
+	nbaComClient       *nba_com_api.Client
+	persistenceService *PersistenceService
 }
 
 func (n *Repository) TodayGames() (string, []string, error) {
 	var scoreboard todays_games.ScoreboardDTO
 
-	scoreBoardJson := n.client.TodaysGames()
+	scoreBoardJson := n.nbaComClient.TodaysGames()
 	raw, _ := json.Marshal(scoreBoardJson)
 
 	err := json.Unmarshal(raw, &scoreboard)
@@ -42,7 +36,7 @@ func (n *Repository) TodayGames() (string, []string, error) {
 func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 	var gameDto boxscore2.GameDTO
 
-	homeJSON := n.client.BoxScore(gameId)
+	homeJSON := n.nbaComClient.BoxScore(gameId)
 	homeRaw, _ := json.Marshal(homeJSON)
 
 	err := json.Unmarshal(homeRaw, &gameDto)
@@ -50,87 +44,14 @@ func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 		return nil, err
 	}
 
-	saveGame(gameDto)
+	n.persistenceService.saveGame(gameDto)
 
 	return gameDto.ToImpModel(), nil
 }
 
-func getNbaLeagueId() int {
-	league, _ := leagues.NewRepository().LeagueByAliasEn("nba")
-
-	return league.ID
-}
-
-func saveTeam(dto boxscore2.TeamDTO, leagueId int) teams.TeamModel {
-	teamModel, err := teams.FirstOrCreate(teams.TeamModel{
-		Alias:    dto.TeamTricode,
-		LeagueID: leagueId,
-		Name:     dto.TeamName,
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-	return teamModel
-}
-
-func saveGame(gameDto boxscore2.GameDTO) games.GameModel {
-	league := enums.NBA
-
-	leagueId := getNbaLeagueId()
-
-	homeTeamModel := saveTeam(gameDto.HomeTeam, leagueId)
-
-	awayTeamModel := saveTeam(gameDto.AwayTeam, leagueId)
-
-	duration := 0
-
-	duration = 4 * league.QuarterDuration()
-	for i := 5; i < gameDto.Period; i++ {
-		duration += league.OvertimeDuration()
-	}
-
-	gameModel, _ := games.FirstOrCreate(games.GameModel{
-		HomeTeamID:    homeTeamModel.ID,
-		AwayTeamID:    awayTeamModel.ID,
-		LeagueID:      leagueId,
-		ScheduledAt:   gameDto.GameTimeUTC,
-		PlayedMinutes: duration,
-	})
-
-	for _, player := range gameDto.HomeTeam.Players {
-		playerModel, _ := players.FirstOrCreate(players.Player{FullName: player.Name, BirthDate: time.Now()})
-
-		players.CreateStatisticInGame(players.PlayerGameStats{
-			PlayerID:      playerModel.ID,
-			GameID:        gameModel.ID,
-			TeamID:        homeTeamModel.ID,
-			PlayedSeconds: time_utils.FormattedMinutesToSeconds(player.Statistics.Minutes, playedTimeFormat),
-			PlsMin:        player.Statistics.Plus - player.Statistics.Minus,
-			IsBench:       player.Starter != "1",
-		})
-	}
-
-	for _, player := range gameDto.AwayTeam.Players {
-		playerModel, _ := players.FirstOrCreate(players.Player{FullName: player.Name, BirthDate: time.Now()})
-
-		players.CreateStatisticInGame(players.PlayerGameStats{
-			PlayerID:      playerModel.ID,
-			GameID:        gameModel.ID,
-			TeamID:        awayTeamModel.ID,
-			PlayedSeconds: time_utils.FormattedMinutesToSeconds(player.Statistics.Minutes, playedTimeFormat),
-			PlsMin:        player.Statistics.Plus - player.Statistics.Minus,
-			IsBench:       player.Starter != "1",
-		})
-	}
-
-	panic(gameModel.ID)
-	return gameModel
-}
-
 func NewRepository() *Repository {
 	return &Repository{
-		client: nba_com_api.NewNbaComApiClient(),
+		nbaComClient:       nba_com_api.NewNbaComApiClient(),
+		persistenceService: NewPersistenceService(),
 	}
 }

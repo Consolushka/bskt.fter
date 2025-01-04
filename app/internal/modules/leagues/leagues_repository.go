@@ -5,14 +5,7 @@ import (
 	"IMP/app/internal/modules/leagues/models"
 )
 
-type Repository struct {
-}
-
-func NewRepository() *Repository {
-	return &Repository{}
-}
-
-func (r Repository) LeagueByAliasEn(aliasEn string) (models.League, error) {
+func LeagueByAliasEn(aliasEn string) (models.League, error) {
 	dbConn := database.Connect()
 
 	var result models.League

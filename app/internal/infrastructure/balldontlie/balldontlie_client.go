@@ -14,7 +14,7 @@ type Client struct {
 func (c *Client) GetAllPlayers(firstNameSearch string, lastNameSearch string) map[string]interface{} {
 	result := c.httpClient.Get(c.baseUrl+"/players?first_name="+firstNameSearch+"&last_name="+lastNameSearch, &c.apiKey)
 
-	return result["data"].(map[string]interface{})
+	return result["data"].([]interface{})[0].(map[string]interface{})
 }
 
 func NewClient() *Client {
