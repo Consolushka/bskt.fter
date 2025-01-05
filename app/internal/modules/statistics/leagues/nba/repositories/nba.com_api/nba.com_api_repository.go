@@ -13,7 +13,7 @@ const playedTimeFormat = "PT%mM%sS"
 
 type Repository struct {
 	nbaComClient       *nba_com_api.Client
-	persistenceService *PersistenceService
+	persistenceService *persistenceService
 }
 
 func (n *Repository) TodayGames() (string, []string, error) {
@@ -52,6 +52,6 @@ func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 func NewRepository() *Repository {
 	return &Repository{
 		nbaComClient:       nba_com_api.NewNbaComApiClient(),
-		persistenceService: NewPersistenceService(),
+		persistenceService: newPersistenceService(),
 	}
 }

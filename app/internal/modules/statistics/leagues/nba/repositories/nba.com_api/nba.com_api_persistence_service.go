@@ -13,17 +13,18 @@ import (
 	"IMP/app/internal/utils/time_utils"
 )
 
-type PersistenceService struct {
+type persistenceService struct {
 	ballDontLieClient *balldontlie.Client
 }
 
-func (p *PersistenceService) savePlayerModel(player boxscore2.PlayerDTO) players.Player {
+func (p *persistenceService) savePlayerModel(player boxscore2.PlayerDTO) players.Player {
 	// If player name has non-latin characters, translate it to english
 	if string_utils.HasNonLanguageChars(player.FirstName, string_utils.Latin) {
 		player.FirstName = translator.Translate(player.FirstName, nil, "en")
 	}
 	if string_utils.HasNonLanguageChars(player.FamilyName, string_utils.Latin) {
 		player.FamilyName = translator.Translate(player.FamilyName, nil, "en")
+
 		if player.FamilyName == "Chancar" {
 			player.FamilyName = "Cancar"
 		}
@@ -47,11 +48,11 @@ func (p *PersistenceService) savePlayerModel(player boxscore2.PlayerDTO) players
 	return playerModel
 }
 
-func (p *PersistenceService) saveTeamPlayers(teamDto boxscore2.TeamDTO, gameModel games.GameModel, teamModel teams.TeamModel) {
+func (p *persistenceService) saveTeamPlayers(teamDto boxscore2.TeamDTO, gameModel games.GameModel, teamModel teams.TeamModel) {
 	for _, player := range teamDto.Players {
 		playerModel := p.savePlayerModel(player)
 
-		players.FirstOrCreateGameStat(players.PlayerGameStats{
+		err := players.FirstOrCreateGameStat(players.PlayerGameStats{
 			PlayerID:      playerModel.ID,
 			GameID:        gameModel.ID,
 			TeamID:        teamModel.ID,
@@ -59,10 +60,14 @@ func (p *PersistenceService) saveTeamPlayers(teamDto boxscore2.TeamDTO, gameMode
 			PlsMin:        player.Statistics.Plus - player.Statistics.Minus,
 			IsBench:       player.Starter != "1",
 		})
+
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
-func (p *PersistenceService) saveTeam(dto boxscore2.TeamDTO, leagueId int) teams.TeamModel {
+func (p *persistenceService) saveTeam(dto boxscore2.TeamDTO, leagueId int) teams.TeamModel {
 	teamModel, _ := teams.FirstOrCreate(teams.TeamModel{
 		Alias:    dto.TeamTricode,
 		LeagueID: leagueId,
@@ -72,11 +77,11 @@ func (p *PersistenceService) saveTeam(dto boxscore2.TeamDTO, leagueId int) teams
 	return teamModel
 }
 
-func (p *PersistenceService) saveGame(gameDto boxscore2.GameDTO) games.GameModel {
+func (p *persistenceService) saveGame(gameDto boxscore2.GameDTO) games.GameModel {
 	league := enums.NBA
 
 	// query to get NBA league id
-	leagueId := p.getNbaLeagueId()
+	leagueId := p.getLeagueId()
 
 	// save and get home team
 	homeTeamModel := p.saveTeam(gameDto.HomeTeam, leagueId)
@@ -107,14 +112,14 @@ func (p *PersistenceService) saveGame(gameDto boxscore2.GameDTO) games.GameModel
 	return gameModel
 }
 
-func (p *PersistenceService) getNbaLeagueId() int {
+func (p *persistenceService) getLeagueId() int {
 	league, _ := leagues.LeagueByAliasEn("nba")
 
 	return league.ID
 }
 
-func NewPersistenceService() *PersistenceService {
-	return &PersistenceService{
+func newPersistenceService() *persistenceService {
+	return &persistenceService{
 		ballDontLieClient: balldontlie.NewClient(),
 	}
 }
