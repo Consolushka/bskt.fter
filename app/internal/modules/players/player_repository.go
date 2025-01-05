@@ -2,13 +2,22 @@ package players
 
 import (
 	"IMP/app/database"
+	"gorm.io/gorm"
 )
 
-func FirstOrCreate(player Player) (Player, error) {
-	var result Player
-	dbConnection := database.Connect()
+type Repository struct {
+	dbConnection *gorm.DB
+}
 
-	tx := dbConnection.
+func NewRepository() *Repository {
+	return &Repository{
+		dbConnection: database.GetDB(),
+	}
+}
+func (r *Repository) FirstOrCreate(player Player) (Player, error) {
+	var result Player
+
+	tx := r.dbConnection.
 		FirstOrCreate(
 			&result,
 			Player{
@@ -20,10 +29,8 @@ func FirstOrCreate(player Player) (Player, error) {
 	return result, tx.Error
 }
 
-func FirstOrCreateGameStat(stats PlayerGameStats) error {
-	dbConnection := database.Connect()
-
-	tx := dbConnection.Attrs(
+func (r *Repository) FirstOrCreateGameStat(stats PlayerGameStats) error {
+	tx := r.dbConnection.Attrs(
 		PlayerGameStats{
 			PlayedSeconds: stats.PlayedSeconds,
 			PlsMin:        stats.PlsMin,

@@ -15,6 +15,10 @@ import (
 
 type persistenceService struct {
 	ballDontLieClient *balldontlie.Client
+	teamsRepository   *teams.Repository
+	playersRepository *players.Repository
+	gamesRepository   *games.Repository
+	leagueRepository  *leagues.Repository
 }
 
 func (p *persistenceService) savePlayerModel(player boxscore2.PlayerDTO) players.Player {
@@ -39,7 +43,7 @@ func (p *persistenceService) savePlayerModel(player boxscore2.PlayerDTO) players
 		draftYear = &draftYearInt
 	}
 
-	playerModel, _ := players.FirstOrCreate(players.Player{
+	playerModel, _ := p.playersRepository.FirstOrCreate(players.Player{
 		FullName:  player.Name,
 		BirthDate: nil,
 		DraftYear: draftYear,
@@ -52,7 +56,7 @@ func (p *persistenceService) saveTeamPlayers(teamDto boxscore2.TeamDTO, gameMode
 	for _, player := range teamDto.Players {
 		playerModel := p.savePlayerModel(player)
 
-		err := players.FirstOrCreateGameStat(players.PlayerGameStats{
+		err := p.playersRepository.FirstOrCreateGameStat(players.PlayerGameStats{
 			PlayerID:      playerModel.ID,
 			GameID:        gameModel.ID,
 			TeamID:        teamModel.ID,
@@ -68,7 +72,7 @@ func (p *persistenceService) saveTeamPlayers(teamDto boxscore2.TeamDTO, gameMode
 }
 
 func (p *persistenceService) saveTeam(dto boxscore2.TeamDTO, leagueId int) teams.TeamModel {
-	teamModel, _ := teams.FirstOrCreate(teams.TeamModel{
+	teamModel, _ := p.teamsRepository.FirstOrCreate(teams.TeamModel{
 		Alias:    dto.TeamTricode,
 		LeagueID: leagueId,
 		Name:     dto.TeamName,
@@ -96,7 +100,7 @@ func (p *persistenceService) saveGame(gameDto boxscore2.GameDTO) games.GameModel
 		duration += league.OvertimeDuration()
 	}
 
-	gameModel, _ := games.FirstOrCreate(games.GameModel{
+	gameModel, _ := p.gamesRepository.FirstOrCreate(games.GameModel{
 		HomeTeamID:    homeTeamModel.ID,
 		AwayTeamID:    awayTeamModel.ID,
 		LeagueID:      leagueId,
@@ -113,7 +117,7 @@ func (p *persistenceService) saveGame(gameDto boxscore2.GameDTO) games.GameModel
 }
 
 func (p *persistenceService) getLeagueId() int {
-	league, _ := leagues.LeagueByAliasEn("nba")
+	league, _ := p.leagueRepository.GetLeagueByAliasEn("nba")
 
 	return league.ID
 }
@@ -121,5 +125,9 @@ func (p *persistenceService) getLeagueId() int {
 func newPersistenceService() *persistenceService {
 	return &persistenceService{
 		ballDontLieClient: balldontlie.NewClient(),
+		teamsRepository:   teams.NewRepository(),
+		gamesRepository:   games.NewRepository(),
+		playersRepository: players.NewRepository(),
+		leagueRepository:  leagues.NewRepository(),
 	}
 }

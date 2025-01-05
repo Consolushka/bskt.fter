@@ -2,14 +2,23 @@ package games
 
 import (
 	"IMP/app/database"
+	"gorm.io/gorm"
 )
 
-func FirstOrCreate(game GameModel) (GameModel, error) {
+type Repository struct {
+	dbConnection *gorm.DB
+}
+
+func NewRepository() *Repository {
+	return &Repository{
+		dbConnection: database.GetDB(),
+	}
+}
+
+func (r *Repository) FirstOrCreate(game GameModel) (GameModel, error) {
 	var result GameModel
 
-	dbConnection := database.Connect()
-
-	tx := dbConnection.
+	tx := r.dbConnection.
 		Attrs(GameModel{
 			PlayedMinutes: game.PlayedMinutes,
 		}).

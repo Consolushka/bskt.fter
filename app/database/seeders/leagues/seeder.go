@@ -13,7 +13,7 @@ func (l Seeder) Model() interface{} {
 }
 
 func (l Seeder) Seed() {
-	dbConnection := database.Connect()
+	dbConnection := database.OpenDbConnection()
 
 	nbaLeague := &models.League{
 		NameLocal:        "National Basketball Association",

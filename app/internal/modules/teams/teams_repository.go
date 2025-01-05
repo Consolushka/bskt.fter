@@ -2,17 +2,33 @@ package teams
 
 import (
 	"IMP/app/database"
+	"gorm.io/gorm"
 )
 
-func FirstOrCreate(team TeamModel) (TeamModel, error) {
-	var result TeamModel
-	dbConnection := database.Connect()
+type Repository struct {
+	dbConnection *gorm.DB
+}
 
-	tx := dbConnection.
-		Attrs(TeamModel{
-			Name: team.Name,
-		}).
-		FirstOrCreate(&result, TeamModel{Alias: team.Alias, LeagueID: team.LeagueID})
+func NewRepository() *Repository {
+	return &Repository{
+		dbConnection: database.GetDB(),
+	}
+}
+
+func (r *Repository) FirstOrCreate(team TeamModel) (TeamModel, error) {
+	var result TeamModel
+
+	tx := r.dbConnection.
+		Attrs(
+			TeamModel{
+				Name: team.Name,
+			}).
+		FirstOrCreate(&result,
+			TeamModel{
+				Alias:    team.Alias,
+				LeagueID: team.LeagueID,
+			},
+		)
 
 	return result, tx.Error
 }

@@ -10,12 +10,17 @@ import (
 	"time"
 )
 
-type persistenceService struct{}
+type persistenceService struct {
+	teamsRepository   *teams.Repository
+	playersRepository *players.Repository
+	gamesRepository   *games.Repository
+	leaguesRepository *leagues.Repository
+}
 
 func (p *persistenceService) savePlayerModel(player boxscore.PlayerBoxscore) players.Player {
 	birthDate, _ := time.Parse("02.01.2006", player.PersonBirth)
 
-	playerModel, _ := players.FirstOrCreate(players.Player{
+	playerModel, _ := p.playersRepository.FirstOrCreate(players.Player{
 		FullName:  player.PersonNameRu,
 		DraftYear: nil,
 		BirthDate: &birthDate,
@@ -28,7 +33,7 @@ func (p *persistenceService) saveTeamPlayers(teamDto boxscore.TeamBoxscore, game
 	for _, player := range teamDto.Players {
 		playerModel := p.savePlayerModel(player)
 
-		err := players.FirstOrCreateGameStat(players.PlayerGameStats{
+		err := p.playersRepository.FirstOrCreateGameStat(players.PlayerGameStats{
 			PlayerID:      playerModel.ID,
 			GameID:        gameModel.ID,
 			TeamID:        teamModel.ID,
@@ -44,7 +49,7 @@ func (p *persistenceService) saveTeamPlayers(teamDto boxscore.TeamBoxscore, game
 }
 
 func (p *persistenceService) saveTeam(dto boxscore.TeamBoxscore, leagueId int) teams.TeamModel {
-	teamModel, _ := teams.FirstOrCreate(teams.TeamModel{
+	teamModel, _ := p.teamsRepository.FirstOrCreate(teams.TeamModel{
 		Alias:    dto.TeamName.CompTeamAbcNameEn,
 		LeagueID: leagueId,
 		Name:     dto.TeamName.CompTeamNameRu,
@@ -75,7 +80,7 @@ func (p *persistenceService) saveGame(gameDto boxscore.GameInfo) games.GameModel
 	}
 
 	scheduled, _ := time.Parse("2006-01-02 23.10", gameDto.GameDate+" "+gameDto.GameTime)
-	gameModel, _ := games.FirstOrCreate(games.GameModel{
+	gameModel, _ := p.gamesRepository.FirstOrCreate(games.GameModel{
 		HomeTeamID:    homeTeamModel.ID,
 		AwayTeamID:    awayTeamModel.ID,
 		LeagueID:      leagueId,
@@ -92,11 +97,16 @@ func (p *persistenceService) saveGame(gameDto boxscore.GameInfo) games.GameModel
 }
 
 func (p *persistenceService) getLeagueId() int {
-	league, _ := leagues.LeagueByAliasEn("mlbl")
+	league, _ := p.leaguesRepository.GetLeagueByAliasEn("mlbl")
 
 	return league.ID
 }
 
 func newPersistenceService() *persistenceService {
-	return &persistenceService{}
+	return &persistenceService{
+		teamsRepository:   teams.NewRepository(),
+		playersRepository: players.NewRepository(),
+		gamesRepository:   games.NewRepository(),
+		leaguesRepository: leagues.NewRepository(),
+	}
 }
