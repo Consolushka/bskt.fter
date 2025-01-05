@@ -23,18 +23,19 @@ func FirstOrCreate(player Player) (Player, error) {
 func FirstOrCreateGameStat(stats PlayerGameStats) error {
 	dbConnection := database.Connect()
 
-	tx := dbConnection.FirstOrCreate(
-		&PlayerGameStats{},
-		PlayerGameStats{
-			PlayerID: stats.PlayerID,
-			GameID:   stats.GameID,
-			TeamID:   stats.TeamID,
-		}).Attrs(
+	tx := dbConnection.Attrs(
 		PlayerGameStats{
 			PlayedSeconds: stats.PlayedSeconds,
 			PlsMin:        stats.PlsMin,
 			IsBench:       stats.IsBench,
-		})
+		}).
+		FirstOrCreate(
+			&PlayerGameStats{},
+			PlayerGameStats{
+				PlayerID: stats.PlayerID,
+				GameID:   stats.GameID,
+				TeamID:   stats.TeamID,
+			})
 
 	return tx.Error
 }

@@ -8,7 +8,8 @@ import (
 )
 
 type Repository struct {
-	client *infobasket.Client
+	client             *infobasket.Client
+	persistenceService *persistenceService
 }
 
 func (i Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
@@ -22,7 +23,7 @@ func (i Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 		return nil, err
 	}
 
-	//todo: save to db
+	i.persistenceService.saveGame(gameDto)
 	return gameDto.ToImpModel(), nil
 }
 
@@ -32,6 +33,7 @@ func (i Repository) TodayGames() (string, []string, error) {
 
 func NewRepository() *Repository {
 	return &Repository{
-		client: infobasket.NewInfobasketClient(),
+		client:             infobasket.NewInfobasketClient(),
+		persistenceService: newPersistenceService(),
 	}
 }
