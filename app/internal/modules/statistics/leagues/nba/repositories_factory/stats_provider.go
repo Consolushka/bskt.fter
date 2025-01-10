@@ -2,7 +2,7 @@ package repositories_factory
 
 import (
 	"IMP/app/internal/modules/statistics/abstract"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/nba.com_api"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/cdn.nba"
 	"IMP/app/internal/modules/statistics/leagues/nba/repositories/sport_radar"
 )
 
@@ -19,7 +19,7 @@ func NewNbaStatsRepository() abstract.StatsRepository {
 	case SPORTRADAR:
 		return sport_radar.NewRepository()
 	case NBA:
-		return nba_com_api.NewRepository()
+		return cdn_nba.NewRepository()
 	default:
 		return nil
 	}

@@ -1,9 +1,9 @@
-package nba_com_api
+package cdn_nba
 
 import (
-	"IMP/app/internal/infrastructure/nba_com_api"
-	boxscore2 "IMP/app/internal/infrastructure/nba_com_api/dtos/boxscore"
-	"IMP/app/internal/infrastructure/nba_com_api/dtos/todays_games"
+	"IMP/app/internal/infrastructure/cdn.nba"
+	boxscore2 "IMP/app/internal/infrastructure/cdn.nba/dtos/boxscore"
+	"IMP/app/internal/infrastructure/cdn.nba/dtos/todays_games"
 	"IMP/app/internal/modules/imp/models"
 	"IMP/app/internal/utils/array_utils"
 	"encoding/json"
@@ -12,14 +12,14 @@ import (
 const playedTimeFormat = "PT%mM%sS"
 
 type Repository struct {
-	nbaComClient       *nba_com_api.Client
+	cdnNbaClient       *cdn_nba.Client
 	persistenceService *persistenceService
 }
 
 func (n *Repository) TodayGames() (string, []string, error) {
 	var scoreboard todays_games.ScoreboardDTO
 
-	scoreBoardJson := n.nbaComClient.TodaysGames()
+	scoreBoardJson := n.cdnNbaClient.TodaysGames()
 	raw, _ := json.Marshal(scoreBoardJson)
 
 	err := json.Unmarshal(raw, &scoreboard)
@@ -36,7 +36,7 @@ func (n *Repository) TodayGames() (string, []string, error) {
 func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 	var gameDto boxscore2.GameDTO
 
-	homeJSON := n.nbaComClient.BoxScore(gameId)
+	homeJSON := n.cdnNbaClient.BoxScore(gameId)
 	homeRaw, _ := json.Marshal(homeJSON)
 
 	err := json.Unmarshal(homeRaw, &gameDto)
@@ -51,7 +51,7 @@ func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 
 func NewRepository() *Repository {
 	return &Repository{
-		nbaComClient:       nba_com_api.NewNbaComApiClient(),
+		cdnNbaClient:       cdn_nba.NewCdnNbaClient(),
 		persistenceService: newPersistenceService(),
 	}
 }

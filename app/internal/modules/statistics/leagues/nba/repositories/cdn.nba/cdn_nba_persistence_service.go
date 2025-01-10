@@ -1,8 +1,8 @@
-package nba_com_api
+package cdn_nba
 
 import (
 	"IMP/app/internal/infrastructure/balldontlie"
-	boxscore2 "IMP/app/internal/infrastructure/nba_com_api/dtos/boxscore"
+	boxscore2 "IMP/app/internal/infrastructure/cdn.nba/dtos/boxscore"
 	"IMP/app/internal/infrastructure/translator"
 	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/leagues"

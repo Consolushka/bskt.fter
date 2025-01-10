@@ -1,4 +1,4 @@
-package nba_com_api
+package cdn_nba
 
 import (
 	"IMP/app/internal/abstract"
@@ -14,7 +14,7 @@ type Client struct {
 	httpClient *abstract.HttpClient
 }
 
-func NewNbaComApiClient() *Client {
+func NewCdnNbaClient() *Client {
 	return &Client{
 		baseUrl:    "https://cdn.nba.com/static/json/liveData",
 		httpClient: abstract.NewHttpClient(),
