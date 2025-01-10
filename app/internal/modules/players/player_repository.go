@@ -23,7 +23,6 @@ func (r *Repository) FirstOrCreate(player Player) (Player, error) {
 			Player{
 				FullName:  player.FullName,
 				BirthDate: player.BirthDate,
-				DraftYear: player.DraftYear,
 			})
 
 	return result, tx.Error

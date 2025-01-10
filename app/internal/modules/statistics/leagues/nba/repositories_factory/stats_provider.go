@@ -2,7 +2,7 @@ package repositories_factory
 
 import (
 	"IMP/app/internal/modules/statistics/abstract"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/cdn.nba"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/cdn_nba"
 	"IMP/app/internal/modules/statistics/leagues/nba/repositories/sport_radar"
 )
 

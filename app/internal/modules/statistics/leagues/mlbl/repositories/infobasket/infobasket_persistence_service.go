@@ -22,7 +22,6 @@ func (p *persistenceService) savePlayerModel(player boxscore.PlayerBoxscore) pla
 
 	playerModel, _ := p.playersRepository.FirstOrCreate(players.Player{
 		FullName:  player.PersonNameRu,
-		DraftYear: nil,
 		BirthDate: &birthDate,
 	})
 

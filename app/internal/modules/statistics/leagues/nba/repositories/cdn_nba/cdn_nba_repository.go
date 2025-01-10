@@ -1,9 +1,9 @@
 package cdn_nba
 
 import (
-	"IMP/app/internal/infrastructure/cdn.nba"
-	boxscore2 "IMP/app/internal/infrastructure/cdn.nba/dtos/boxscore"
-	"IMP/app/internal/infrastructure/cdn.nba/dtos/todays_games"
+	"IMP/app/internal/infrastructure/cdn_nba"
+	boxscore2 "IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
+	"IMP/app/internal/infrastructure/cdn_nba/dtos/todays_games"
 	"IMP/app/internal/modules/imp/models"
 	"IMP/app/internal/utils/array_utils"
 	"encoding/json"

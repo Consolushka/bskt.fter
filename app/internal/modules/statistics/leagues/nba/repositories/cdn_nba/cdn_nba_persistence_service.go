@@ -1,20 +1,21 @@
 package cdn_nba
 
 import (
-	"IMP/app/internal/infrastructure/balldontlie"
-	boxscore2 "IMP/app/internal/infrastructure/cdn.nba/dtos/boxscore"
-	"IMP/app/internal/infrastructure/translator"
+	boxscore2 "IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
+	"IMP/app/internal/infrastructure/nba_com"
 	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/teams"
-	"IMP/app/internal/utils/string_utils"
 	"IMP/app/internal/utils/time_utils"
+	"github.com/PuerkitoBio/goquery"
+	"time"
 )
 
 type persistenceService struct {
-	ballDontLieClient *balldontlie.Client
+	nbaComClient *nba_com.Client
+
 	teamsRepository   *teams.Repository
 	playersRepository *players.Repository
 	gamesRepository   *games.Repository
@@ -22,34 +23,35 @@ type persistenceService struct {
 }
 
 func (p *persistenceService) savePlayerModel(player boxscore2.PlayerDTO) players.Player {
-	// If player name has non-latin characters, translate it to english
-	if string_utils.HasNonLanguageChars(player.FirstName, string_utils.Latin) {
-		player.FirstName = translator.Translate(player.FirstName, nil, "en")
-	}
-	if string_utils.HasNonLanguageChars(player.FamilyName, string_utils.Latin) {
-		player.FamilyName = translator.Translate(player.FamilyName, nil, "en")
-
-		if player.FamilyName == "Chancar" {
-			player.FamilyName = "Cancar"
-		}
-	}
-
-	// fetch player info from balldontlie to get draft year
-	playerInfo := p.ballDontLieClient.GetAllPlayers(player.FirstName, player.FamilyName)
-	var draftYear *int
-	draftYearFloat, ok := playerInfo["draft_year"]
-	if ok && draftYearFloat != nil {
-		draftYearInt := int(draftYearFloat.(float64))
-		draftYear = &draftYearInt
-	}
-
-	playerModel, _ := p.playersRepository.FirstOrCreate(players.Player{
+	playerModel, err := p.playersRepository.FirstOrCreate(players.Player{
 		FullName:  player.Name,
-		BirthDate: nil,
-		DraftYear: draftYear,
+		BirthDate: p.getPlayerBirthdate(player),
 	})
 
+	if err != nil {
+		panic(err)
+	}
+
 	return playerModel
+}
+
+// getPlayerBirthdate fetch html page from nba.com and parse player birthdate
+func (p *persistenceService) getPlayerBirthdate(player boxscore2.PlayerDTO) *time.Time {
+	playerInfo := p.nbaComClient.PlayerInfoPage(player.PersonId)
+	if playerInfo == nil {
+		panic("asdasd")
+	}
+
+	var birthDate time.Time
+	playerInfo.Find(".PlayerSummary_playerInfo__om2G4").Each(func(i int, s *goquery.Selection) {
+		children := s.Children()
+		if children.First().Text() == "BIRTHDATE" {
+			node := children.Get(1)
+			birthDate, _ = time.Parse("January 2, 2006", node.FirstChild.Data)
+		}
+	})
+
+	return &birthDate
 }
 
 func (p *persistenceService) saveTeamPlayers(teamDto boxscore2.TeamDTO, gameModel games.GameModel, teamModel teams.TeamModel) {
@@ -124,7 +126,7 @@ func (p *persistenceService) getLeagueId() int {
 
 func newPersistenceService() *persistenceService {
 	return &persistenceService{
-		ballDontLieClient: balldontlie.NewClient(),
+		nbaComClient:      nba_com.NewClient(),
 		teamsRepository:   teams.NewRepository(),
 		gamesRepository:   games.NewRepository(),
 		playersRepository: players.NewRepository(),
