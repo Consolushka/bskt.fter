@@ -2,6 +2,7 @@ package players
 
 import (
 	"IMP/app/database"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -14,18 +15,39 @@ func NewRepository() *Repository {
 		dbConnection: database.GetDB(),
 	}
 }
-func (r *Repository) FirstOrCreate(player Player) (Player, error) {
+
+func (r *Repository) FirstByLeaguePlayerId(id int) (*Player, error) {
 	var result Player
 
 	tx := r.dbConnection.
+		First(
+			&result,
+			Player{
+				LeaguePlayerID: id,
+			})
+
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	return &result, tx.Error
+}
+
+func (r *Repository) FirstOrCreate(player Player) (*Player, error) {
+	var result Player
+
+	tx := r.dbConnection.
+		Attrs(Player{
+			FullName:  player.FullName,
+			BirthDate: player.BirthDate,
+		}).
 		FirstOrCreate(
 			&result,
 			Player{
-				FullName:  player.FullName,
-				BirthDate: player.BirthDate,
+				LeaguePlayerID: player.LeaguePlayerID,
 			})
 
-	return result, tx.Error
+	return &result, tx.Error
 }
 
 func (r *Repository) FirstOrCreateGameStat(stats PlayerGameStats) error {

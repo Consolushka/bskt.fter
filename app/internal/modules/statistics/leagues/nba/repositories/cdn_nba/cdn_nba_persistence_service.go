@@ -10,6 +10,7 @@ import (
 	"IMP/app/internal/modules/teams"
 	"IMP/app/internal/utils/time_utils"
 	"github.com/PuerkitoBio/goquery"
+	"log"
 	"time"
 )
 
@@ -23,23 +24,30 @@ type persistenceService struct {
 }
 
 func (p *persistenceService) savePlayerModel(player boxscore2.PlayerDTO) players.Player {
-	playerModel, err := p.playersRepository.FirstOrCreate(players.Player{
-		FullName:  player.Name,
-		BirthDate: p.getPlayerBirthdate(player),
-	})
+
+	playerModel, err := p.playersRepository.FirstByLeaguePlayerId(player.PersonId)
+	if playerModel == nil {
+		log.Println("Player not found in database: ", player.PersonId, ". Fetching from nba.com")
+
+		playerModel, err = p.playersRepository.FirstOrCreate(players.Player{
+			FullName:       player.Name,
+			BirthDate:      p.getPlayerBirthdate(player),
+			LeaguePlayerID: player.PersonId,
+		})
+	}
 
 	if err != nil {
 		panic(err)
 	}
 
-	return playerModel
+	return *playerModel
 }
 
 // getPlayerBirthdate fetch html page from nba.com and parse player birthdate
 func (p *persistenceService) getPlayerBirthdate(player boxscore2.PlayerDTO) *time.Time {
 	playerInfo := p.nbaComClient.PlayerInfoPage(player.PersonId)
 	if playerInfo == nil {
-		panic("asdasd")
+		panic("There is no page on nba.com for player: " + player.Name)
 	}
 
 	var birthDate time.Time

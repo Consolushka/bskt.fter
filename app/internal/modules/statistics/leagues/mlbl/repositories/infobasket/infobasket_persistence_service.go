@@ -17,12 +17,13 @@ type persistenceService struct {
 	leaguesRepository *leagues.Repository
 }
 
-func (p *persistenceService) savePlayerModel(player boxscore.PlayerBoxscore) players.Player {
+func (p *persistenceService) savePlayerModel(player boxscore.PlayerBoxscore) *players.Player {
 	birthDate, _ := time.Parse("02.01.2006", player.PersonBirth)
 
 	playerModel, _ := p.playersRepository.FirstOrCreate(players.Player{
-		FullName:  player.PersonNameRu,
-		BirthDate: &birthDate,
+		FullName:       player.PersonNameRu,
+		BirthDate:      &birthDate,
+		LeaguePlayerID: player.PersonID,
 	})
 
 	return playerModel
