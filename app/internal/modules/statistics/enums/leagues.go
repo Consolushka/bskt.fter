@@ -46,6 +46,17 @@ func (l League) OvertimeDuration() int {
 	}
 }
 
+func (l League) String() string {
+	switch l {
+	case NBA:
+		return "NBA"
+	case MLBL:
+		return "MLBL"
+	}
+
+	return ""
+}
+
 func FromString(league string) League {
 	league = strings.ToUpper(league)
 	switch league {

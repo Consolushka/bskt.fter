@@ -5,15 +5,14 @@ import (
 	boxscore2 "IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
 	"IMP/app/internal/infrastructure/cdn_nba/dtos/todays_games"
 	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/statistics/leagues/nba/repositories/cdn_nba/persistence"
 	"IMP/app/internal/utils/array_utils"
 	"encoding/json"
 )
 
-const playedTimeFormat = "PT%mM%sS"
-
 type Repository struct {
 	cdnNbaClient       *cdn_nba.Client
-	persistenceService *persistenceService
+	persistenceService *persistence.CdnNbaPersistenceService
 }
 
 func (n *Repository) TodayGames() (string, []string, error) {
@@ -44,7 +43,7 @@ func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 		return nil, err
 	}
 
-	n.persistenceService.saveGame(gameDto)
+	n.persistenceService.SaveGame(gameDto)
 
 	return gameDto.ToImpModel(), nil
 }
@@ -52,6 +51,6 @@ func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 func NewRepository() *Repository {
 	return &Repository{
 		cdnNbaClient:       cdn_nba.NewCdnNbaClient(),
-		persistenceService: newPersistenceService(),
+		persistenceService: persistence.NewCdnNbaPersistenceService(),
 	}
 }
