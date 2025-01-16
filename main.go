@@ -1,14 +1,16 @@
 package main
 
 import (
-	"IMP/app/cmd"
+	"IMP/app/api"
 	"IMP/app/database"
+	"log"
+	"net/http"
 )
 
 func main() {
 	database.OpenDbConnection()
-	//cmd.GamePdf("nba", "0022400439")
-	//cmd.TodayGamesPdf()
-	cmd.Execute()
-	//leagues.Seed()
+	mux := api.Serve()
+
+	log.Println("Starting server on :8080")
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }

@@ -29,7 +29,7 @@ func (p *persistenceService) savePlayerModel(player boxscore.PlayerBoxscore) *pl
 	return playerModel
 }
 
-func (p *persistenceService) saveTeamPlayers(teamDto boxscore.TeamBoxscore, gameModel games.GameModel, teamModel teams.TeamModel) {
+func (p *persistenceService) saveTeamPlayers(teamDto boxscore.TeamBoxscore, gameModel games.GameModel, teamModel teams.Team) {
 	for _, player := range teamDto.Players {
 		playerModel := p.savePlayerModel(player)
 
@@ -48,8 +48,8 @@ func (p *persistenceService) saveTeamPlayers(teamDto boxscore.TeamBoxscore, game
 	}
 }
 
-func (p *persistenceService) saveTeam(dto boxscore.TeamBoxscore, leagueId int) teams.TeamModel {
-	teamModel, _ := p.teamsRepository.FirstOrCreate(teams.TeamModel{
+func (p *persistenceService) saveTeam(dto boxscore.TeamBoxscore, leagueId int) teams.Team {
+	teamModel, _ := p.teamsRepository.FirstOrCreate(teams.Team{
 		Alias:    dto.TeamName.CompTeamAbcNameEn,
 		LeagueID: leagueId,
 		Name:     dto.TeamName.CompTeamNameRu,

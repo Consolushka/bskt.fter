@@ -13,9 +13,4 @@ func FetchPage(url string) (*goquery.Document, error) {
 	defer resp.Body.Close()
 
 	return goquery.NewDocumentFromReader(resp.Body)
-
-	//var values []string
-	//doc.Find(".PlayerSummary_playerInfoValue__JS8_v").Each(func(i int, s *goquery.Selection) {
-	//	values = append(values, s.Text())
-	//})
 }

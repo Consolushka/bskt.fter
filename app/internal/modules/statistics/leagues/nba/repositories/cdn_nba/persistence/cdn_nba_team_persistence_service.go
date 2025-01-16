@@ -13,8 +13,8 @@ type teamPersistenceService struct {
 }
 
 // saveTeam returns or create team
-func (p *teamPersistenceService) saveTeam(dto boxscore2.TeamDTO, leagueId int) teams.TeamModel {
-	teamModel, _ := p.teamsRepository.FirstOrCreate(teams.TeamModel{
+func (p *teamPersistenceService) saveTeam(dto boxscore2.TeamDTO, leagueId int) teams.Team {
+	teamModel, _ := p.teamsRepository.FirstOrCreate(teams.Team{
 		Alias:    dto.TeamTricode,
 		LeagueID: leagueId,
 		Name:     dto.TeamName,
@@ -24,7 +24,7 @@ func (p *teamPersistenceService) saveTeam(dto boxscore2.TeamDTO, leagueId int) t
 }
 
 // saveTeamPlayers save players and their statistics for a team
-func (p *teamPersistenceService) saveTeamPlayers(teamDto boxscore2.TeamDTO, gameModel games.GameModel, teamModel teams.TeamModel) {
+func (p *teamPersistenceService) saveTeamPlayers(teamDto boxscore2.TeamDTO, gameModel games.GameModel, teamModel teams.Team) {
 	for _, player := range teamDto.Players {
 		p.playerPersistenceService.savePlayerGameStats(player, gameModel, teamModel)
 	}

@@ -21,7 +21,7 @@ type playerPersistenceService struct {
 }
 
 // savePlayerGameStats saves player game statistics if not exists by playerId+gameId+teamId
-func (p *playerPersistenceService) savePlayerGameStats(player boxscore2.PlayerDTO, gameModel games.GameModel, teamModel teams.TeamModel) {
+func (p *playerPersistenceService) savePlayerGameStats(player boxscore2.PlayerDTO, gameModel games.GameModel, teamModel teams.Team) {
 	playerModel := p.savePlayerModel(player)
 
 	err := p.playersRepository.FirstOrCreateGameStat(players.PlayerGameStats{

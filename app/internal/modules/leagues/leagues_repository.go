@@ -2,7 +2,6 @@ package leagues
 
 import (
 	"IMP/app/database"
-	"IMP/app/internal/modules/leagues/models"
 	"gorm.io/gorm"
 )
 
@@ -16,9 +15,9 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) GetLeagueByAliasEn(aliasEn string) (models.League, error) {
-	var result models.League
-	r.db.Model(models.League{AliasEn: aliasEn}).First(&result)
+func (r *Repository) GetLeagueByAliasEn(aliasEn string) (League, error) {
+	var result League
+	r.db.Model(League{AliasEn: aliasEn}).First(&result)
 
 	return result, nil
 }

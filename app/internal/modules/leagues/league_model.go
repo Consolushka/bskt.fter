@@ -1,4 +1,4 @@
-package models
+package leagues
 
 import "time"
 

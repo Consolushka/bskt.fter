@@ -15,16 +15,16 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) FirstOrCreate(team TeamModel) (TeamModel, error) {
-	var result TeamModel
+func (r *Repository) FirstOrCreate(team Team) (Team, error) {
+	var result Team
 
 	tx := r.dbConnection.
 		Attrs(
-			TeamModel{
+			Team{
 				Name: team.Name,
 			}).
 		FirstOrCreate(&result,
-			TeamModel{
+			Team{
 				Alias:    team.Alias,
 				LeagueID: team.LeagueID,
 			},

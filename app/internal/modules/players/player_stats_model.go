@@ -4,6 +4,7 @@ import "time"
 
 type PlayerGameStats struct {
 	PlayerID      int       `json:"player_id" db:"player_id" gorm:"primaryKey;autoIncrement:false"`
+	Player        Player    `json:"player" gorm:"foreignKey:PlayerID"`
 	GameID        int       `json:"game_id" db:"game_id" gorm:"primaryKey;autoIncrement:false"`
 	TeamID        int       `json:"team_id" db:"team_id"`
 	PlsMin        int       `json:"pls_min" db:"pls_min"`

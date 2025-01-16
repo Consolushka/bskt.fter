@@ -15,6 +15,16 @@ func NewRepository() *Repository {
 	}
 }
 
+func (r *Repository) First(id int) (*GameModel, error) {
+	var result GameModel
+
+	tx := r.dbConnection.
+		First(&result, GameModel{ID: id}).
+		Preload("League")
+
+	return &result, tx.Error
+}
+
 func (r *Repository) FirstOrCreate(game GameModel) (GameModel, error) {
 	var result GameModel
 
