@@ -15,9 +15,12 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) GetLeagueByAliasEn(aliasEn string) (League, error) {
+func (r *Repository) GetLeagueByAliasEn(aliasEn string) (*League, error) {
 	var result League
-	r.db.Model(League{AliasEn: aliasEn}).First(&result)
+	tx := r.db.Model(League{AliasEn: aliasEn}).First(&result)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
 
-	return result, nil
+	return &result, nil
 }

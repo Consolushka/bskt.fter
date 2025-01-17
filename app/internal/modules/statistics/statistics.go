@@ -1,10 +1,10 @@
-package factory
+package statistics
 
 import (
-	"IMP/app/internal/modules/statistics/abstract"
 	"IMP/app/internal/modules/statistics/enums"
-	mlbl "IMP/app/internal/modules/statistics/leagues/mlbl/repositories_factory"
-	nba "IMP/app/internal/modules/statistics/leagues/nba/repositories_factory"
+	"IMP/app/internal/modules/statistics/internal/abstract"
+	mlbl "IMP/app/internal/modules/statistics/internal/leagues/mlbl/repositories_factory"
+	"IMP/app/internal/modules/statistics/internal/leagues/nba"
 )
 
 func NewLeagueRepository(league enums.League) abstract.StatsRepository {

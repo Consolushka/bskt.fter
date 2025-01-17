@@ -2,6 +2,7 @@ package enums
 
 import "strings"
 
+// todo: i think refactor
 type League int
 
 const (

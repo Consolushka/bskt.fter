@@ -2,17 +2,20 @@ package cdn_nba
 
 import (
 	"IMP/app/internal/infrastructure/cdn_nba"
-	boxscore2 "IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
+	"IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
 	"IMP/app/internal/infrastructure/cdn_nba/dtos/todays_games"
-	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/cdn_nba/persistence"
+	"IMP/app/internal/modules/statistics/enums"
+	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
 	"encoding/json"
 )
 
+const league = enums.NBA
+const playedTimeFormat = "PT%mM%sS"
+
 type Repository struct {
-	cdnNbaClient       *cdn_nba.Client
-	persistenceService *persistence.CdnNbaPersistenceService
+	cdnNbaClient *cdn_nba.Client
+	mapper       *cdnNbaMapper
 }
 
 func (n *Repository) TodayGames() (string, []string, error) {
@@ -32,8 +35,8 @@ func (n *Repository) TodayGames() (string, []string, error) {
 	}), nil
 }
 
-func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
-	var gameDto boxscore2.GameDTO
+func (n *Repository) GameBoxScore(gameId string) (*models.GameBoxScoreDTO, error) {
+	var gameDto boxscore.GameDTO
 
 	homeJSON := n.cdnNbaClient.BoxScore(gameId)
 	homeRaw, _ := json.Marshal(homeJSON)
@@ -43,14 +46,14 @@ func (n *Repository) GameBoxScore(gameId string) (*models.GameModel, error) {
 		return nil, err
 	}
 
-	n.persistenceService.SaveGame(gameDto)
+	gameBoxScoreDto := n.mapper.mapGame(gameDto)
 
-	return gameDto.ToImpModel(), nil
+	return &gameBoxScoreDto, nil
 }
 
 func NewRepository() *Repository {
 	return &Repository{
-		cdnNbaClient:       cdn_nba.NewCdnNbaClient(),
-		persistenceService: persistence.NewCdnNbaPersistenceService(),
+		cdnNbaClient: cdn_nba.NewCdnNbaClient(),
+		mapper:       newCdnNbaMapper(),
 	}
 }

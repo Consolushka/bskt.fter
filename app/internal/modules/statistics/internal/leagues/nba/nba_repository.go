@@ -1,9 +1,9 @@
-package repositories_factory
+package nba
 
 import (
-	"IMP/app/internal/modules/statistics/abstract"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/cdn_nba"
-	"IMP/app/internal/modules/statistics/leagues/nba/repositories/sport_radar"
+	"IMP/app/internal/modules/statistics/internal/abstract"
+	"IMP/app/internal/modules/statistics/internal/leagues/nba/repositories/cdn_nba"
+	"IMP/app/internal/modules/statistics/internal/leagues/nba/repositories/sport_radar"
 )
 
 const (
