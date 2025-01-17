@@ -2,6 +2,7 @@ package games
 
 import (
 	"IMP/app/database"
+	"IMP/app/internal/modules/imp/models"
 	"gorm.io/gorm"
 )
 
@@ -29,12 +30,14 @@ func (s *Service) GetGame(id int) (*GameModel, error) {
 
 	tx := s.dbConnection.Debug().
 		Preload("League").
-		Preload("HomeTeam").
-		Preload("HomeTeam.PlayerGameStats", "player_game_stats.game_id = ?", id).
-		Preload("HomeTeam.PlayerGameStats.Player").
-		Preload("AwayTeam").
-		Preload("AwayTeam.PlayerGameStats", "player_game_stats.game_id = ?", id).
-		Preload("AwayTeam.PlayerGameStats.Player").
+		Preload("HomeTeamStats").
+		Preload("HomeTeamStats.Team").
+		Preload("HomeTeamStats.PlayerGameStats").
+		Preload("HomeTeamStats.PlayerGameStats.Player").
+		Preload("AwayTeamStats").
+		Preload("AwayTeamStats.Team").
+		Preload("AwayTeamStats.PlayerGameStats").
+		Preload("AwayTeamStats.PlayerGameStats.Player").
 		First(&gameModel, GameModel{ID: id})
 
 	if tx.Error != nil {
@@ -42,4 +45,36 @@ func (s *Service) GetGame(id int) (*GameModel, error) {
 	}
 
 	return &gameModel, nil
+}
+
+func (s *Service) GetGameMetrics(id int) (*models.GameImpMetrics, error) {
+	var gameModel GameModel
+
+	tx := s.dbConnection.Debug().
+		Preload("League").
+		Preload("HomeTeamStats").
+		Preload("HomeTeamStats.PlayerGameStats", "player_game_stats.game_id = ?", id).
+		Preload("HomeTeamStats.PlayerGameStats.Player").
+		Preload("AwayTeamStats").
+		Preload("AwayTeamStats.PlayerGameStats", "player_game_stats.game_id = ?", id).
+		Preload("AwayTeamStats.PlayerGameStats.Player").
+		First(&gameModel, GameModel{ID: id})
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	gameImpMetrics := models.GameImpMetrics{
+		Id:        gameModel.ID,
+		Scheduled: &gameModel.ScheduledAt,
+		Home: models.TeamImpMetrics{
+			Alias:       "",
+			TotalPoints: 0,
+			Players:     nil,
+		},
+		Away:         models.TeamImpMetrics{},
+		FullGameTime: gameModel.PlayedMinutes,
+	}
+
+	return &gameImpMetrics, nil
 }

@@ -23,7 +23,7 @@ func (m *mapper) mapGame(game boxscore.GameInfo) *models.GameBoxScoreDTO {
 		duration += league.OvertimeDuration()
 	}
 
-	scheduled, _ := time.Parse("2006-01-02 23.1", game.GameDate+" "+game.GameTime)
+	scheduled, _ := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTime)
 
 	gameBoxScoreDto := models.GameBoxScoreDTO{
 		League:        league,
@@ -49,7 +49,7 @@ func (m *mapper) mapTeam(teamBoxscore boxscore.TeamBoxscore) models.TeamBoxScore
 }
 
 func (m *mapper) mapPlayer(player boxscore.PlayerBoxscore) models.PlayerDTO {
-	birthdate, _ := time.Parse("2006-01-02", player.PersonBirth)
+	birthdate, _ := time.Parse("02.01.2006", player.PersonBirth)
 
 	return models.PlayerDTO{
 		FullName:       player.PersonNameRu,

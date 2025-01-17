@@ -90,7 +90,7 @@ func (p *Persistence) saveGameModel(dto *models.GameBoxScoreDTO, leagueId int, h
 }
 
 func (p *Persistence) saveTeamStats(dto models.TeamBoxScoreDTO, gameModel games.GameModel, teamModel teams.Team) error {
-	_, err := p.teamsRepository.FirstOrCreateGameStats(teams.TeamGameStats{
+	teamGameModel, err := p.teamsRepository.FirstOrCreateGameStats(teams.TeamGameStats{
 		TeamId: teamModel.ID,
 		GameId: gameModel.ID,
 		Points: dto.Scored,
@@ -104,8 +104,7 @@ func (p *Persistence) saveTeamStats(dto models.TeamBoxScoreDTO, gameModel games.
 
 		err := p.playersRepository.FirstOrCreateGameStat(players.PlayerGameStats{
 			PlayerID:      playerModel.ID,
-			GameID:        gameModel.ID,
-			TeamID:        teamModel.ID,
+			TeamGameId:    teamGameModel.Id,
 			PlayedSeconds: player.Statistic.PlayedSeconds,
 			PlsMin:        player.Statistic.PlsMin,
 			IsBench:       player.Statistic.IsBench,

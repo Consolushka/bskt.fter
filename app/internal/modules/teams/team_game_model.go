@@ -1,11 +1,17 @@
 package teams
 
-import "time"
+import (
+	"IMP/app/internal/modules/players"
+	"time"
+)
 
 type TeamGameStats struct {
-	TeamId    int       `db:"team_id"`
-	GameId    int       `db:"game_id"`
-	Points    int       `db:"points"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	Id              int                       `json:"id" db:"id"`
+	TeamId          int                       `json:"team_id" db:"team_id"`
+	Team            Team                      `json:"team" gorm:"foreignKey:TeamId"`
+	GameId          int                       `json:"game_id" db:"game_id"`
+	Points          int                       `json:"points" db:"points"`
+	PlayerGameStats []players.PlayerGameStats `json:"players" gorm:"foreignKey:team_game_id"`
+	CreatedAt       time.Time                 `json:"created_at" db:"created_at"`
+	UpdatedAt       time.Time                 `json:"updated_at" db:"updated_at"`
 }

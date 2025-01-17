@@ -15,7 +15,7 @@ func newController() *controller {
 	}
 }
 
-// getGame handles GET /game/{id}
+// getGame
 //
 // id is the ID of the game to retrieve, could be only int. If not int, returns BadRequest
 //
@@ -23,10 +23,11 @@ func newController() *controller {
 func (c *controller) getGame(w http.ResponseWriter, r *getSpecificGameRequest) {
 	w.Header().Set("Content-Type", "application/json")
 
-	stats, err := c.service.GetGame(r.Id)
+	gameModel, err := c.service.GetGame(r.Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(stats)
+
+	json.NewEncoder(w).Encode(fromGameModel(gameModel))
 }

@@ -60,9 +60,8 @@ func (r *Repository) FirstOrCreateGameStat(stats PlayerGameStats) error {
 		FirstOrCreate(
 			&PlayerGameStats{},
 			PlayerGameStats{
-				PlayerID: stats.PlayerID,
-				GameID:   stats.GameID,
-				TeamID:   stats.TeamID,
+				PlayerID:   stats.PlayerID,
+				TeamGameId: stats.TeamGameId,
 			})
 
 	return tx.Error
