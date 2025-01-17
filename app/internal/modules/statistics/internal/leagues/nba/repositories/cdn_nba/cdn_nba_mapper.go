@@ -36,6 +36,7 @@ func (c *cdnNbaMapper) mapTeam(dto boxscore.TeamDTO) models.TeamBoxScoreDTO {
 		Alias:    dto.TeamTricode,
 		Name:     dto.TeamName,
 		LeagueId: dto.TeamId,
+		Scored:   dto.Score,
 		Players: array_utils.Map(dto.Players, func(player boxscore.PlayerDTO) models.PlayerDTO {
 			return c.mapPlayer(player)
 		}),

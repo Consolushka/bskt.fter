@@ -32,3 +32,20 @@ func (r *Repository) FirstOrCreate(team Team) (Team, error) {
 
 	return result, tx.Error
 }
+
+func (r *Repository) FirstOrCreateGameStats(stats TeamGameStats) (TeamGameStats, error) {
+	var result TeamGameStats
+
+	tx := r.dbConnection.Attrs(
+		TeamGameStats{
+			Points: stats.Points,
+		}).
+		FirstOrCreate(
+			&result,
+			TeamGameStats{
+				TeamId: stats.TeamId,
+				GameId: stats.GameId,
+			})
+
+	return result, tx.Error
+}

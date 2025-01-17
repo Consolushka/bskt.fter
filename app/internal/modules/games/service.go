@@ -5,26 +5,26 @@ import (
 	"gorm.io/gorm"
 )
 
-type service struct {
+type Service struct {
 	repository   *Repository
 	dbConnection *gorm.DB
 }
 
-func newService() *service {
-	return &service{
+func NewService() *Service {
+	return &Service{
 		repository:   NewRepository(),
 		dbConnection: database.GetDB().Debug(),
 	}
 }
 
-// getGame returns game by specific id
+// GetGame returns game by specific id
 //
 // Also preloads:
 //   - League
 //   - Teams
 //   - Players stats
 //   - Players models
-func (s *service) getGame(id int) (*GameModel, error) {
+func (s *Service) GetGame(id int) (*GameModel, error) {
 	var gameModel GameModel
 
 	tx := s.dbConnection.Debug().

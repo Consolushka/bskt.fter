@@ -6,12 +6,12 @@ import (
 )
 
 type controller struct {
-	service *service
+	service *Service
 }
 
 func newController() *controller {
 	return &controller{
-		service: newService(),
+		service: NewService(),
 	}
 }
 
@@ -23,7 +23,7 @@ func newController() *controller {
 func (c *controller) getGame(w http.ResponseWriter, r *getSpecificGameRequest) {
 	w.Header().Set("Content-Type", "application/json")
 
-	stats, err := c.service.getGame(r.Id)
+	stats, err := c.service.GetGame(r.Id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
