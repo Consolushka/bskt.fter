@@ -124,10 +124,14 @@ func (p *Persistence) savePlayerModel(player models.PlayerDTO) players.Player {
 	if playerModel == nil {
 		log.Println("Player not found in database: ", player.LeaguePlayerID, ". Fetching from client")
 
-		playerFullName, birthdate := p.getPlayerBio(p.league, player.LeaguePlayerID)
+		if player.BirthDate == nil || player.FullName == "" {
+			playerFullName, birthdate := p.getPlayerBio(p.league, player.LeaguePlayerID)
+			player.BirthDate = birthdate
+			player.FullName = playerFullName
+		}
 		playerModel, err = p.playersRepository.FirstOrCreate(players.Player{
-			FullName:       playerFullName,
-			BirthDate:      birthdate,
+			FullName:       player.FullName,
+			BirthDate:      player.BirthDate,
 			LeaguePlayerID: player.LeaguePlayerID,
 		})
 	}

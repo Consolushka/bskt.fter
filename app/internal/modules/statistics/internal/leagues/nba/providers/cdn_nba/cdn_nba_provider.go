@@ -13,12 +13,12 @@ import (
 const league = enums.NBA
 const playedTimeFormat = "PT%mM%sS"
 
-type Repository struct {
+type Provider struct {
 	cdnNbaClient *cdn_nba.Client
-	mapper       *cdnNbaMapper
+	mapper       *mapper
 }
 
-func (n *Repository) TodayGames() (string, []string, error) {
+func (n *Provider) TodayGames() (string, []string, error) {
 	var scoreboard todays_games.ScoreboardDTO
 
 	scoreBoardJson := n.cdnNbaClient.TodaysGames()
@@ -35,7 +35,7 @@ func (n *Repository) TodayGames() (string, []string, error) {
 	}), nil
 }
 
-func (n *Repository) GameBoxScore(gameId string) (*models.GameBoxScoreDTO, error) {
+func (n *Provider) GameBoxScore(gameId string) (*models.GameBoxScoreDTO, error) {
 	var gameDto boxscore.GameDTO
 
 	homeJSON := n.cdnNbaClient.BoxScore(gameId)
@@ -51,9 +51,9 @@ func (n *Repository) GameBoxScore(gameId string) (*models.GameBoxScoreDTO, error
 	return &gameBoxScoreDto, nil
 }
 
-func NewRepository() *Repository {
-	return &Repository{
+func NewProvider() *Provider {
+	return &Provider{
 		cdnNbaClient: cdn_nba.NewCdnNbaClient(),
-		mapper:       newCdnNbaMapper(),
+		mapper:       newMapper(),
 	}
 }

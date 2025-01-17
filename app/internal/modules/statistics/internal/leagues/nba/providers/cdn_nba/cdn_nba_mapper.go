@@ -7,13 +7,13 @@ import (
 	"IMP/app/internal/utils/time_utils"
 )
 
-type cdnNbaMapper struct{}
+type mapper struct{}
 
-func newCdnNbaMapper() *cdnNbaMapper {
-	return &cdnNbaMapper{}
+func newMapper() *mapper {
+	return &mapper{}
 }
 
-func (c *cdnNbaMapper) mapGame(gameDto boxscore.GameDTO) models.GameBoxScoreDTO {
+func (c *mapper) mapGame(gameDto boxscore.GameDTO) models.GameBoxScoreDTO {
 	// calculate full game duration
 	duration := 0
 	duration = 4 * league.QuarterDuration()
@@ -31,7 +31,7 @@ func (c *cdnNbaMapper) mapGame(gameDto boxscore.GameDTO) models.GameBoxScoreDTO 
 	return gameBoxScoreDto
 }
 
-func (c *cdnNbaMapper) mapTeam(dto boxscore.TeamDTO) models.TeamBoxScoreDTO {
+func (c *mapper) mapTeam(dto boxscore.TeamDTO) models.TeamBoxScoreDTO {
 	return models.TeamBoxScoreDTO{
 		Alias:    dto.TeamTricode,
 		Name:     dto.TeamName,
@@ -43,7 +43,7 @@ func (c *cdnNbaMapper) mapTeam(dto boxscore.TeamDTO) models.TeamBoxScoreDTO {
 	}
 }
 
-func (c *cdnNbaMapper) mapPlayer(dto boxscore.PlayerDTO) models.PlayerDTO {
+func (c *mapper) mapPlayer(dto boxscore.PlayerDTO) models.PlayerDTO {
 	return models.PlayerDTO{
 		FullName:       dto.Name,
 		BirthDate:      nil,

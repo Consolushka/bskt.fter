@@ -5,20 +5,20 @@ import (
 	models2 "IMP/app/internal/modules/statistics/models"
 )
 
-type Repository struct {
+type Provider struct {
 	client *sport_radar.Client
 }
 
-func (r Repository) TodayGames() (string, []string, error) {
+func (r Provider) TodayGames() (string, []string, error) {
 	panic("implement me")
 }
 
-func (r Repository) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error) {
+func (r Provider) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error) {
 	panic("implement me")
 }
 
-func NewRepository() *Repository {
-	return &Repository{
+func NewProvider() *Provider {
+	return &Provider{
 		client: sport_radar.NewSportRadarApiClient(),
 	}
 }

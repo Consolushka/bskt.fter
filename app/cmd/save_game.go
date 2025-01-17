@@ -24,7 +24,7 @@ func init() {
 }
 
 func SaveGame(leagueName string, gameId string) {
-	repo := statistics.NewLeagueRepository(enums.FromString(leagueName))
+	repo := statistics.NewLeagueProvider(enums.FromString(leagueName))
 	model, err := repo.GameBoxScore(gameId)
 	if err != nil {
 		log.Fatal(err)
