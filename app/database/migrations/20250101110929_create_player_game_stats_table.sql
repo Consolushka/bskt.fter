@@ -23,6 +23,5 @@ EXECUTE FUNCTION trigger_set_timestamp();
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TRIGGER IF EXISTS update_player_game_stats_updated_at ON player_game_stats;
 DROP TABLE IF EXISTS player_game_stats;
 -- +goose StatementEnd

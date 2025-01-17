@@ -23,7 +23,5 @@ EXECUTE FUNCTION trigger_set_timestamp();
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TRIGGER IF EXISTS update_teams_updated_at ON teams;
-
 DROP TABLE IF EXISTS teams;
 -- +goose StatementEnd

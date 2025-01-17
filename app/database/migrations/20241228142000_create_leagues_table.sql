@@ -40,8 +40,6 @@ EXECUTE FUNCTION trigger_set_timestamp();
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TRIGGER update_leagues_updated_at ON leagues;
-
 DROP TABLE IF EXISTS leagues;
 
 DROP FUNCTION IF EXISTS trigger_set_timestamp;
