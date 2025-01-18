@@ -9,8 +9,12 @@ import (
 	"IMP/app/internal/modules/statistics/enums"
 )
 
-// calculatePlayerImpPerMinute calculates IMPPerMinute for player
-func calculatePlayerImpPerMinute(playedTime float64, plsMin int, finalDiff int, fullGameTime int) float64 {
+// CalculatePlayerImpPerMinute calculates IMPPerMinute for player
+func CalculatePlayerImpPerMinute(playedTime float64, plsMin int, finalDiff int, fullGameTime int) float64 {
+	if playedTime == 0 {
+		return 0
+	}
+
 	playerImpPerMinute := float64(plsMin) / playedTime
 	fullGameImpPerMinute := float64(finalDiff) / float64(fullGameTime)
 
@@ -26,7 +30,7 @@ func CalculateTeam(players []models.PlayerModel, finalDiff int, league enums.Lea
 		fullGameTime := league.FullGameTimeMinutes()
 		playedMinutes := float64(player.SecondsPlayed) / 60
 
-		impPerMinute := calculatePlayerImpPerMinute(playedMinutes, player.PlsMin, finalDiff, fullGameTime)
+		impPerMinute := CalculatePlayerImpPerMinute(playedMinutes, player.PlsMin, finalDiff, fullGameTime)
 
 		bases := enums2.TimeBasesByLeague(league)
 		impPers := make([]float64, len(bases))

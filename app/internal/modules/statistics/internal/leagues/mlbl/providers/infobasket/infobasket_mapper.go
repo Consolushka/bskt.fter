@@ -29,7 +29,7 @@ func (m *mapper) mapGame(game boxscore.GameInfo) *models.GameBoxScoreDTO {
 		League:        league,
 		HomeTeam:      m.mapTeam(game.GameTeams[0]),
 		AwayTeam:      m.mapTeam(game.GameTeams[1]),
-		PlayedMinutes: game.MaxPeriod,
+		PlayedMinutes: duration,
 		ScheduledAt:   scheduled,
 	}
 

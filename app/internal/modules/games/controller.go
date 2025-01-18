@@ -29,5 +29,28 @@ func (c *controller) getGame(w http.ResponseWriter, r *getSpecificGameRequest) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(fromGameModel(gameModel))
+	response := fromGameModel(gameModel)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+// getGameMetrics
+//
+// retrieve specific game and then calculate IMP metrics for every player
+func (c *controller) getGameMetrics(w http.ResponseWriter, r *getSpecificGameRequest) {
+	w.Header().Set("Content-Type", "application/json")
+
+	gameModel, err := c.service.GetGameMetrics(r.Id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := fromGameMetricsModel(gameModel)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

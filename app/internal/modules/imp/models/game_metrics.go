@@ -15,7 +15,7 @@ type GameImpMetrics struct {
 type TeamImpMetrics struct {
 	Alias       string
 	TotalPoints int
-	Players     []PlayerModel
+	Players     []PlayerImpMetrics
 }
 
 type PlayerImpMetrics struct {
