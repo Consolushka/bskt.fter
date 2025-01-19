@@ -1,6 +1,8 @@
 package models
 
 import (
+	"IMP/app/internal/utils/time_utils"
+	"strconv"
 	"time"
 )
 
@@ -23,4 +25,19 @@ type PlayerImpMetrics struct {
 	SecondsPlayed int
 	PlsMin        int
 	IMP           float64
+}
+
+func (p *PlayerImpMetrics) Headers() []string {
+	return []string{"Player",
+		"Minutes Played",
+		"IMP",
+	}
+}
+
+func (p *PlayerImpMetrics) ToTable() []string {
+	return []string{
+		p.FullName,
+		time_utils.SecondsToFormat(p.SecondsPlayed, time_utils.PlayedTimeFormat),
+		strconv.FormatFloat(p.IMP, 'f', 2, 64),
+	}
 }
