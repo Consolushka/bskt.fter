@@ -21,7 +21,8 @@ type TeamImpMetrics struct {
 }
 
 type PlayerImpMetrics struct {
-	FullName      string
+	FullNameLocal string
+	FullNameEn    string
 	SecondsPlayed int
 	PlsMin        int
 	IMP           float64
@@ -36,7 +37,7 @@ func (p *PlayerImpMetrics) Headers() []string {
 
 func (p *PlayerImpMetrics) ToTable() []string {
 	return []string{
-		p.FullName,
+		p.FullNameEn,
 		time_utils.SecondsToFormat(p.SecondsPlayed, time_utils.PlayedTimeFormat),
 		strconv.FormatFloat(p.IMP, 'f', 2, 64),
 	}

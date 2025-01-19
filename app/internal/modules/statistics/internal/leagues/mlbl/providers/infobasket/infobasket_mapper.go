@@ -52,7 +52,8 @@ func (m *mapper) mapPlayer(player boxscore.PlayerBoxscore) models.PlayerDTO {
 	birthdate, _ := time.Parse("02.01.2006", player.PersonBirth)
 
 	return models.PlayerDTO{
-		FullName:       player.PersonNameRu,
+		FullNameLocal:  player.PersonNameRu,
+		FullNameEn:     player.PersonNameEn,
 		BirthDate:      &birthdate,
 		LeaguePlayerID: player.PersonID,
 		Statistic: models.PlayerStatisticDTO{

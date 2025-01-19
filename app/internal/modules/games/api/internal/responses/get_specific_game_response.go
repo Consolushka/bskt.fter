@@ -52,7 +52,7 @@ func mapPlayersToResponse(playersList []players.PlayerGameStats) []getSpecificGa
 	return array_utils.Map(playersList, func(playerGameStats players.PlayerGameStats) getSpecificGamePlayerDetailsResponse {
 		formattedPlayedTime := time_utils.SecondsToFormat(playerGameStats.PlayedSeconds, time_utils.PlayedTimeFormat)
 		return getSpecificGamePlayerDetailsResponse{
-			FullName:      playerGameStats.Player.FullName,
+			FullName:      playerGameStats.Player.FullNameLocal,
 			MinutesPlayed: formattedPlayedTime,
 			Start:         !playerGameStats.IsBench,
 			PlsMin:        playerGameStats.PlsMin,

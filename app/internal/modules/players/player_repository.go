@@ -38,8 +38,9 @@ func (r *Repository) FirstOrCreate(player Player) (*Player, error) {
 
 	tx := r.dbConnection.
 		Attrs(Player{
-			FullName:  player.FullName,
-			BirthDate: player.BirthDate,
+			FullNameLocal: player.FullNameLocal,
+			FullNameEn:    player.FullNameEn,
+			BirthDate:     player.BirthDate,
 		}).
 		FirstOrCreate(
 			&result,

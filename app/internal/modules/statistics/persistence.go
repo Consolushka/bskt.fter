@@ -2,12 +2,14 @@ package statistics
 
 import (
 	"IMP/app/internal/infrastructure/nba_com"
+	"IMP/app/internal/infrastructure/translator"
 	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/modules/teams"
+	"IMP/app/internal/utils/string_utils"
 	"github.com/PuerkitoBio/goquery"
 	"log"
 	"strconv"
@@ -123,13 +125,15 @@ func (p *Persistence) savePlayerModel(player models.PlayerDTO) players.Player {
 	if playerModel == nil {
 		log.Println("Player not found in database: ", player.LeaguePlayerID, ". Fetching from client")
 
-		if player.BirthDate == nil || player.FullName == "" {
-			playerFullName, birthdate := p.getPlayerBio(p.league, player.LeaguePlayerID)
+		if player.BirthDate == nil || player.FullNameLocal == "" {
+			playerLocalFullName, playerEnFullName, birthdate := p.getPlayerBio(p.league, player.LeaguePlayerID)
 			player.BirthDate = birthdate
-			player.FullName = playerFullName
+			player.FullNameLocal = playerLocalFullName
+			player.FullNameEn = playerEnFullName
 		}
 		playerModel, err = p.playersRepository.FirstOrCreate(players.Player{
-			FullName:       player.FullName,
+			FullNameLocal:  player.FullNameLocal,
+			FullNameEn:     player.FullNameEn,
 			BirthDate:      player.BirthDate,
 			LeaguePlayerID: player.LeaguePlayerID,
 		})
@@ -142,7 +146,7 @@ func (p *Persistence) savePlayerModel(player models.PlayerDTO) players.Player {
 	return *playerModel
 }
 
-func (p *Persistence) getPlayerBio(league enums.League, playerId int) (string, *time.Time) {
+func (p *Persistence) getPlayerBio(league enums.League, playerId int) (string, string, *time.Time) {
 	if league == enums.NBA {
 
 		playerInfo := p.nbaComClient.PlayerInfoPage(playerId)
@@ -151,7 +155,7 @@ func (p *Persistence) getPlayerBio(league enums.League, playerId int) (string, *
 		}
 
 		var birthDate time.Time
-		var playerFullName string
+		var playerLocalFullName string
 		playerInfo.Find(".PlayerSummary_playerInfo__om2G4").Each(func(i int, s *goquery.Selection) {
 			children := s.Children()
 			if children.First().Text() == "BIRTHDATE" {
@@ -159,10 +163,15 @@ func (p *Persistence) getPlayerBio(league enums.League, playerId int) (string, *
 				birthDate, _ = time.Parse("January 2, 2006", node.FirstChild.Data)
 			}
 		})
-		playerFullName = playerInfo.Find(".PlayerSummary_playerNameText___MhqC").Text()
-		playerFullName = strings.ReplaceAll(playerFullName, "\n", " ")
+		playerLocalFullName = playerInfo.Find(".PlayerSummary_playerNameText___MhqC").Text()
+		playerLocalFullName = strings.ReplaceAll(playerLocalFullName, "\n", " ")
+		// If player name contains non-latin characters - translates name to EN
+		playerEnFullName := playerLocalFullName
+		if string_utils.HasNonLanguageChars(playerLocalFullName, string_utils.Latin) {
+			playerEnFullName = translator.Translate(playerEnFullName, nil, "en")
+		}
 
-		return playerFullName, &birthDate
+		return playerLocalFullName, playerEnFullName, &birthDate
 	}
 	panic("Unknown league")
 }

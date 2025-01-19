@@ -3,7 +3,8 @@ package models
 import "time"
 
 type PlayerDTO struct {
-	FullName       string
+	FullNameLocal  string
+	FullNameEn     string
 	BirthDate      *time.Time
 	LeaguePlayerID int
 	Statistic      PlayerStatisticDTO

@@ -45,7 +45,7 @@ func (c *mapper) mapTeam(dto boxscore.TeamDTO) models.TeamBoxScoreDTO {
 
 func (c *mapper) mapPlayer(dto boxscore.PlayerDTO) models.PlayerDTO {
 	return models.PlayerDTO{
-		FullName:       dto.Name,
+		FullNameLocal:  dto.Name,
 		BirthDate:      nil,
 		LeaguePlayerID: dto.PersonId,
 		Statistic: models.PlayerStatisticDTO{

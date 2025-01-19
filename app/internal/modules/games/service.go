@@ -93,7 +93,8 @@ func (s *Service) mapGameModelToImpMetricsModel(gameModel *GameModel) *models.Ga
 func (s *Service) mapTeamPlayersMetrics(currentTeam teams.TeamGameStats, oposingTeam teams.TeamGameStats, playedMinutes int) []models.PlayerImpMetrics {
 	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats players.PlayerGameStats) models.PlayerImpMetrics {
 		return models.PlayerImpMetrics{
-			FullName:      playerGameStats.Player.FullName,
+			FullNameLocal: playerGameStats.Player.FullNameLocal,
+			FullNameEn:    playerGameStats.Player.FullNameEn,
 			SecondsPlayed: playerGameStats.PlayedSeconds,
 			PlsMin:        playerGameStats.PlsMin,
 			IMP:           imp.CalculatePlayerImpPerMinute(float64(playerGameStats.PlayedSeconds)/60, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, playedMinutes),
