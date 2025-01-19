@@ -1,1 +1,1 @@
-GET http://localhost:8000/api/game/4/metrics
+GET http://localhost:8000/api/game/4/metrics/pdf

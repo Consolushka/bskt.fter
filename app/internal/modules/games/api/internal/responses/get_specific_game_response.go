@@ -1,13 +1,14 @@
-package games
+package responses
 
 import (
+	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/internal/utils/time_utils"
 	"strconv"
 )
 
-type getSpecificGameResponse struct {
+type GetSpecificGameResponse struct {
 	GameId    string                             `json:"game_id"`
 	Scheduled string                             `json:"scheduled"`
 	Home      getSpecificGameTeamDetailsResponse `json:"home"`
@@ -28,8 +29,8 @@ type getSpecificGamePlayerDetailsResponse struct {
 	PlsMin        int    `json:"pls_min"`
 }
 
-func fromGameModel(gameModel *GameModel) getSpecificGameResponse {
-	return getSpecificGameResponse{
+func NewGetSpecificGameResponse(gameModel *games.GameModel) GetSpecificGameResponse {
+	return GetSpecificGameResponse{
 		GameId:    strconv.Itoa(gameModel.ID),
 		Scheduled: gameModel.ScheduledAt.Format("02.01.2006 15:04"),
 		Home: getSpecificGameTeamDetailsResponse{

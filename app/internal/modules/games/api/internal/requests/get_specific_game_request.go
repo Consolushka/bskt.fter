@@ -1,4 +1,4 @@
-package games
+package requests
 
 import (
 	"github.com/gorilla/mux"
@@ -6,11 +6,12 @@ import (
 	"strconv"
 )
 
-type getSpecificGameRequest struct {
+type GetSpecificGameRequest struct {
 	Id int
 }
 
-func (g *getSpecificGameRequest) Validate(r *http.Request) error {
+// Validate validates the {id} query-parameter to be integer
+func (g *GetSpecificGameRequest) Validate(r *http.Request) error {
 	vars := mux.Vars(r)
 
 	id, err := strconv.Atoi(vars["id"])

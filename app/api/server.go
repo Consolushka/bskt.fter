@@ -1,7 +1,7 @@
 package api
 
 import (
-	"IMP/app/internal/modules/games"
+	"IMP/app/internal/modules/games/api"
 	"github.com/gorilla/mux"
 	"log"
 )
@@ -15,21 +15,21 @@ func Serve() *mux.Router {
 type server struct {
 	router *mux.Router
 
-	gamesRouter *games.Router
+	gamesRouter *api.Router
 }
 
 func newServer() *server {
 	return &server{
 		router:      mux.NewRouter(),
-		gamesRouter: games.NewRouter(),
+		gamesRouter: api.NewRouter(),
 	}
 }
 
 func (s *server) setupRoutes() *mux.Router {
-	api := s.router.PathPrefix("/api").Subrouter()
+	apiRouter := s.router.PathPrefix("/api").Subrouter()
 
 	// Register module routes
-	s.gamesRouter.RegisterRoutes(api)
+	s.gamesRouter.RegisterRoutes(apiRouter)
 
 	return s.router
 }
