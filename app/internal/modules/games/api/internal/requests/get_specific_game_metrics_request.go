@@ -4,7 +4,6 @@ import (
 	"IMP/app/internal/abstract"
 	"IMP/app/internal/modules/imp/enums"
 	"errors"
-	"net/http"
 	"strconv"
 )
 
@@ -18,7 +17,7 @@ type GetSpecificGameMetricsRequest struct {
 }
 
 // Validate validates the {id} query-parameter and {format} parameter (could be only 'pdf' or 'json')
-func (g *GetSpecificGameMetricsRequest) Validate(r *http.Request) error {
+func (g *GetSpecificGameMetricsRequest) Validate() error {
 	return g.parseAll(
 		g.parseId,
 		g.parseFormat,

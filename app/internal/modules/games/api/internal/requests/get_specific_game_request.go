@@ -2,7 +2,6 @@ package requests
 
 import (
 	"IMP/app/internal/abstract"
-	"net/http"
 	"strconv"
 )
 
@@ -13,7 +12,7 @@ type GetSpecificGameRequest struct {
 }
 
 // Validate validates the {id} query-parameter to be integer
-func (g *GetSpecificGameRequest) Validate(r *http.Request) error {
+func (g *GetSpecificGameRequest) Validate() error {
 	return g.parseAll(
 		g.parseId,
 	)

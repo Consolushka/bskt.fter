@@ -1,9 +1,7 @@
 package abstract
 
-import "net/http"
-
 type CustomRequest interface {
-	Validate(r *http.Request) error
+	Validate() error
 	GetStorage() *CustomRequestStorage
 	SetStorage(storage CustomRequestStorage)
 }
