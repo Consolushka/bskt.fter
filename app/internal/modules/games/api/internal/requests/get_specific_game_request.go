@@ -1,24 +1,42 @@
 package requests
 
 import (
-	"github.com/gorilla/mux"
+	"IMP/app/internal/abstract"
 	"net/http"
 	"strconv"
 )
 
 type GetSpecificGameRequest struct {
-	Id int
+	abstract.BaseRequest
+
+	id int
 }
 
 // Validate validates the {id} query-parameter to be integer
 func (g *GetSpecificGameRequest) Validate(r *http.Request) error {
-	vars := mux.Vars(r)
+	return g.parseAll(
+		g.parseId,
+	)
+}
 
-	id, err := strconv.Atoi(vars["id"])
+func (g *GetSpecificGameRequest) Id() int {
+	return g.id
+}
+
+func (g *GetSpecificGameRequest) parseAll(parsers ...func() error) error {
+	for _, parser := range parsers {
+		if err := parser(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (g *GetSpecificGameRequest) parseId() error {
+	id, err := strconv.Atoi(g.GetStorage().GetQueryParam("id"))
 	if err != nil {
 		return err
 	}
-
-	g.Id = id
+	g.id = id
 	return nil
 }

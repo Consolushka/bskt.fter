@@ -27,7 +27,7 @@ func NewController() *Controller {
 func (c *Controller) GetGame(w http.ResponseWriter, r *requests.GetSpecificGameRequest) {
 	w.Header().Set("Content-Type", "application/json")
 
-	gameModel, err := c.service.GetGame(r.Id)
+	gameModel, err := c.service.GetGame(r.Id())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

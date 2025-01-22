@@ -1,1 +1,3 @@
-GET http://localhost:8000/api/game/4
+GET http://localhost:8000/api/game/7
+Content-Type: application/json
+Accept: application/json

@@ -1,1 +1,12 @@
-GET http://localhost:8000/api/game/4/metrics/pdf
+GET http://localhost:8000/api/game/6/metrics/pdf
+Accept: application/json
+Content-Type: application/json
+
+{
+  "data": "123",
+  "format": "json",
+  "pers": [
+    "Starter",
+    "Bench"
+  ]
+}
