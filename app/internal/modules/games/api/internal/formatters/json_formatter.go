@@ -44,7 +44,12 @@ func mapPlayerMetricsToResponse(players []models.PlayerImpMetrics) []responses.G
 			FullName:      player.FullNameLocal,
 			MinutesPlayed: time_utils.SecondsToFormat(player.SecondsPlayed, time_utils.PlayedTimeFormat),
 			PlsMin:        player.PlsMin,
-			IMP:           player.IMP,
+			IMP: array_utils.Map(player.ImpPers, func(impPer models.PlayerImpPersMetrics) responses.GetSpecificGamePlayerImpPerMetricsResponse {
+				return responses.GetSpecificGamePlayerImpPerMetricsResponse{
+					Base: string(impPer.Per),
+					Imp:  impPer.IMP,
+				}
+			}),
 		}
 	})
 }

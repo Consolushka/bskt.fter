@@ -19,6 +19,31 @@ const (
 	Per48 TimeBasedImpCoefficient = 48
 )
 
+func TimeBasesByLeagueAndPers(league enums.League, impPer ImpPERs) TimeBasedImpCoefficient {
+	switch league {
+	case enums.NBA:
+		switch impPer {
+		case Bench:
+			return Per24
+		case Starter:
+			return Per38
+		case FullGame:
+			return Per48
+		}
+	case enums.MLBL:
+		switch impPer {
+		case Bench:
+			return Per20
+		case Starter:
+			return Per30
+		case FullGame:
+			return Per40
+		}
+	}
+
+	return 0
+}
+
 func TimeBasesByLeague(league enums.League) []TimeBasedImpCoefficient {
 	switch league {
 	case enums.NBA:

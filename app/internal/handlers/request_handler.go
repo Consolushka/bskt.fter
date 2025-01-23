@@ -32,7 +32,7 @@ func BindAndValidateRequestHandler[T abstract.CustomRequest](controllerHandler f
 			decodedBody,
 		))
 
-		err := requestInstance.Validate(r)
+		err := requestInstance.Validate()
 		if err != nil {
 			http.Error(w, "Invalid request", http.StatusBadRequest)
 			return

@@ -44,7 +44,7 @@ func (c *Controller) GetGame(w http.ResponseWriter, r *requests.GetSpecificGameR
 //
 // retrieve specific game and then calculate IMP metrics for every player
 func (c *Controller) GetGameMetrics(w http.ResponseWriter, r *requests.GetSpecificGameMetricsRequest) {
-	gameModel, err := c.service.GetGameMetrics(r.Id())
+	gameModel, err := c.service.GetGameMetrics(r.Id(), r.Pers())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

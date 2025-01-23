@@ -15,8 +15,13 @@ type GetSpecificGameTeamMetricsResponse struct {
 }
 
 type GetSpecificGamePlayerMetricsResponse struct {
-	FullName      string  `json:"full_name"`
-	MinutesPlayed string  `json:"minutes_played"`
-	PlsMin        int     `json:"pls_min"`
-	IMP           float64 `json:"imp"`
+	FullName      string                                       `json:"full_name"`
+	MinutesPlayed string                                       `json:"minutes_played"`
+	PlsMin        int                                          `json:"pls_min"`
+	IMP           []GetSpecificGamePlayerImpPerMetricsResponse `json:"impPers"`
+}
+
+type GetSpecificGamePlayerImpPerMetricsResponse struct {
+	Base string  `json:"base"`
+	Imp  float64 `json:"imp"`
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"IMP/app/internal/modules/imp/enums"
 	"IMP/app/internal/utils/time_utils"
 	"strconv"
 	"time"
@@ -25,20 +26,35 @@ type PlayerImpMetrics struct {
 	FullNameEn    string
 	SecondsPlayed int
 	PlsMin        int
-	IMP           float64
+	ImpPers       []PlayerImpPersMetrics
+}
+
+type PlayerImpPersMetrics struct {
+	Per enums.ImpPERs
+	IMP float64
 }
 
 func (p *PlayerImpMetrics) Headers() []string {
-	return []string{"Player",
+	headers := []string{"Player",
 		"Minutes Played",
-		"IMP",
 	}
+
+	for _, per := range p.ImpPers {
+		headers = append(headers, string(per.Per))
+	}
+
+	return headers
 }
 
 func (p *PlayerImpMetrics) ToTable() []string {
-	return []string{
+	table := []string{
 		p.FullNameEn,
 		time_utils.SecondsToFormat(p.SecondsPlayed, time_utils.PlayedTimeFormat),
-		strconv.FormatFloat(p.IMP, 'f', 2, 64),
 	}
+
+	for _, per := range p.ImpPers {
+		table = append(table, strconv.FormatFloat(per.IMP, 'f', 2, 64))
+	}
+
+	return table
 }

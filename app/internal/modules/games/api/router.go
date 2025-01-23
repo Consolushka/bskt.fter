@@ -18,5 +18,5 @@ func NewRouter() *Router {
 
 func (router *Router) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/game/{id}", handlers.BindAndValidateRequestHandler(router.controller.GetGame)).Methods("GET")
-	r.HandleFunc("/game/{id}/metrics/{format}", handlers.BindAndValidateRequestHandler(router.controller.GetGameMetrics)).Methods("GET")
+	r.HandleFunc("/game/{id}/metrics", handlers.BindAndValidateRequestHandler(router.controller.GetGameMetrics)).Methods("GET")
 }
