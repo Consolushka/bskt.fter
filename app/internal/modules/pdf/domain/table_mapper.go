@@ -1,4 +1,4 @@
-package mappers
+package domain
 
 type TableMapper interface {
 	Headers() []string

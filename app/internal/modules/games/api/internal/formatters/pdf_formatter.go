@@ -3,7 +3,7 @@ package formatters
 import (
 	"IMP/app/internal/modules/imp/domain/models"
 	"IMP/app/internal/modules/pdf"
-	"IMP/app/internal/modules/pdf/mappers"
+	"IMP/app/internal/modules/pdf/domain"
 	"net/http"
 	"os"
 	"strconv"
@@ -49,8 +49,8 @@ func (f *pdfFormatter) Format(w http.ResponseWriter, data *models.GameImpMetrics
 }
 
 // toTableMapperSlice converts slice of PlayerImpResult to slice of TableMapper
-func toTableMapperSlice(players []models.PlayerImpMetrics) []mappers.TableMapper {
-	result := make([]mappers.TableMapper, len(players))
+func toTableMapperSlice(players []models.PlayerImpMetrics) []domain.TableMapper {
+	result := make([]domain.TableMapper, len(players))
 	for i, player := range players {
 		result[i] = &player
 	}

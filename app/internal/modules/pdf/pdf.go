@@ -1,7 +1,7 @@
 package pdf
 
 import (
-	"IMP/app/internal/modules/pdf/mappers"
+	"IMP/app/internal/modules/pdf/domain"
 	"github.com/go-pdf/fpdf"
 	"os"
 )
@@ -32,7 +32,7 @@ func (p *Builder) PrintLn(text string) {
 }
 
 // PrintTable prints a table to the PDF end of file.
-func (p *Builder) PrintTable(data []mappers.TableMapper) {
+func (p *Builder) PrintTable(data []domain.TableMapper) {
 	for _, header := range data[0].Headers() {
 		p.pdf.Cell(40, 10, header)
 	}
