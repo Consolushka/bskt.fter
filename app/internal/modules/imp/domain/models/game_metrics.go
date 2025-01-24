@@ -1,7 +1,7 @@
 package models
 
 import (
-	"IMP/app/internal/modules/imp/enums"
+	"IMP/app/internal/modules/imp/domain/enums"
 	"IMP/app/internal/utils/time_utils"
 	"strconv"
 	"time"

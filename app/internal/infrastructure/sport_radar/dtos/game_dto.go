@@ -1,10 +1,5 @@
 package dtos
 
-import (
-	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/modules/statistics/enums"
-)
-
 type GameBoxScoreDTO struct {
 	ID           string       `json:"id"`
 	Status       string       `json:"status"`
@@ -23,24 +18,4 @@ type GameBoxScoreDTO struct {
 	ClockDecimal string       `json:"clock_decimal"`
 	Home         TeamStatsDTO `json:"home"`
 	Away         TeamStatsDTO `json:"away"`
-}
-
-// ToImpModel converts a GameBoxScoreDTO to a models.GameModel which is neccessary for IMP package
-func (dto GameBoxScoreDTO) ToImpModel() *models.GameModel {
-	league := enums.NBA
-	duration := 0
-	if dto.Quarter > 4 {
-		duration = 4 * league.QuarterDuration()
-		for i := 0; i < dto.Quarter-4; i++ {
-			duration += league.OvertimeDuration()
-		}
-	}
-
-	return &models.GameModel{
-		Scheduled:    dto.Scheduled,
-		FullGameTime: duration,
-		Home:         dto.Home.ToImpModel(),
-		Away:         dto.Away.ToImpModel(),
-		League:       enums.NBA,
-	}
 }

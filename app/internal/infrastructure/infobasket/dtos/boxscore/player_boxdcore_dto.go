@@ -1,11 +1,5 @@
 package boxscore
 
-import (
-	"IMP/app/internal/infrastructure/translator"
-	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/utils/string_utils"
-)
-
 type PlayerBoxscore struct {
 	PersonID         int         `json:"PersonID"`
 	TeamNumber       int         `json:"TeamNumber"`
@@ -58,17 +52,4 @@ type PlayerBoxscore struct {
 	PlayedTime       string      `json:"PlayedTime"`
 	IsStart          bool        `json:"IsStart"`
 	StartMark        string      `json:"StartMark"`
-}
-
-func (p *PlayerBoxscore) ToImpModel() models.PlayerModel {
-	personName := p.PersonNameEn
-	if string_utils.HasNonLanguageChars(personName, string_utils.Latin) {
-		personName = translator.Translate(personName, nil, "en")
-	}
-
-	return models.PlayerModel{
-		FullName:      personName,
-		SecondsPlayed: p.Seconds,
-		PlsMin:        p.PlusMinus,
-	}
 }

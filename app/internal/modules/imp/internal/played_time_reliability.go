@@ -1,13 +1,13 @@
 package calculations
 
 import (
-	"IMP/app/internal/modules/imp/enums"
+	"IMP/app/internal/modules/imp/internal/domain"
 	"math"
 )
 
 const lowerEdgeCoef = 0.3947
 
-func CalculateReliability(minutesPlayed float64, timeBase enums.TimeBasedImpCoefficient) float64 {
+func CalculateReliability(minutesPlayed float64, timeBase domain.TimeBasedImpCoefficient) float64 {
 	timeBaseMinutes := float64(timeBase.Minutes())
 	lowerEdge := lowerEdgeCoef * timeBaseMinutes
 

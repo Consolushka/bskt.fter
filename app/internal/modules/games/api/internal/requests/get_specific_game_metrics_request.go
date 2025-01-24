@@ -2,7 +2,7 @@ package requests
 
 import (
 	"IMP/app/internal/abstract"
-	"IMP/app/internal/modules/imp/enums"
+	"IMP/app/internal/modules/imp/domain/enums"
 	"errors"
 	"strconv"
 )

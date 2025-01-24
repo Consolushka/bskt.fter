@@ -1,10 +1,5 @@
 package boxscore
 
-import (
-	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/utils/time_utils"
-)
-
 const playedTimeFormat = "PT%mM%sS"
 
 type PlayerDTO struct {
@@ -21,12 +16,4 @@ type PlayerDTO struct {
 	NameI      string              `json:"nameI"`
 	FirstName  string              `json:"firstName"`
 	FamilyName string              `json:"familyName"`
-}
-
-func (p *PlayerDTO) ToImpModel() models.PlayerModel {
-	return models.PlayerModel{
-		FullName:      p.Name,
-		SecondsPlayed: time_utils.FormattedMinutesToSeconds(p.Statistics.Minutes, playedTimeFormat),
-		PlsMin:        p.Statistics.Plus - p.Statistics.Minus,
-	}
 }

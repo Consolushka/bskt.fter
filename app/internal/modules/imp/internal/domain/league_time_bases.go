@@ -1,8 +1,8 @@
-package enums
+package domain
 
 import (
+	enums2 "IMP/app/internal/modules/imp/domain/enums"
 	"IMP/app/internal/modules/statistics/enums"
-	"strconv"
 )
 
 type TimeBasedImpCoefficient int
@@ -19,52 +19,29 @@ const (
 	Per48 TimeBasedImpCoefficient = 48
 )
 
-func TimeBasesByLeagueAndPers(league enums.League, impPer ImpPERs) TimeBasedImpCoefficient {
+func TimeBasesByLeagueAndPers(league enums.League, impPer enums2.ImpPERs) TimeBasedImpCoefficient {
 	switch league {
 	case enums.NBA:
 		switch impPer {
-		case Bench:
+		case enums2.Bench:
 			return Per24
-		case Starter:
+		case enums2.Starter:
 			return Per38
-		case FullGame:
+		case enums2.FullGame:
 			return Per48
 		}
 	case enums.MLBL:
 		switch impPer {
-		case Bench:
+		case enums2.Bench:
 			return Per20
-		case Starter:
+		case enums2.Starter:
 			return Per30
-		case FullGame:
+		case enums2.FullGame:
 			return Per40
 		}
 	}
 
 	return 0
-}
-
-func TimeBasesByLeague(league enums.League) []TimeBasedImpCoefficient {
-	switch league {
-	case enums.NBA:
-		return []TimeBasedImpCoefficient{
-			Per24,
-			Per38,
-			Per48,
-		}
-	case enums.MLBL:
-		return []TimeBasedImpCoefficient{
-			Per20,
-			Per30,
-			Per40,
-		}
-	default:
-		return []TimeBasedImpCoefficient{}
-	}
-}
-
-func (t TimeBasedImpCoefficient) Title() string {
-	return "Per" + strconv.Itoa(int(t))
 }
 
 func (t TimeBasedImpCoefficient) Minutes() int {

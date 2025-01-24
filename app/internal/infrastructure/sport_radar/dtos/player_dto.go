@@ -1,10 +1,5 @@
 package dtos
 
-import (
-	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/utils/time_utils"
-)
-
 const playedTimeFormat = "%m:%s"
 
 type PlayerDTO struct {
@@ -22,13 +17,4 @@ type PlayerDTO struct {
 	SrID            string         `json:"sr_id"`
 	Reference       string         `json:"reference"`
 	Statistics      PlayerStatsDTO `json:"statistics"`
-}
-
-func (p *PlayerDTO) ToImpModel() models.PlayerModel {
-	return models.PlayerModel{
-		FullName:      p.FullName,
-		SecondsPlayed: time_utils.FormattedMinutesToSeconds(p.Statistics.Minutes, playedTimeFormat),
-		PlsMin:        p.Statistics.PlsMin,
-	}
-
 }

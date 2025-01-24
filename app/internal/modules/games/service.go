@@ -2,10 +2,9 @@ package games
 
 import (
 	"IMP/app/database"
-	"IMP/app/internal/modules/calculations"
 	"IMP/app/internal/modules/imp"
-	"IMP/app/internal/modules/imp/enums"
-	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/imp/domain/enums"
+	"IMP/app/internal/modules/imp/domain/models"
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/players"
 	enums2 "IMP/app/internal/modules/statistics/enums"
@@ -107,17 +106,14 @@ func (s *Service) mapGameModelToImpMetricsModel(gameModel *GameModel, impPers []
 func (s *Service) mapTeamPlayersMetrics(currentTeam teams.TeamGameStats, oposingTeam teams.TeamGameStats, fullGameTime int, impPers []enums.ImpPERs, league enums2.League) []models.PlayerImpMetrics {
 	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats players.PlayerGameStats) models.PlayerImpMetrics {
 		playerImpPers := make([]models.PlayerImpPersMetrics, len(impPers))
-		cleanImp := imp.CalculatePlayerImpPerMinute(float64(playerGameStats.PlayedSeconds)/60, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, fullGameTime)
+
+		cleanImp := imp.EvaluateClean(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, fullGameTime)
 
 		for i, impPer := range impPers {
-			timeBase := enums.TimeBasesByLeagueAndPers(league, impPer)
-
-			reliability := calculations.CalculateReliability(float64(playerGameStats.PlayedSeconds)/60, timeBase)
-			pure := cleanImp * float64(timeBase.Minutes())
 
 			playerImpPers[i] = models.PlayerImpPersMetrics{
 				Per: impPer,
-				IMP: pure * reliability,
+				IMP: imp.EvaluatePer(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, fullGameTime, impPer, league, &cleanImp),
 			}
 		}
 

@@ -1,10 +1,5 @@
 package boxscore
 
-import (
-	models2 "IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/utils/array_utils"
-)
-
 type TeamBoxscore struct {
 	TeamNumber       int      `json:"TeamNumber"`
 	TeamID           int      `json:"TeamID"`
@@ -47,29 +42,4 @@ type TeamBoxscore struct {
 	//Coach            map[string_utils]interface{} `json:"Coach"`
 	Players []PlayerBoxscore `json:"Players"`
 	//Coaches          map[string_utils]interface{} `json:"Coaches"`
-}
-
-func (dto TeamBoxscore) ToImpModel() models2.TeamGameResultModel {
-	return models2.TeamGameResultModel{
-		Team: models2.TeamModel{
-			FullName: dto.TeamName.CompTeamNameEn,
-			Alias:    dto.TeamName.CompTeamAbcNameEn,
-		},
-		TotalPoints: dto.Score,
-		Players:     gameDtoToPlayers(dto.Players),
-	}
-}
-
-func gameDtoToPlayers(players []PlayerBoxscore) []models2.PlayerModel {
-	players = array_utils.Filter(players, func(p PlayerBoxscore) bool {
-		return p.Seconds > 0
-	})
-
-	playersModels := make([]models2.PlayerModel, len(players))
-
-	for i, player := range players {
-		playersModels[i] = player.ToImpModel()
-	}
-
-	return playersModels
 }

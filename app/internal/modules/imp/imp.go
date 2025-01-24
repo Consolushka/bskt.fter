@@ -1,46 +1,38 @@
 package imp
 
 import (
-	"IMP/app/internal/modules/calculations"
-	enums2 "IMP/app/internal/modules/imp/enums"
-	"IMP/app/internal/modules/imp/mappers"
-	"IMP/app/internal/modules/imp/models"
-	"IMP/app/internal/modules/imp/results"
-	"IMP/app/internal/modules/statistics/enums"
+	"IMP/app/internal/modules/imp/domain/enums"
+	calculations "IMP/app/internal/modules/imp/internal"
+	enums3 "IMP/app/internal/modules/imp/internal/domain"
+	enums2 "IMP/app/internal/modules/statistics/enums"
 )
 
-// CalculatePlayerImpPerMinute calculates IMPPerMinute for player
-func CalculatePlayerImpPerMinute(playedTime float64, plsMin int, finalDiff int, fullGameTime int) float64 {
-	if playedTime == 0 {
+func EvaluateClean(playedSeconds int, plsMin int, finalDifferantial int, fullGameTime int) float64 {
+	if playedSeconds == 0 {
 		return 0
 	}
 
-	playerImpPerMinute := float64(plsMin) / playedTime
-	fullGameImpPerMinute := float64(finalDiff) / float64(fullGameTime)
+	playerImpPerMinute := float64(plsMin) / float64(playedSeconds) / 60
+	fullGameImpPerMinute := float64(finalDifferantial) / float64(fullGameTime)
 
 	rawValue := playerImpPerMinute - fullGameImpPerMinute
 
 	return rawValue
 }
 
-// CalculateTeam calculates IMP for every player in the team for league time bases
-func CalculateTeam(players []models.PlayerModel, finalDiff int, league enums.League) []results.PlayerImpResult {
-	tableData := make([]results.PlayerImpResult, len(players))
-	for i, player := range players {
-		fullGameTime := league.FullGameTimeMinutes()
-		playedMinutes := float64(player.SecondsPlayed) / 60
+func EvaluatePer(playedSeconds int, plsMin int, finalDifferential int, fullGameTime int, impPer enums.ImpPERs, league enums2.League, cleanImpPointer *float64) float64 {
+	var cleanImp float64
 
-		impPerMinute := CalculatePlayerImpPerMinute(playedMinutes, player.PlsMin, finalDiff, fullGameTime)
-
-		bases := enums2.TimeBasesByLeague(league)
-		impPers := make([]float64, len(bases))
-		for i, timeBase := range bases {
-			reliability := calculations.CalculateReliability(playedMinutes, timeBase)
-			pure := impPerMinute * float64(timeBase.Minutes())
-			impPers[i] = pure * reliability
-		}
-		tableData[i] = mappers.PlayerToResult(player, bases, impPers)
+	if cleanImpPointer == nil {
+		cleanImp = EvaluateClean(playedSeconds, plsMin, finalDifferential, fullGameTime)
+	} else {
+		cleanImp = *cleanImpPointer
 	}
 
-	return tableData
+	timeBase := enums3.TimeBasesByLeagueAndPers(league, impPer)
+
+	reliability := calculations.CalculateReliability(float64(playedSeconds)/60, timeBase)
+	pure := cleanImp * float64(timeBase.Minutes())
+
+	return pure * reliability
 }

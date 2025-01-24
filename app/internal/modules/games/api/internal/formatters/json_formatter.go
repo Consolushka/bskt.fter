@@ -2,7 +2,7 @@ package formatters
 
 import (
 	"IMP/app/internal/modules/games/api/internal/responses"
-	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/imp/domain/models"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/internal/utils/time_utils"
 	"encoding/json"

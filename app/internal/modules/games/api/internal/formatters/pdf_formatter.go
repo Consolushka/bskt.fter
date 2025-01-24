@@ -1,7 +1,7 @@
 package formatters
 
 import (
-	"IMP/app/internal/modules/imp/models"
+	"IMP/app/internal/modules/imp/domain/models"
 	"IMP/app/internal/modules/pdf"
 	"IMP/app/internal/modules/pdf/mappers"
 	"net/http"
