@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   app:
-    container_name: golang_container
+    container_name: golang
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -27,7 +27,7 @@ services:
 
   db:
     image: postgres:16.6
-    container_name: postgres_container
+    container_name: postgres
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -37,6 +37,26 @@ services:
       - '5432:5432'
     volumes:
       - ./_db/pg_data:/var/lib/postgresql/data
+    networks:
+      - imp
+
+  air:
+    container_name: air_server
+    image: cosmtrek/air
+    # working_dir value has to be the same of mapped volume
+    working_dir: /IMP
+    depends_on:
+      - db
+    ports:
+      - "8001:8080"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
+    volumes:
+      - ./:/IMP
     networks:
       - imp
 

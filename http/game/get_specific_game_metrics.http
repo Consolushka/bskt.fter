@@ -1,4 +1,4 @@
-GET http://localhost:8000/api/game/7/metrics
+GET http://localhost:8001/api/game/7/metrics
 Accept: application/json
 Content-Type: application/json
 
