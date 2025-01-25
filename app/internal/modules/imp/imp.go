@@ -12,7 +12,7 @@ func EvaluateClean(playedSeconds int, plsMin int, finalDifferantial int, fullGam
 		return 0
 	}
 
-	playerImpPerMinute := float64(plsMin) / float64(playedSeconds) / 60
+	playerImpPerMinute := float64(plsMin) / (float64(playedSeconds) / 60)
 	fullGameImpPerMinute := float64(finalDifferantial) / float64(fullGameTime)
 
 	rawValue := playerImpPerMinute - fullGameImpPerMinute
