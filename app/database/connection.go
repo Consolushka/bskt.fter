@@ -1,10 +1,9 @@
 package database
 
 import (
-	"fmt"
+	"IMP/app/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
 var db *gorm.DB
@@ -21,14 +20,12 @@ func OpenDbConnection() *gorm.DB {
 	}
 
 	db = connection // Store the connection in the package-level variable
-	fmt.Println("Successfully connected to database")
 	return db
 }
 
 func GetDB() *gorm.DB {
 	if db == nil {
-		log.Panic("Database connection is nil")
-		return OpenDbConnection()
+		log.GetLogger().Error("Database connection is not initialized")
 	}
 	return db
 }
