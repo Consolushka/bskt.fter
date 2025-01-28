@@ -15,7 +15,6 @@ var saveGameCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		SaveGame(args[0], args[1])
-		fmt.Println("Game results file successfully generated")
 	},
 }
 
@@ -35,4 +34,6 @@ func SaveGame(leagueName string, gameId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("Game results file successfully generated")
 }

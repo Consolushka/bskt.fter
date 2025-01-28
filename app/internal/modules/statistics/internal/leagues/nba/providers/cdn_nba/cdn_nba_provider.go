@@ -3,11 +3,13 @@ package cdn_nba
 import (
 	"IMP/app/internal/infrastructure/cdn_nba"
 	"IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
-	"IMP/app/internal/infrastructure/cdn_nba/dtos/todays_games"
+	"IMP/app/internal/infrastructure/cdn_nba/dtos/schedule_league"
 	"IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
+	"IMP/app/log"
 	"encoding/json"
+	"time"
 )
 
 const league = enums.NBA
@@ -18,21 +20,28 @@ type Provider struct {
 	mapper       *mapper
 }
 
-func (n *Provider) TodayGames() (string, []string, error) {
-	var scoreboard todays_games.ScoreboardDTO
+func (n *Provider) GamesByDate(date time.Time) ([]string, error) {
+	var schedule schedule_league.SeasonScheduleDTO
 
-	scoreBoardJson := n.cdnNbaClient.TodaysGames()
-	raw, _ := json.Marshal(scoreBoardJson)
+	scheduleJson := n.cdnNbaClient.ScheduleSeason()
+	raw, _ := json.Marshal(scheduleJson)
 
-	err := json.Unmarshal(raw, &scoreboard)
-
+	err := json.Unmarshal(raw, &schedule)
 	if err != nil {
-		return "", nil, err
+		log.GetLogger().Fatalln(err)
 	}
 
-	return scoreboard.GameDate, array_utils.Map(scoreboard.Games, func(game todays_games.GameDTO) string {
-		return game.GameId
-	}), nil
+	formattedSearchedDate := date.Format("01/02/2006 00:00:00")
+
+	for _, gameDate := range schedule.Games {
+		if gameDate.GameDate == formattedSearchedDate {
+			return array_utils.Map(gameDate.Games, func(game schedule_league.GameDTO) string {
+				return game.GameId
+			}), nil
+		}
+	}
+
+	return make([]string, 0), err
 }
 
 func (n *Provider) GameBoxScore(gameId string) (*models.GameBoxScoreDTO, error) {

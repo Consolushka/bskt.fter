@@ -3,13 +3,14 @@ package sport_radar
 import (
 	"IMP/app/internal/infrastructure/sport_radar"
 	models2 "IMP/app/internal/modules/statistics/models"
+	"time"
 )
 
 type Provider struct {
 	client *sport_radar.Client
 }
 
-func (r Provider) TodayGames() (string, []string, error) {
+func (r Provider) GamesByDate(date time.Time) ([]string, error) {
 	panic("implement me")
 }
 

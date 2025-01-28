@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-const boxScoreEndpointPattern = "/boxscore/boxscore_%v.json"
-const todaysGamesEndpoint = "/scoreboard/todaysScoreboard_00.json"
+const boxScoreEndpointPattern = "/liveData/boxscore/boxscore_%v.json"
+const fullSeasonEndpoint = "/staticData/scheduleLeagueV2_14.json"
 
 type Client struct {
 	baseUrl string
@@ -16,7 +16,7 @@ type Client struct {
 
 func NewCdnNbaClient() *Client {
 	return &Client{
-		baseUrl:    "https://cdn.nba.com/static/json/liveData",
+		baseUrl:    "https://cdn.nba.com/static/json",
 		httpClient: abstract.NewHttpClient(),
 	}
 }
@@ -27,8 +27,8 @@ func (c Client) BoxScore(gameId string) map[string]interface{} {
 	return result["game"].(map[string]interface{})
 }
 
-func (c Client) TodaysGames() map[string]interface{} {
-	result := c.httpClient.Get(c.baseUrl+todaysGamesEndpoint, nil)
+func (c Client) ScheduleSeason() map[string]interface{} {
+	result := c.httpClient.Get(c.baseUrl+fullSeasonEndpoint, nil)
 
-	return result["scoreboard"].(map[string]interface{})
+	return result["leagueSchedule"].(map[string]interface{})
 }

@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/infrastructure/infobasket/dtos/boxscore"
 	models2 "IMP/app/internal/modules/statistics/models"
 	"encoding/json"
+	"time"
 )
 
 type Provider struct {
@@ -26,7 +27,7 @@ func (i *Provider) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error)
 	return i.mapper.mapGame(gameDto), nil
 }
 
-func (i *Provider) TodayGames() (string, []string, error) {
+func (i *Provider) GamesByDate(date time.Time) ([]string, error) {
 	panic("implement me")
 }
 
