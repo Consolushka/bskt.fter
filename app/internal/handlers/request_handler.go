@@ -29,6 +29,7 @@ func BindAndValidateRequestHandler[T abstract.CustomRequest](controllerHandler f
 		requestInstance := reflect.New(reflect.TypeOf(request).Elem()).Interface().(T)
 		requestInstance.SetStorage(abstract.NewCustomRequestStorage(
 			mux.Vars(r),
+			r.URL.Query().Encode(),
 			decodedBody,
 		))
 

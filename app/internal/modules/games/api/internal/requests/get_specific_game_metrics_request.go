@@ -16,7 +16,7 @@ type GetSpecificGameMetricsRequest struct {
 	pers   []enums.ImpPERs
 }
 
-// Validate validates the {id} query-parameter and {format} parameter (could be only 'pdf' or 'json')
+// Validate validates the {id} path-parameter and {format} parameter (could be only 'pdf' or 'json')
 func (g *GetSpecificGameMetricsRequest) Validate() error {
 	return g.parseAll(
 		g.parseId,
@@ -35,7 +35,7 @@ func (g *GetSpecificGameMetricsRequest) parseAll(parsers ...func() error) error 
 }
 
 func (g *GetSpecificGameMetricsRequest) parseId() error {
-	id, err := strconv.Atoi(g.GetStorage().GetQueryParam("id"))
+	id, err := strconv.Atoi(g.GetStorage().GetPathParam("id"))
 	if err != nil {
 		return err
 	}

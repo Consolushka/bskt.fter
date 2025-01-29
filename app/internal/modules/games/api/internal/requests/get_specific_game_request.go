@@ -11,7 +11,7 @@ type GetSpecificGameRequest struct {
 	id int
 }
 
-// Validate validates the {id} query-parameter to be integer
+// Validate validates the {id} path-parameter to be integer
 func (g *GetSpecificGameRequest) Validate() error {
 	return g.parseAll(
 		g.parseId,
@@ -32,7 +32,7 @@ func (g *GetSpecificGameRequest) parseAll(parsers ...func() error) error {
 }
 
 func (g *GetSpecificGameRequest) parseId() error {
-	id, err := strconv.Atoi(g.GetStorage().GetQueryParam("id"))
+	id, err := strconv.Atoi(g.GetStorage().GetPathParam("id"))
 	if err != nil {
 		return err
 	}
