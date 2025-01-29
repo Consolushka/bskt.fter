@@ -10,7 +10,9 @@ import (
 	enums2 "IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/teams"
 	"IMP/app/internal/utils/array_utils"
+	"database/sql"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Service struct {
@@ -55,8 +57,7 @@ func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*models.GameI
 		return nil, err
 	}
 
-	tx := s.dbConnection.Debug().
-		First(&leagueModel, leagues.League{ID: gameModel.LeagueID})
+	tx := s.dbConnection.First(&leagueModel, leagues.League{ID: gameModel.LeagueID})
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -67,10 +68,31 @@ func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*models.GameI
 	return gameImpMetrics, nil
 }
 
+// GetGames fetches all games for specific date and preloads all related models
+func (s *Service) GetGames(date time.Time) ([]GameModel, error) {
+	var gamesModel []GameModel
+
+	tx := s.dbConnection.
+		Model(&GameModel{}).
+		Preload("League").
+		Preload("HomeTeamStats").
+		Preload("HomeTeamStats.Team").
+		Preload("HomeTeamStats.PlayerGameStats").
+		Preload("HomeTeamStats.PlayerGameStats.Player").
+		Preload("AwayTeamStats").
+		Preload("AwayTeamStats.Team").
+		Preload("AwayTeamStats.PlayerGameStats").
+		Preload("AwayTeamStats.PlayerGameStats.Player").
+		Where("DATE(scheduled_at) = @date", sql.Named("date", date.Format("2006-01-02"))).
+		Find(&gamesModel)
+
+	return gamesModel, tx.Error
+}
+
 func (s *Service) retrieveGameModelById(id int) (*GameModel, error) {
 	var gameModel GameModel
 
-	tx := s.dbConnection.Debug().
+	tx := s.dbConnection.
 		Preload("League").
 		Preload("HomeTeamStats").
 		Preload("HomeTeamStats.Team").

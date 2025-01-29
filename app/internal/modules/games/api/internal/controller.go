@@ -5,17 +5,40 @@ import (
 	"IMP/app/internal/modules/games/api/internal/formatters"
 	"IMP/app/internal/modules/games/api/internal/requests"
 	"IMP/app/internal/modules/games/api/internal/responses"
+	"IMP/app/log"
 	"encoding/json"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 type Controller struct {
 	service *games.Service
+
+	logger *logrus.Logger
 }
 
 func NewController() *Controller {
 	return &Controller{
 		service: games.NewService(),
+		logger:  log.GetLogger(),
+	}
+}
+
+// GetGames returns all games filtered by date
+func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest) {
+	w.Header().Set("Content-Type", "application/json")
+
+	games, err := c.service.GetGames(*r.Date())
+	if err != nil {
+		c.logger.Errorln(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(games); err != nil {
+		c.logger.Errorln(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
