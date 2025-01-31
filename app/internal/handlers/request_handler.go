@@ -35,7 +35,7 @@ func BindAndValidateRequestHandler[T abstract.CustomRequest](controllerHandler f
 
 		err := requestInstance.Validate()
 		if err != nil {
-			http.Error(w, "Invalid request", http.StatusBadRequest)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 

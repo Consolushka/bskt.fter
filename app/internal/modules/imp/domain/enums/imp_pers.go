@@ -5,7 +5,7 @@ type ImpPERs string
 const (
 	Clean    ImpPERs = "Clean"
 	Bench    ImpPERs = "Bench"
-	Starter  ImpPERs = "Starter"
+	Start    ImpPERs = "Start"
 	FullGame ImpPERs = "FullGame"
 )
 
@@ -15,7 +15,7 @@ func (ip ImpPERs) Order() int {
 		return 0
 	case Bench:
 		return 1
-	case Starter:
+	case Start:
 		return 2
 	case FullGame:
 		return 3

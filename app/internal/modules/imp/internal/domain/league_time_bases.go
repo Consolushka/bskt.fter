@@ -25,7 +25,7 @@ func TimeBasesByLeagueAndPers(league enums.League, impPer enums2.ImpPERs) TimeBa
 		switch impPer {
 		case enums2.Bench:
 			return Per24
-		case enums2.Starter:
+		case enums2.Start:
 			return Per38
 		case enums2.FullGame:
 			return Per48
@@ -34,7 +34,7 @@ func TimeBasesByLeagueAndPers(league enums.League, impPer enums2.ImpPERs) TimeBa
 		switch impPer {
 		case enums2.Bench:
 			return Per20
-		case enums2.Starter:
+		case enums2.Start:
 			return Per30
 		case enums2.FullGame:
 			return Per40

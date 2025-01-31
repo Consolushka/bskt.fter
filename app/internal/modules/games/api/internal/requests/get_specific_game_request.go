@@ -5,6 +5,10 @@ import (
 	"strconv"
 )
 
+// GetSpecificGameRequest expects request with:
+//
+// Path-parameters:
+//   - id - game id: integer
 type GetSpecificGameRequest struct {
 	abstract.BaseRequest
 

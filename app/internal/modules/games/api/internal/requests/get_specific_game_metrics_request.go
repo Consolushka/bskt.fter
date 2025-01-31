@@ -5,8 +5,17 @@ import (
 	"IMP/app/internal/modules/imp/domain/enums"
 	"errors"
 	"strconv"
+	"strings"
 )
 
+// GetSpecificGameMetricsRequest expects request with:
+//
+// Path-parameters:
+//   - id - game id
+//
+// Query-parameters:
+//   - format - could be only 'pdf' or 'json'. Default is 'json'
+//   - pers - comma-separated list of PERS
 type GetSpecificGameMetricsRequest struct {
 	abstract.BaseRequest
 
@@ -44,25 +53,26 @@ func (g *GetSpecificGameMetricsRequest) parseId() error {
 }
 
 func (g *GetSpecificGameMetricsRequest) parseFormat() error {
-	format, exists := g.GetStorage().GetBodyParam("format")
-	if !exists {
+	format := g.GetStorage().GetQueryParam("format")
+	if format == "" {
 		g.format = "json"
 		return nil
 	}
+
 	if format != "json" && format != "pdf" {
 		return errors.New("invalid format")
 	}
-	g.format = format.(string)
+	g.format = format
 	return nil
 }
 
 func (g *GetSpecificGameMetricsRequest) parsePERS() error {
-	persInterface, exists := g.GetStorage().GetBodyParam("pers")
-	if exists {
-		persArray := persInterface.([]interface{})
+	persInterface := g.GetStorage().GetQueryParam("pers")
+	if persInterface != "" {
+		persArray := strings.Split(persInterface, "%2C")
 		g.pers = make([]enums.ImpPERs, len(persArray))
 		for i, v := range persArray {
-			g.pers[i] = enums.ImpPERs(v.(string))
+			g.pers[i] = enums.ImpPERs(v)
 		}
 	}
 	return nil
