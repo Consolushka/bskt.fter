@@ -12,9 +12,16 @@ var saveGameByDateCmd = &cobra.Command{
 	Use:   "save-game-by-date",
 	Short: "Saves game into application",
 	Long:  "Saves game results into database",
-	Args:  cobra.ExactArgs(2),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		date, err := time.Parse("02-01-2006", args[1])
+		var dateString string
+		if len(args) == 1 {
+			dateString = time.Now().Format("02-01-2006")
+		} else {
+			dateString = args[1]
+		}
+
+		date, err := time.Parse("02-01-2006", dateString)
 		if err != nil {
 			fmt.Println("Incorrect date format. Please use format: dd-mm-yyyy")
 		}
