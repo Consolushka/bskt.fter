@@ -30,5 +30,5 @@ func NewSportRadarApiClient() *Client {
 func (c Client) GameSummary(gameId string) map[string]interface{} {
 	result := c.httpClient.Get(c.baseUrl+"/"+c.lang+"/games/"+gameId+"/"+gameSummaryEndpoint+"?api_key="+c.apiKey, nil)
 
-	return result
+	return result.(map[string]interface{})
 }

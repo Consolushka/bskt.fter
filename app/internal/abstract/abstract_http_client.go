@@ -13,8 +13,8 @@ func NewHttpClient() *HttpClient {
 }
 
 // Get send GET request to given url w/o body and headers (yet)
-func (c *HttpClient) Get(url string, apiKey *string) map[string]interface{} {
-	var result map[string]interface{}
+func (c *HttpClient) Get(url string, apiKey *string) interface{} {
+	var result interface{}
 
 	req, _ := http.NewRequest("GET", url, nil)
 
