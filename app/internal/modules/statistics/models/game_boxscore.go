@@ -6,6 +6,7 @@ import (
 )
 
 type GameBoxScoreDTO struct {
+	Id            string
 	League        enums.League
 	HomeTeam      TeamBoxScoreDTO
 	AwayTeam      TeamBoxScoreDTO

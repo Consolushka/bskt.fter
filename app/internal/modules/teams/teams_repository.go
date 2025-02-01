@@ -21,7 +21,8 @@ func (r *Repository) FirstOrCreate(team Team) (Team, error) {
 	tx := r.dbConnection.
 		Attrs(
 			Team{
-				Name: team.Name,
+				Name:       team.Name,
+				OfficialId: team.OfficialId,
 			}).
 		FirstOrCreate(&result,
 			Team{

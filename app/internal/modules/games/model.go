@@ -18,7 +18,7 @@ type GameModel struct {
 	ScheduledAt   time.Time           `json:"scheduled_at" gorm:"not null"`
 	CreatedAt     time.Time           `json:"created_at"`
 	UpdatedAt     time.Time           `json:"updated_at"`
-	OfficialId    int                 `json:"official_id" gorm:"not null"`
+	OfficialId    string              `json:"official_id" gorm:"not null"`
 }
 
 func (GameModel) TableName() string {

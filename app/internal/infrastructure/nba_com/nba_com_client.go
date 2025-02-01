@@ -4,7 +4,6 @@ import (
 	"IMP/app/internal/abstract"
 	"IMP/app/internal/infrastructure/crawler"
 	"github.com/PuerkitoBio/goquery"
-	"strconv"
 )
 
 const playerInfoPage = "/player/"
@@ -14,8 +13,8 @@ type Client struct {
 	httpClient *abstract.HttpClient
 }
 
-func (c *Client) PlayerInfoPage(playerId int) *goquery.Document {
-	url := c.baseUrl + playerInfoPage + strconv.Itoa(playerId)
+func (c *Client) PlayerInfoPage(playerId string) *goquery.Document {
+	url := c.baseUrl + playerInfoPage + playerId
 
 	doc, err := crawler.FetchPage(url)
 	if err != nil {

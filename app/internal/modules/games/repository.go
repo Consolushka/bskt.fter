@@ -31,6 +31,7 @@ func (r *Repository) FirstOrCreate(game GameModel) (GameModel, error) {
 	tx := r.dbConnection.
 		Attrs(GameModel{
 			PlayedMinutes: game.PlayedMinutes,
+			OfficialId:    game.OfficialId,
 		}).
 		FirstOrCreate(&result, GameModel{
 			HomeTeamID:  game.HomeTeamID,

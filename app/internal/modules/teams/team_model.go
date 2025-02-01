@@ -11,7 +11,7 @@ type Team struct {
 	Name       string    `json:"name" db:"name"`
 	CreatedAt  time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
-	OfficialId int       `json:"official_id" db:"official_id"`
+	OfficialId string    `json:"official_id" db:"official_id"`
 }
 
 func (Team) TableName() string {

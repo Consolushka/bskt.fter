@@ -16,7 +16,7 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) FirstByLeaguePlayerId(id int) (*Player, error) {
+func (r *Repository) FirstByOfficialId(id string) (*Player, error) {
 	var result Player
 
 	tx := r.dbConnection.

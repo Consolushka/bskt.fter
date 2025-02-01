@@ -12,7 +12,6 @@ import (
 	"IMP/app/internal/utils/string_utils"
 	"github.com/PuerkitoBio/goquery"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -71,9 +70,10 @@ func (p *Persistence) SaveGameBoxScore(dto *models.GameBoxScoreDTO) error {
 
 func (p *Persistence) saveTeamModel(dto models.TeamBoxScoreDTO, leagueId int) (teams.Team, error) {
 	teamModel, err := p.teamsRepository.FirstOrCreate(teams.Team{
-		Alias:    dto.Alias,
-		LeagueID: leagueId,
-		Name:     dto.Name,
+		Alias:      dto.Alias,
+		LeagueID:   leagueId,
+		Name:       dto.Name,
+		OfficialId: dto.LeagueId,
 	})
 
 	return teamModel, err
@@ -86,6 +86,7 @@ func (p *Persistence) saveGameModel(dto *models.GameBoxScoreDTO, leagueId int, h
 		LeagueID:      leagueId,
 		ScheduledAt:   dto.ScheduledAt,
 		PlayedMinutes: dto.PlayedMinutes,
+		OfficialId:    dto.Id,
 	})
 
 	return gameModel, err
@@ -121,7 +122,7 @@ func (p *Persistence) saveTeamStats(dto models.TeamBoxScoreDTO, gameModel games.
 }
 
 func (p *Persistence) savePlayerModel(player models.PlayerDTO) players.Player {
-	playerModel, err := p.playersRepository.FirstByLeaguePlayerId(player.LeaguePlayerID)
+	playerModel, err := p.playersRepository.FirstByOfficialId(player.LeaguePlayerID)
 	if playerModel == nil {
 		log.Println("Player not found in database: ", player.LeaguePlayerID, ". Fetching from client")
 
@@ -146,12 +147,12 @@ func (p *Persistence) savePlayerModel(player models.PlayerDTO) players.Player {
 	return *playerModel
 }
 
-func (p *Persistence) getPlayerBio(league enums.League, playerId int) (string, string, *time.Time) {
+func (p *Persistence) getPlayerBio(league enums.League, playerId string) (string, string, *time.Time) {
 	if league == enums.NBA {
 
 		playerInfo := p.nbaComClient.PlayerInfoPage(playerId)
 		if playerInfo == nil {
-			panic("There is no page on nba.com for player id: " + strconv.Itoa(playerId))
+			panic("There is no page on nba.com for player id: " + playerId)
 		}
 
 		var birthDate time.Time

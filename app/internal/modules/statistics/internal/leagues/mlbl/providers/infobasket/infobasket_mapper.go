@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
+	"strconv"
 	"time"
 )
 
@@ -40,7 +41,7 @@ func (m *mapper) mapTeam(teamBoxscore boxscore.TeamBoxscore) models.TeamBoxScore
 	return models.TeamBoxScoreDTO{
 		Alias:    teamBoxscore.TeamName.CompTeamAbcNameEn,
 		Name:     teamBoxscore.TeamName.CompTeamNameEn,
-		LeagueId: teamBoxscore.TeamID,
+		LeagueId: strconv.Itoa(teamBoxscore.TeamID),
 		Scored:   teamBoxscore.Score,
 		Players: array_utils.Map(teamBoxscore.Players, func(player boxscore.PlayerBoxscore) models.PlayerDTO {
 			return m.mapPlayer(player)
@@ -55,7 +56,7 @@ func (m *mapper) mapPlayer(player boxscore.PlayerBoxscore) models.PlayerDTO {
 		FullNameLocal:  player.PersonNameRu,
 		FullNameEn:     player.PersonNameEn,
 		BirthDate:      &birthdate,
-		LeaguePlayerID: player.PersonID,
+		LeaguePlayerID: strconv.Itoa(player.PersonID),
 		Statistic: models.PlayerStatisticDTO{
 			PlsMin:        player.PlusMinus,
 			PlayedSeconds: player.Seconds,

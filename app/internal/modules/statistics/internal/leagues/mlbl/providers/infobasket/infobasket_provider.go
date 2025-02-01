@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/infrastructure/infobasket/dtos/boxscore"
 	models2 "IMP/app/internal/modules/statistics/models"
 	"encoding/json"
+	"strconv"
 	"time"
 )
 
@@ -24,7 +25,9 @@ func (i *Provider) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error)
 		return nil, err
 	}
 
-	return i.mapper.mapGame(gameDto), nil
+	game := i.mapper.mapGame(gameDto)
+	game.Id = gameId
+	return game, nil
 }
 
 func (i *Provider) GamesByDate(date time.Time) ([]string, error) {

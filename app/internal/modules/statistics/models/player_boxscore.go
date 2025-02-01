@@ -6,6 +6,6 @@ type PlayerDTO struct {
 	FullNameLocal  string
 	FullNameEn     string
 	BirthDate      *time.Time
-	LeaguePlayerID int
+	LeaguePlayerID string
 	Statistic      PlayerStatisticDTO
 }

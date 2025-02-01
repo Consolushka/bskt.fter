@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/internal/utils/time_utils"
+	"strconv"
 )
 
 type mapper struct{}
@@ -21,6 +22,7 @@ func (c *mapper) mapGame(gameDto boxscore.GameDTO) models.GameBoxScoreDTO {
 		duration += league.OvertimeDuration()
 	}
 	gameBoxScoreDto := models.GameBoxScoreDTO{
+		Id:            gameDto.GameId,
 		League:        league,
 		HomeTeam:      c.mapTeam(gameDto.HomeTeam),
 		AwayTeam:      c.mapTeam(gameDto.AwayTeam),
@@ -35,7 +37,7 @@ func (c *mapper) mapTeam(dto boxscore.TeamDTO) models.TeamBoxScoreDTO {
 	return models.TeamBoxScoreDTO{
 		Alias:    dto.TeamTricode,
 		Name:     dto.TeamName,
-		LeagueId: dto.TeamId,
+		LeagueId: strconv.Itoa(dto.TeamId),
 		Scored:   dto.Score,
 		Players: array_utils.Map(dto.Players, func(player boxscore.PlayerDTO) models.PlayerDTO {
 			return c.mapPlayer(player)
@@ -47,7 +49,7 @@ func (c *mapper) mapPlayer(dto boxscore.PlayerDTO) models.PlayerDTO {
 	return models.PlayerDTO{
 		FullNameLocal:  dto.Name,
 		BirthDate:      nil,
-		LeaguePlayerID: dto.PersonId,
+		LeaguePlayerID: strconv.Itoa(dto.PersonId),
 		Statistic: models.PlayerStatisticDTO{
 			PlsMin:        dto.Statistics.Plus - dto.Statistics.Minus,
 			PlayedSeconds: time_utils.FormattedMinutesToSeconds(dto.Statistics.Minutes, playedTimeFormat),
