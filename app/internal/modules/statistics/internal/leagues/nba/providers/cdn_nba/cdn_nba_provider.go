@@ -60,6 +60,10 @@ func (n *Provider) GameBoxScore(gameId string) (*models.GameBoxScoreDTO, error) 
 	return &gameBoxScoreDto, nil
 }
 
+func (n *Provider) GamesByTeam(teamId string) ([]string, error) {
+	panic("implement me")
+}
+
 func NewProvider() *Provider {
 	return &Provider{
 		cdnNbaClient: cdn_nba.NewCdnNbaClient(),
