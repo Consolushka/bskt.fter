@@ -25,7 +25,7 @@ func NewService() *Service {
 	return &Service{
 		gamesRepository:   NewRepository(),
 		leaguesRepository: leagues.NewRepository(),
-		dbConnection:      database.GetDB().Debug(),
+		dbConnection:      database.GetDB(),
 	}
 }
 

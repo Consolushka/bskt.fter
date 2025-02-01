@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/statistics"
 	"IMP/app/internal/modules/statistics/enums"
 	"fmt"
@@ -23,8 +24,17 @@ func init() {
 }
 
 func SaveGame(leagueName string, gameId string) {
-	repo := statistics.NewLeagueProvider(enums.FromString(leagueName))
-	model, err := repo.GameBoxScore(gameId)
+	exists, err := games.NewRepository().Exists(games.GameModel{OfficialId: gameId})
+	if err != nil {
+		log.Fatal(err)
+	}
+	if exists {
+		fmt.Println("Game with official_id " + gameId + " already exists")
+		return
+	}
+
+	leagueProvider := statistics.NewLeagueProvider(enums.FromString(leagueName))
+	model, err := leagueProvider.GameBoxScore(gameId)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,5 +45,5 @@ func SaveGame(leagueName string, gameId string) {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Game results file successfully generated")
+	fmt.Println("Game with id " + gameId + " was saved into db")
 }
