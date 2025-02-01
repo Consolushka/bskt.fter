@@ -1,6 +1,7 @@
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 DOCKER_COMPOSE := docker compose
 GO_CONTAINER := app
+SERVER_CONTAINER := air
 DOCKER_COMPOSE_FILE := $(ROOT_DIR)/docker-compose.yaml
 ENV_FILE := $(ROOT_DIR)/.env
 
@@ -32,6 +33,10 @@ down: ## down all services
 
 sh: ## Enter Golang container sh
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) bash
+
+restart-server: ## Enter Golang container sh
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down $(SERVER_CONTAINER)
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up $(SERVER_CONTAINER)
 
 install: ## first time installation
 	make setup
