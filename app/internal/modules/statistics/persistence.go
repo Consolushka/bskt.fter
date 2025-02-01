@@ -132,10 +132,10 @@ func (p *Persistence) savePlayerModel(player models.PlayerDTO) players.Player {
 			player.FullNameEn = playerEnFullName
 		}
 		playerModel, err = p.playersRepository.FirstOrCreate(players.Player{
-			FullNameLocal:  player.FullNameLocal,
-			FullNameEn:     player.FullNameEn,
-			BirthDate:      player.BirthDate,
-			LeaguePlayerID: player.LeaguePlayerID,
+			FullNameLocal: player.FullNameLocal,
+			FullNameEn:    player.FullNameEn,
+			BirthDate:     player.BirthDate,
+			OfficialId:    player.LeaguePlayerID,
 		})
 	}
 

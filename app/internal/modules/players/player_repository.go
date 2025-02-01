@@ -23,7 +23,7 @@ func (r *Repository) FirstByLeaguePlayerId(id int) (*Player, error) {
 		First(
 			&result,
 			Player{
-				LeaguePlayerID: id,
+				OfficialId: id,
 			})
 
 	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
@@ -45,7 +45,7 @@ func (r *Repository) FirstOrCreate(player Player) (*Player, error) {
 		FirstOrCreate(
 			&result,
 			Player{
-				LeaguePlayerID: player.LeaguePlayerID,
+				OfficialId: player.OfficialId,
 			})
 
 	return &result, tx.Error
