@@ -18,6 +18,10 @@ func (r Provider) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error) 
 	panic("implement me")
 }
 
+func (r *Provider) GamesByTeam(teamId string) ([]string, error) {
+	panic("implement me")
+}
+
 func NewProvider() *Provider {
 	return &Provider{
 		client: sport_radar.NewSportRadarApiClient(),

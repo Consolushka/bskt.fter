@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	boxScoreEndpointPattern = "/GetOnline/%v?format=json&lang=ru"
+	boxScoreEndpointPattern  = "/GetOnline/%v?format=json&lang=ru"
+	teamGamesEndpointPattern = "/TeamGames/%v?format=json"
 )
 
 type Client struct {
@@ -15,8 +16,21 @@ type Client struct {
 	httpClient *abstract.HttpClient
 }
 
-func (c Client) BoxScore(gameId string) map[string]interface{} {
+func (c *Client) BoxScore(gameId string) map[string]interface{} {
 	result := c.httpClient.Get(c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
+
+	return result.(map[string]interface{})
+}
+
+func (c *Client) TeamGames(teamId string) []map[string]interface{} {
+	rawResult := c.httpClient.Get(c.baseUrl+fmt.Sprintf(teamGamesEndpointPattern, teamId), nil)
+
+	interfaceSlice := rawResult.([]interface{})
+	result := make([]map[string]interface{}, len(interfaceSlice))
+
+	for i, v := range interfaceSlice {
+		result[i] = v.(map[string]interface{})
+	}
 
 	return result
 }
