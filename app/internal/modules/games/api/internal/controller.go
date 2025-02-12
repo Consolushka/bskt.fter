@@ -24,16 +24,20 @@ func NewController() *Controller {
 
 // GetGames returns all games filtered by date
 func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest) {
+	var gamesResponse []responses.GetSpecificGameResponse
 	w.Header().Set("Content-Type", "application/json")
 
-	games, err := c.service.GetGames(*r.Date())
+	gamesModels, err := c.service.GetGames(*r.Date())
 	if err != nil {
 		c.logger.Errorln(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(games); err != nil {
+	for _, game := range gamesModels {
+		gamesResponse = append(gamesResponse, responses.NewGetSpecificGameResponse(&game))
+	}
+	if err := json.NewEncoder(w).Encode(gamesResponse); err != nil {
 		c.logger.Errorln(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

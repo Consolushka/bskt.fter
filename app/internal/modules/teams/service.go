@@ -5,7 +5,6 @@ import (
 	"IMP/app/internal/modules/imp/domain/enums"
 	impModels "IMP/app/internal/modules/imp/domain/models"
 	teamModels "IMP/app/internal/modules/teams/models"
-	"IMP/app/log"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,9 +40,8 @@ func (s *Service) GetTeamById(id int) (teamModels.Team, error) {
 }
 
 func (s *Service) GetTeamWithGames(teamId int) ([]*games.GameModel, error) {
-	//var games []games.GameModel
 	var gamesIds []int
-	var games []*games.GameModel
+	var gamesModels []*games.GameModel
 
 	gamesService := games.NewService()
 
@@ -58,16 +56,15 @@ func (s *Service) GetTeamWithGames(teamId int) ([]*games.GameModel, error) {
 			return nil, err
 		}
 
-		games = append(games, game)
+		gamesModels = append(gamesModels, game)
 	}
 
-	return games, tx.Error
+	return gamesModels, tx.Error
 }
 
 func (s *Service) GetTeamWithGamesMetrics(teamId int, impPers []enums.ImpPERs) ([]*impModels.GameImpMetrics, error) {
-	//var games []games.GameModel
 	var gamesIds []int
-	var games []*impModels.GameImpMetrics
+	var gamesModels []*impModels.GameImpMetrics
 
 	gamesService := games.NewService()
 
@@ -82,8 +79,8 @@ func (s *Service) GetTeamWithGamesMetrics(teamId int, impPers []enums.ImpPERs) (
 			return nil, err
 		}
 
-		games = append(games, game)
+		gamesModels = append(gamesModels, game)
 	}
 
-	return games, tx.Error
+	return gamesModels, tx.Error
 }
