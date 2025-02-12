@@ -36,7 +36,7 @@ sh: ## Enter Golang container sh
 
 restart-server: ## Enter Golang container sh
 	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down $(SERVER_CONTAINER)
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up $(SERVER_CONTAINER)
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up $(SERVER_CONTAINER) -d
 
 install: ## first time installation
 	make setup

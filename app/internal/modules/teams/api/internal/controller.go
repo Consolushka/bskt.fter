@@ -63,17 +63,32 @@ func (c *Controller) GetTeam(w http.ResponseWriter, r *requests.GetTeamByIdReque
 // GetTeamGames
 //
 // retrieve specific game and then calculate IMP metrics for every player
-//func (c *Controller) GetTeamGames(w http.ResponseWriter, r *requests.GetTeamByIdRequest) {
-//	gameModel, err := c.service.GetGameMetrics(r.Id(), r.Pers())
-//	if err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//
-//	formatter := formatters.NewFormatter(r.Format())
-//
-//	if err := formatter.Format(w, gameModel); err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//}
+func (c *Controller) GetTeamGames(w http.ResponseWriter, r *requests.GetTeamGamesRequest) {
+	w.Header().Set("Content-Type", "application/json")
+
+	gameModel, err := c.service.GetTeamWithGames(r.Id())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(gameModel); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (c *Controller) GetTeamGamesMetrics(w http.ResponseWriter, r *requests.GetTeamByIdGamesMetricsRequest) {
+	w.Header().Set("Content-Type", "application/json")
+
+	gameModel, err := c.service.GetTeamWithGamesMetrics(r.Id(), r.Pers())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(gameModel); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}

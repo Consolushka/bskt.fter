@@ -35,6 +35,8 @@ func (s *server) setupRoutes() *mux.Router {
 	s.gamesRouter.RegisterRoutes(apiRouter)
 	s.teamsRouter.RegisterRoutes(apiRouter)
 
+	s.printRoutes()
+
 	return s.router
 }
 

@@ -20,5 +20,6 @@ func (router *Router) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/teams", handlers.BindAndValidateRequestHandler(router.controller.GetTeams)).Methods("GET")
 
 	r.HandleFunc("/teams/{id}", handlers.BindAndValidateRequestHandler(router.controller.GetTeam)).Methods("GET")
-	//r.HandleFunc("/teams/{id}/games", handlers.BindAndValidateRequestHandler(router.controller.GetTeamGames)).Methods("GET")
+	r.HandleFunc("/teams/{id}/games", handlers.BindAndValidateRequestHandler(router.controller.GetTeamGames)).Methods("GET")
+	r.HandleFunc("/teams/{id}/games/metrics", handlers.BindAndValidateRequestHandler(router.controller.GetTeamGamesMetrics)).Methods("GET")
 }

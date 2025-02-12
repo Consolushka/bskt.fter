@@ -2,6 +2,7 @@ package teams
 
 import (
 	"IMP/app/database"
+	"IMP/app/internal/modules/teams/models"
 	"gorm.io/gorm"
 )
 
@@ -15,17 +16,17 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) FirstOrCreate(team Team) (Team, error) {
-	var result Team
+func (r *Repository) FirstOrCreate(team models.Team) (models.Team, error) {
+	var result models.Team
 
 	tx := r.dbConnection.
 		Attrs(
-			Team{
+			models.Team{
 				Name:       team.Name,
 				OfficialId: team.OfficialId,
 			}).
 		FirstOrCreate(&result,
-			Team{
+			models.Team{
 				Alias:    team.Alias,
 				LeagueID: team.LeagueID,
 			},
@@ -34,16 +35,16 @@ func (r *Repository) FirstOrCreate(team Team) (Team, error) {
 	return result, tx.Error
 }
 
-func (r *Repository) FirstOrCreateGameStats(stats TeamGameStats) (TeamGameStats, error) {
-	var result TeamGameStats
+func (r *Repository) FirstOrCreateGameStats(stats models.TeamGameStats) (models.TeamGameStats, error) {
+	var result models.TeamGameStats
 
 	tx := r.dbConnection.Attrs(
-		TeamGameStats{
+		models.TeamGameStats{
 			Points: stats.Points,
 		}).
 		FirstOrCreate(
 			&result,
-			TeamGameStats{
+			models.TeamGameStats{
 				TeamId: stats.TeamId,
 				GameId: stats.GameId,
 			})

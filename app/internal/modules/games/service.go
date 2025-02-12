@@ -8,7 +8,7 @@ import (
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/players"
 	enums2 "IMP/app/internal/modules/statistics/enums"
-	"IMP/app/internal/modules/teams"
+	teamModels "IMP/app/internal/modules/teams/models"
 	"IMP/app/internal/utils/array_utils"
 	"database/sql"
 	"gorm.io/gorm"
@@ -125,7 +125,7 @@ func (s *Service) mapGameModelToImpMetricsModel(gameModel *GameModel, impPers []
 	}
 }
 
-func (s *Service) mapTeamPlayersMetrics(currentTeam teams.TeamGameStats, oposingTeam teams.TeamGameStats, fullGameTime int, impPers []enums.ImpPERs, league enums2.League) []models.PlayerImpMetrics {
+func (s *Service) mapTeamPlayersMetrics(currentTeam teamModels.TeamGameStats, oposingTeam teamModels.TeamGameStats, fullGameTime int, impPers []enums.ImpPERs, league enums2.League) []models.PlayerImpMetrics {
 	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats players.PlayerGameStats) models.PlayerImpMetrics {
 		playerImpPers := make([]models.PlayerImpPersMetrics, len(impPers))
 

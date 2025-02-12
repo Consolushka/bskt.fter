@@ -1,4 +1,4 @@
-package teams
+package models
 
 import (
 	"IMP/app/internal/modules/players"
@@ -8,7 +8,7 @@ import (
 type TeamGameStats struct {
 	Id              int                       `json:"id" db:"id"`
 	TeamId          int                       `json:"team_id" db:"team_id"`
-	Team            Team                      `json:"team" gorm:"foreignKey:TeamId"`
+	Team            *Team                     `json:"team" gorm:"foreignKey:TeamId"`
 	GameId          int                       `json:"game_id" db:"game_id"`
 	Points          int                       `json:"points" db:"points"`
 	PlayerGameStats []players.PlayerGameStats `json:"players" gorm:"foreignKey:team_game_id"`

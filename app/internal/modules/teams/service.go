@@ -1,6 +1,10 @@
 package teams
 
 import (
+	"IMP/app/internal/modules/games"
+	"IMP/app/internal/modules/imp/domain/enums"
+	impModels "IMP/app/internal/modules/imp/domain/models"
+	teamModels "IMP/app/internal/modules/teams/models"
 	"IMP/app/log"
 	"github.com/sirupsen/logrus"
 )
@@ -18,21 +22,69 @@ func NewService() *Service {
 	}
 }
 
-func (s *Service) GetTeams() ([]Team, error) {
-	var teams []Team
+func (s *Service) GetTeams() ([]teamModels.Team, error) {
+	var teams []teamModels.Team
 
-	tx := s.repository.dbConnection.Model(&Team{}).
+	tx := s.repository.dbConnection.Model(&teamModels.Team{}).
 		Find(&teams)
 
 	return teams, tx.Error
 }
 
-func (s *Service) GetTeamById(id int) (Team, error) {
-	var team Team
+func (s *Service) GetTeamById(id int) (teamModels.Team, error) {
+	var team teamModels.Team
 
-	tx := s.repository.dbConnection.Model(&Team{}).
+	tx := s.repository.dbConnection.Model(&teamModels.Team{}).
 		Where("id = ?", id).
 		First(&team)
 
 	return team, tx.Error
+}
+
+func (s *Service) GetTeamWithGames(teamId int) ([]*games.GameModel, error) {
+	//var games []games.GameModel
+	var gamesIds []int
+	var games []*games.GameModel
+
+	gamesService := games.NewService()
+
+	tx := s.repository.dbConnection.Model(&teamModels.TeamGameStats{}).
+		Where("team_id = ?", teamId).
+		Select("game_id").
+		Find(&gamesIds)
+
+	for _, gameId := range gamesIds {
+		game, err := gamesService.GetGame(gameId)
+		if err != nil {
+			return nil, err
+		}
+
+		games = append(games, game)
+	}
+
+	return games, tx.Error
+}
+
+func (s *Service) GetTeamWithGamesMetrics(teamId int, impPers []enums.ImpPERs) ([]*impModels.GameImpMetrics, error) {
+	//var games []games.GameModel
+	var gamesIds []int
+	var games []*impModels.GameImpMetrics
+
+	gamesService := games.NewService()
+
+	tx := s.repository.dbConnection.Model(&teamModels.TeamGameStats{}).
+		Where("team_id = ?", teamId).
+		Select("game_id").
+		Find(&gamesIds)
+
+	for _, gameId := range gamesIds {
+		game, err := gamesService.GetGameMetrics(gameId, impPers)
+		if err != nil {
+			return nil, err
+		}
+
+		games = append(games, game)
+	}
+
+	return games, tx.Error
 }

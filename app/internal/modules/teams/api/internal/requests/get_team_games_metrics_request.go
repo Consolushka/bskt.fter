@@ -5,30 +5,24 @@ import (
 	"IMP/app/internal/base/components/request_components"
 )
 
-// GetSpecificGameMetricsRequest expects request with:
+// GetTeamByIdGamesMetricsRequest expects request with:
 //
 // Path-parameters:
-//   - id - game id
+//   - id - team id
 //
 // Query-parameters:
-//   - format - could be only 'pdf' or 'json'. Default is 'json'
-//   - pers - comma-separated list of enums.ImpPERs
-type GetSpecificGameMetricsRequest struct {
+//   - pers - comma-separated list of PERS
+type GetTeamByIdGamesMetricsRequest struct {
 	abstract.BaseRequest
 
 	request_components.HasIdPathParam
-	request_components.HasDateQueryParam
 	request_components.HasPersQueryParam
 }
 
-func (g *GetSpecificGameMetricsRequest) Validators() []func(storage abstract.CustomRequestStorage) error {
+func (g *GetTeamByIdGamesMetricsRequest) Validators() []func(storage abstract.CustomRequestStorage) error {
 	var parentValidators []func(storage abstract.CustomRequestStorage) error
 
 	for _, validator := range g.HasIdPathParam.Validators() {
-		parentValidators = append(parentValidators, validator)
-	}
-
-	for _, validator := range g.HasDateQueryParam.Validators() {
 		parentValidators = append(parentValidators, validator)
 	}
 

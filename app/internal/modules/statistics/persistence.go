@@ -7,8 +7,9 @@ import (
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/statistics/enums"
-	"IMP/app/internal/modules/statistics/models"
+	statisticModels "IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/modules/teams"
+	teamModels "IMP/app/internal/modules/teams/models"
 	"IMP/app/internal/utils/string_utils"
 	"github.com/PuerkitoBio/goquery"
 	"log"
@@ -37,7 +38,7 @@ func NewPersistence() *Persistence {
 	}
 }
 
-func (p *Persistence) SaveGameBoxScore(dto *models.GameBoxScoreDTO) error {
+func (p *Persistence) SaveGameBoxScore(dto *statisticModels.GameBoxScoreDTO) error {
 	p.league = dto.League
 
 	leagueModel, err := p.leagueRepository.GetLeagueByAliasEn(strings.ToLower(dto.League.String()))
@@ -68,8 +69,8 @@ func (p *Persistence) SaveGameBoxScore(dto *models.GameBoxScoreDTO) error {
 	return nil
 }
 
-func (p *Persistence) saveTeamModel(dto models.TeamBoxScoreDTO, leagueId int) (teams.Team, error) {
-	teamModel, err := p.teamsRepository.FirstOrCreate(teams.Team{
+func (p *Persistence) saveTeamModel(dto statisticModels.TeamBoxScoreDTO, leagueId int) (teamModels.Team, error) {
+	teamModel, err := p.teamsRepository.FirstOrCreate(teamModels.Team{
 		Alias:      dto.Alias,
 		LeagueID:   leagueId,
 		Name:       dto.Name,
@@ -79,7 +80,7 @@ func (p *Persistence) saveTeamModel(dto models.TeamBoxScoreDTO, leagueId int) (t
 	return teamModel, err
 }
 
-func (p *Persistence) saveGameModel(dto *models.GameBoxScoreDTO, leagueId int, homeTeamId int, awayTeamId int) (games.GameModel, error) {
+func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, leagueId int, homeTeamId int, awayTeamId int) (games.GameModel, error) {
 	gameModel, err := p.gamesRepository.FirstOrCreate(games.GameModel{
 		HomeTeamID:    homeTeamId,
 		AwayTeamID:    awayTeamId,
@@ -92,8 +93,8 @@ func (p *Persistence) saveGameModel(dto *models.GameBoxScoreDTO, leagueId int, h
 	return gameModel, err
 }
 
-func (p *Persistence) saveTeamStats(dto models.TeamBoxScoreDTO, gameModel games.GameModel, teamModel teams.Team) error {
-	teamGameModel, err := p.teamsRepository.FirstOrCreateGameStats(teams.TeamGameStats{
+func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameModel games.GameModel, teamModel teamModels.Team) error {
+	teamGameModel, err := p.teamsRepository.FirstOrCreateGameStats(teamModels.TeamGameStats{
 		TeamId: teamModel.ID,
 		GameId: gameModel.ID,
 		Points: dto.Scored,
@@ -121,7 +122,7 @@ func (p *Persistence) saveTeamStats(dto models.TeamBoxScoreDTO, gameModel games.
 	return nil
 }
 
-func (p *Persistence) savePlayerModel(player models.PlayerDTO) players.Player {
+func (p *Persistence) savePlayerModel(player statisticModels.PlayerDTO) players.Player {
 	playerModel, err := p.playersRepository.FirstByOfficialId(player.LeaguePlayerID)
 	if playerModel == nil {
 		log.Println("Player not found in database: ", player.LeaguePlayerID, ". Fetching from client")

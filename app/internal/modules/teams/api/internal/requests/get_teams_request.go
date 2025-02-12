@@ -8,15 +8,6 @@ type GetTeamsRequest struct {
 	abstract.BaseRequest
 }
 
-func (g *GetTeamsRequest) Validate() error {
-	return g.parseAll()
-}
-
-func (g *GetTeamsRequest) parseAll(parsers ...func() error) error {
-	for _, parser := range parsers {
-		if err := parser(); err != nil {
-			return err
-		}
-	}
-	return nil
+func (g GetTeamsRequest) Validators() []func(storage abstract.CustomRequestStorage) error {
+	return []func(storage abstract.CustomRequestStorage) error{}
 }
