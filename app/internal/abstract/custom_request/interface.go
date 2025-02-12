@@ -1,4 +1,4 @@
-package abstract
+package custom_request
 
 type CustomRequest interface {
 	Validators() []func(storage CustomRequestStorage) error

@@ -1,7 +1,7 @@
 package infobasket
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/http"
 	"fmt"
 )
 
@@ -13,7 +13,7 @@ const (
 type Client struct {
 	baseUrl string
 
-	httpClient *abstract.HttpClient
+	httpClient *http.Client
 }
 
 func (c *Client) BoxScore(gameId string) map[string]interface{} {
@@ -38,6 +38,6 @@ func (c *Client) TeamGames(teamId string) []map[string]interface{} {
 func NewInfobasketClient() *Client {
 	return &Client{
 		baseUrl:    "https://reg.infobasket.su/Widget",
-		httpClient: abstract.NewHttpClient(),
+		httpClient: http.NewHttpClient(),
 	}
 }

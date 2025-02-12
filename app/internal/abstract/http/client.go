@@ -1,4 +1,4 @@
-package abstract
+package http
 
 import (
 	"encoding/json"
@@ -6,14 +6,14 @@ import (
 	"net/http"
 )
 
-type HttpClient struct{}
+type Client struct{}
 
-func NewHttpClient() *HttpClient {
-	return &HttpClient{}
+func NewHttpClient() *Client {
+	return &Client{}
 }
 
 // Get send GET request to given url w/o body and headers (yet)
-func (c *HttpClient) Get(url string, apiKey *string) interface{} {
+func (c *Client) Get(url string, apiKey *string) interface{} {
 	var result interface{}
 
 	req, _ := http.NewRequest("GET", url, nil)

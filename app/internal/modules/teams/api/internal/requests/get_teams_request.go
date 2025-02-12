@@ -1,13 +1,13 @@
 package requests
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/custom_request"
 )
 
 type GetTeamsRequest struct {
-	abstract.BaseRequest
+	custom_request.BaseRequest
 }
 
-func (g GetTeamsRequest) Validators() []func(storage abstract.CustomRequestStorage) error {
-	return []func(storage abstract.CustomRequestStorage) error{}
+func (g GetTeamsRequest) Validators() []func(storage custom_request.CustomRequestStorage) error {
+	return []func(storage custom_request.CustomRequestStorage) error{}
 }

@@ -1,7 +1,7 @@
 package nba_com
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/http"
 	"IMP/app/internal/infrastructure/crawler"
 	"github.com/PuerkitoBio/goquery"
 )
@@ -10,7 +10,7 @@ const playerInfoPage = "/player/"
 
 type Client struct {
 	baseUrl    string
-	httpClient *abstract.HttpClient
+	httpClient *http.Client
 }
 
 func (c *Client) PlayerInfoPage(playerId string) *goquery.Document {
@@ -27,6 +27,6 @@ func (c *Client) PlayerInfoPage(playerId string) *goquery.Document {
 func NewClient() *Client {
 	return &Client{
 		baseUrl:    "https://www.nba.com",
-		httpClient: abstract.NewHttpClient(),
+		httpClient: http.NewHttpClient(),
 	}
 }

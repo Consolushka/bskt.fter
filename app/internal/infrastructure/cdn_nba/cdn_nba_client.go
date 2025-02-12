@@ -1,7 +1,7 @@
 package cdn_nba
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/http"
 	"fmt"
 )
 
@@ -11,13 +11,13 @@ const fullSeasonEndpoint = "/staticData/scheduleLeagueV2_14.json"
 type Client struct {
 	baseUrl string
 
-	httpClient *abstract.HttpClient
+	httpClient *http.Client
 }
 
 func NewCdnNbaClient() *Client {
 	return &Client{
 		baseUrl:    "https://cdn.nba.com/static/json",
-		httpClient: abstract.NewHttpClient(),
+		httpClient: http.NewHttpClient(),
 	}
 }
 

@@ -1,7 +1,7 @@
 package sport_radar
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/http"
 )
 
 const (
@@ -14,7 +14,7 @@ type Client struct {
 	lang    string
 	apiKey  string
 
-	httpClient *abstract.HttpClient
+	httpClient *http.Client
 }
 
 func NewSportRadarApiClient() *Client {
@@ -23,7 +23,7 @@ func NewSportRadarApiClient() *Client {
 		version:    "v8",
 		lang:       "en",
 		apiKey:     "piUTvn6SPhj5EX8NIS9vOxHDGKRaMNwYLXVD5u9O",
-		httpClient: abstract.NewHttpClient(),
+		httpClient: http.NewHttpClient(),
 	}
 }
 

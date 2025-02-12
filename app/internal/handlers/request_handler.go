@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/custom_request"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	"reflect"
 )
 
-func BindAndValidateRequestHandler[T abstract.CustomRequest](controllerHandler func(w http.ResponseWriter, r T)) http.HandlerFunc {
+func BindAndValidateRequestHandler[T custom_request.CustomRequest](controllerHandler func(w http.ResponseWriter, r T)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var decodedBody map[string]interface{}
 
@@ -27,13 +27,13 @@ func BindAndValidateRequestHandler[T abstract.CustomRequest](controllerHandler f
 		}
 
 		requestInstance := reflect.New(reflect.TypeOf(request).Elem()).Interface().(T)
-		requestInstance.SetStorage(abstract.NewCustomRequestStorage(
+		requestInstance.SetStorage(custom_request.NewCustomRequestStorage(
 			mux.Vars(r),
 			r.URL.Query().Encode(),
 			decodedBody,
 		))
 
-		err := abstract.Validate(requestInstance)
+		err := custom_request.Validate(requestInstance)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return

@@ -1,25 +1,25 @@
 package request_components
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/custom_request"
 	"IMP/app/internal/modules/imp/domain/enums"
 	"strings"
 )
 
 // HasPersQueryParam expects pers from enums.ImpPERs split by ','
 type HasPersQueryParam struct {
-	abstract.BaseRequest
+	custom_request.BaseRequest
 
 	pers []enums.ImpPERs
 }
 
-func (h *HasPersQueryParam) Validators() []func(storage abstract.CustomRequestStorage) error {
-	return []func(storage abstract.CustomRequestStorage) error{
+func (h *HasPersQueryParam) Validators() []func(storage custom_request.CustomRequestStorage) error {
+	return []func(storage custom_request.CustomRequestStorage) error{
 		h.parsePERS,
 	}
 }
 
-func (h *HasPersQueryParam) parsePERS(storage abstract.CustomRequestStorage) error {
+func (h *HasPersQueryParam) parsePERS(storage custom_request.CustomRequestStorage) error {
 	persInterface := storage.GetQueryParam("pers")
 	if persInterface != "" {
 		persArray := strings.Split(persInterface, "%2C")

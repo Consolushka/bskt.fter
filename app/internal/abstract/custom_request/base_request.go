@@ -1,4 +1,4 @@
-package abstract
+package custom_request
 
 type BaseRequest struct {
 	storage CustomRequestStorage

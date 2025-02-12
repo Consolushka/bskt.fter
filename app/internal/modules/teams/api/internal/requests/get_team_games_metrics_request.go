@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/custom_request"
 	"IMP/app/internal/base/components/request_components"
 )
 
@@ -13,14 +13,14 @@ import (
 // Query-parameters:
 //   - pers - comma-separated list of PERS
 type GetTeamByIdGamesMetricsRequest struct {
-	abstract.BaseRequest
+	custom_request.BaseRequest
 
 	request_components.HasIdPathParam
 	request_components.HasPersQueryParam
 }
 
-func (g *GetTeamByIdGamesMetricsRequest) Validators() []func(storage abstract.CustomRequestStorage) error {
-	var parentValidators []func(storage abstract.CustomRequestStorage) error
+func (g *GetTeamByIdGamesMetricsRequest) Validators() []func(storage custom_request.CustomRequestStorage) error {
+	var parentValidators []func(storage custom_request.CustomRequestStorage) error
 
 	for _, validator := range g.HasIdPathParam.Validators() {
 		parentValidators = append(parentValidators, validator)

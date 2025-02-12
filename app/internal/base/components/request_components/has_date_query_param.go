@@ -1,20 +1,20 @@
 package request_components
 
 import (
-	"IMP/app/internal/abstract"
+	"IMP/app/internal/abstract/custom_request"
 	"errors"
 	"time"
 )
 
 // HasDateQueryParam expects date in format 'dd-mm-yyyy'
 type HasDateQueryParam struct {
-	abstract.BaseRequest
+	custom_request.BaseRequest
 
 	date *time.Time
 }
 
-func (h *HasDateQueryParam) Validators() []func(storage abstract.CustomRequestStorage) error {
-	return []func(storage abstract.CustomRequestStorage) error{
+func (h *HasDateQueryParam) Validators() []func(storage custom_request.CustomRequestStorage) error {
+	return []func(storage custom_request.CustomRequestStorage) error{
 		h.parseDate,
 	}
 }
@@ -23,7 +23,7 @@ func (h *HasDateQueryParam) Date() *time.Time {
 	return h.date
 }
 
-func (h *HasDateQueryParam) parseDate(storage abstract.CustomRequestStorage) error {
+func (h *HasDateQueryParam) parseDate(storage custom_request.CustomRequestStorage) error {
 	queryDate := storage.GetQueryParam("date")
 
 	if queryDate == "" {
