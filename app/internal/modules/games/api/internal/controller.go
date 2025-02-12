@@ -5,7 +5,6 @@ import (
 	"IMP/app/internal/modules/games/api/internal/formatters"
 	"IMP/app/internal/modules/games/api/internal/requests"
 	"IMP/app/internal/modules/games/api/responses"
-	"IMP/app/log"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -20,7 +19,6 @@ type Controller struct {
 func NewController() *Controller {
 	return &Controller{
 		service: games.NewService(),
-		logger:  log.GetLogger(),
 	}
 }
 

@@ -23,6 +23,10 @@ func Init() {
 	}
 }
 
-func GetLogger() *logrus.Logger {
-	return log
+func Error(args ...interface{}) {
+	log.Error(args...)
+}
+
+func Fatalln(args ...interface{}) {
+	log.Fatalln(args...)
 }

@@ -28,7 +28,7 @@ func (n *Provider) GamesByDate(date time.Time) ([]string, error) {
 
 	err := json.Unmarshal(raw, &schedule)
 	if err != nil {
-		log.GetLogger().Fatalln(err)
+		log.Fatalln(err)
 	}
 
 	formattedSearchedDate := date.Format("01/02/2006 00:00:00")

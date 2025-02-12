@@ -3,7 +3,6 @@ package internal
 import (
 	"IMP/app/internal/modules/teams"
 	"IMP/app/internal/modules/teams/api/internal/requests"
-	"IMP/app/log"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -18,7 +17,6 @@ type Controller struct {
 func NewController() *Controller {
 	return &Controller{
 		service: teams.NewService(),
-		logger:  log.GetLogger(),
 	}
 }
 

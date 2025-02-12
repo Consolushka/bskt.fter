@@ -17,7 +17,7 @@ type GetSpecificGameMetricsRequest struct {
 	custom_request.BaseRequest
 
 	request_components.HasIdPathParam
-	request_components.HasDateQueryParam
+	request_components.HasFormatQueryParam
 	request_components.HasPersQueryParam
 }
 
@@ -28,7 +28,7 @@ func (g *GetSpecificGameMetricsRequest) Validators() []func(storage custom_reque
 		parentValidators = append(parentValidators, validator)
 	}
 
-	for _, validator := range g.HasDateQueryParam.Validators() {
+	for _, validator := range g.HasFormatQueryParam.Validators() {
 		parentValidators = append(parentValidators, validator)
 	}
 

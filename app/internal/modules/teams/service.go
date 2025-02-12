@@ -18,7 +18,6 @@ type Service struct {
 func NewService() *Service {
 	return &Service{
 		repository: NewRepository(),
-		logger:     log.GetLogger(),
 	}
 }
 
