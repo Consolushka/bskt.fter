@@ -4,7 +4,7 @@ import (
 	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/games/api/internal/formatters"
 	"IMP/app/internal/modules/games/api/internal/requests"
-	"IMP/app/internal/modules/games/api/responses"
+	"IMP/app/internal/modules/games/resources"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -24,7 +24,7 @@ func NewController() *Controller {
 
 // GetGames returns all games filtered by date
 func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest) {
-	var gamesResponse []responses.GetSpecificGameResponse
+	var gamesResponse []resources.Game
 	w.Header().Set("Content-Type", "application/json")
 
 	gamesModels, err := c.service.GetGames(*r.Date())
@@ -35,7 +35,7 @@ func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest
 	}
 
 	for _, game := range gamesModels {
-		gamesResponse = append(gamesResponse, responses.NewGetSpecificGameResponse(&game))
+		gamesResponse = append(gamesResponse, resources.NewGameResource(game))
 	}
 	if err := json.NewEncoder(w).Encode(gamesResponse); err != nil {
 		c.logger.Errorln(err)
@@ -58,7 +58,7 @@ func (c *Controller) GetGame(w http.ResponseWriter, r *requests.GetSpecificGameR
 		return
 	}
 
-	response := responses.NewGetSpecificGameResponse(gameModel)
+	response := resources.NewGameResource(*gameModel)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

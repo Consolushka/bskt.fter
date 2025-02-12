@@ -24,6 +24,7 @@ func (s *Service) GetTeams() ([]teamModels.Team, error) {
 	var teams []teamModels.Team
 
 	tx := s.repository.dbConnection.Model(&teamModels.Team{}).
+		Preload("League").
 		Find(&teams)
 
 	return teams, tx.Error
@@ -33,6 +34,7 @@ func (s *Service) GetTeamById(id int) (teamModels.Team, error) {
 	var team teamModels.Team
 
 	tx := s.repository.dbConnection.Model(&teamModels.Team{}).
+		Preload("League").
 		Where("id = ?", id).
 		First(&team)
 
