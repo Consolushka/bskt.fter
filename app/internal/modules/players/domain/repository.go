@@ -1,7 +1,8 @@
-package players
+package domain
 
 import (
 	"IMP/app/database"
+	"IMP/app/internal/modules/players/domain/models"
 	"errors"
 	"gorm.io/gorm"
 )
@@ -16,13 +17,13 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) FirstByOfficialId(id string) (*Player, error) {
-	var result Player
+func (r *Repository) FirstByOfficialId(id string) (*models.Player, error) {
+	var result models.Player
 
 	tx := r.dbConnection.
 		First(
 			&result,
-			Player{
+			models.Player{
 				OfficialId: id,
 			})
 
@@ -33,34 +34,34 @@ func (r *Repository) FirstByOfficialId(id string) (*Player, error) {
 	return &result, tx.Error
 }
 
-func (r *Repository) FirstOrCreate(player Player) (*Player, error) {
-	var result Player
+func (r *Repository) FirstOrCreate(player models.Player) (*models.Player, error) {
+	var result models.Player
 
 	tx := r.dbConnection.
-		Attrs(Player{
+		Attrs(models.Player{
 			FullNameLocal: player.FullNameLocal,
 			FullNameEn:    player.FullNameEn,
 			BirthDate:     player.BirthDate,
 		}).
 		FirstOrCreate(
 			&result,
-			Player{
+			models.Player{
 				OfficialId: player.OfficialId,
 			})
 
 	return &result, tx.Error
 }
 
-func (r *Repository) FirstOrCreateGameStat(stats PlayerGameStats) error {
+func (r *Repository) FirstOrCreateGameStat(stats models.PlayerGameStats) error {
 	tx := r.dbConnection.Attrs(
-		PlayerGameStats{
+		models.PlayerGameStats{
 			PlayedSeconds: stats.PlayedSeconds,
 			PlsMin:        stats.PlsMin,
 			IsBench:       stats.IsBench,
 		}).
 		FirstOrCreate(
-			&PlayerGameStats{},
-			PlayerGameStats{
+			&models.PlayerGameStats{},
+			models.PlayerGameStats{
 				PlayerID:   stats.PlayerID,
 				TeamGameId: stats.TeamGameId,
 			})

@@ -9,7 +9,7 @@ import (
 	impModels "IMP/app/internal/modules/imp/domain/models"
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
-	"IMP/app/internal/modules/players"
+	playersDomain "IMP/app/internal/modules/players/domain/models"
 	enums2 "IMP/app/internal/modules/statistics/enums"
 	teamModels "IMP/app/internal/modules/teams/models"
 	"IMP/app/internal/utils/array_utils"
@@ -129,7 +129,7 @@ func (s *Service) mapGameModelToImpMetricsModel(gameModel *gamesModels.Game, imp
 }
 
 func (s *Service) mapTeamPlayersMetrics(currentTeam teamModels.TeamGameStats, oposingTeam teamModels.TeamGameStats, fullGameTime int, impPers []enums.ImpPERs, league enums2.League) []impModels.PlayerImpMetrics {
-	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats players.PlayerGameStats) impModels.PlayerImpMetrics {
+	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats playersDomain.PlayerGameStats) impModels.PlayerImpMetrics {
 		playerImpPers := make([]impModels.PlayerImpPersMetrics, len(impPers))
 
 		cleanImp := imp.EvaluateClean(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, fullGameTime)

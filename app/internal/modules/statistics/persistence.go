@@ -6,7 +6,8 @@ import (
 	gamesDomain "IMP/app/internal/modules/games/domain"
 	gamesModels "IMP/app/internal/modules/games/domain/models"
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
-	"IMP/app/internal/modules/players"
+	playersDomain "IMP/app/internal/modules/players/domain"
+	playersModels "IMP/app/internal/modules/players/domain/models"
 	"IMP/app/internal/modules/statistics/enums"
 	statisticModels "IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/modules/teams"
@@ -22,7 +23,7 @@ type Persistence struct {
 	leagueRepository  *leaguesDomain.Repository
 	teamsRepository   *teams.Repository
 	gamesRepository   *gamesDomain.Repository
-	playersRepository *players.Repository
+	playersRepository *playersDomain.Repository
 
 	nbaComClient *nba_com.Client
 
@@ -34,7 +35,7 @@ func NewPersistence() *Persistence {
 		leagueRepository:  leaguesDomain.NewRepository(),
 		teamsRepository:   teams.NewRepository(),
 		gamesRepository:   gamesDomain.NewRepository(),
-		playersRepository: players.NewRepository(),
+		playersRepository: playersDomain.NewRepository(),
 		nbaComClient:      nba_com.NewClient(),
 	}
 }
@@ -107,7 +108,7 @@ func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameMod
 	for _, player := range dto.Players {
 		playerModel := p.savePlayerModel(player)
 
-		err := p.playersRepository.FirstOrCreateGameStat(players.PlayerGameStats{
+		err := p.playersRepository.FirstOrCreateGameStat(playersModels.PlayerGameStats{
 			PlayerID:      playerModel.ID,
 			TeamGameId:    teamGameModel.Id,
 			PlayedSeconds: player.Statistic.PlayedSeconds,
@@ -123,7 +124,7 @@ func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameMod
 	return nil
 }
 
-func (p *Persistence) savePlayerModel(player statisticModels.PlayerDTO) players.Player {
+func (p *Persistence) savePlayerModel(player statisticModels.PlayerDTO) playersModels.Player {
 	playerModel, err := p.playersRepository.FirstByOfficialId(player.LeaguePlayerID)
 	if playerModel == nil {
 		log.Println("Player not found in database: ", player.LeaguePlayerID, ". Fetching from client")
@@ -134,7 +135,7 @@ func (p *Persistence) savePlayerModel(player statisticModels.PlayerDTO) players.
 			player.FullNameLocal = playerLocalFullName
 			player.FullNameEn = playerEnFullName
 		}
-		playerModel, err = p.playersRepository.FirstOrCreate(players.Player{
+		playerModel, err = p.playersRepository.FirstOrCreate(playersModels.Player{
 			FullNameLocal: player.FullNameLocal,
 			FullNameEn:    player.FullNameEn,
 			BirthDate:     player.BirthDate,

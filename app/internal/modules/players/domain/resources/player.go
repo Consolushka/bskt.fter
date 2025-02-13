@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"IMP/app/internal/modules/players"
+	"IMP/app/internal/modules/players/domain/models"
 	"IMP/app/internal/utils/time_utils"
 )
 
@@ -12,7 +12,7 @@ type Player struct {
 	PlsMin        int    `json:"pls_min"`
 }
 
-func NewPlayerResource(playerGameStats players.PlayerGameStats) Player {
+func NewPlayerResource(playerGameStats models.PlayerGameStats) Player {
 	formattedPlayedTime := time_utils.SecondsToFormat(playerGameStats.PlayedSeconds, time_utils.PlayedTimeFormat)
 
 	return Player{

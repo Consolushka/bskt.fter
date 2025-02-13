@@ -1,6 +1,8 @@
-package players
+package models
 
-import "time"
+import (
+	"time"
+)
 
 type PlayerGameStats struct {
 	PlayerID      int       `json:"player_id" db:"player_id" gorm:"primaryKey;autoIncrement:false"`

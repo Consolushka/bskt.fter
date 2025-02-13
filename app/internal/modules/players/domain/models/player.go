@@ -1,4 +1,4 @@
-package players
+package models
 
 import "time"
 
