@@ -2,7 +2,7 @@ package models
 
 import (
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
-	teamModels "IMP/app/internal/modules/teams/models"
+	teamModels "IMP/app/internal/modules/teams/domain/models"
 	"time"
 )
 

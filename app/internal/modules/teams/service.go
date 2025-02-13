@@ -5,36 +5,37 @@ import (
 	gamesModels "IMP/app/internal/modules/games/domain/models"
 	"IMP/app/internal/modules/imp/domain/enums"
 	impModels "IMP/app/internal/modules/imp/domain/models"
-	teamModels "IMP/app/internal/modules/teams/models"
+	teamsDomain "IMP/app/internal/modules/teams/domain"
+	teamsModels "IMP/app/internal/modules/teams/domain/models"
 	"github.com/sirupsen/logrus"
 )
 
 type Service struct {
-	repository *Repository
+	repository *teamsDomain.Repository
 
 	logger *logrus.Logger
 }
 
 func NewService() *Service {
 	return &Service{
-		repository: NewRepository(),
+		repository: teamsDomain.NewRepository(),
 	}
 }
 
-func (s *Service) GetTeams() ([]teamModels.Team, error) {
-	var teams []teamModels.Team
+func (s *Service) GetTeams() ([]teamsModels.Team, error) {
+	var teams []teamsModels.Team
 
-	tx := s.repository.dbConnection.Model(&teamModels.Team{}).
+	tx := s.repository.DbConnection.Model(&teamsModels.Team{}).
 		Preload("League").
 		Find(&teams)
 
 	return teams, tx.Error
 }
 
-func (s *Service) GetTeamById(id int) (teamModels.Team, error) {
-	var team teamModels.Team
+func (s *Service) GetTeamById(id int) (teamsModels.Team, error) {
+	var team teamsModels.Team
 
-	tx := s.repository.dbConnection.Model(&teamModels.Team{}).
+	tx := s.repository.DbConnection.Model(&teamsModels.Team{}).
 		Preload("League").
 		Where("id = ?", id).
 		First(&team)
@@ -44,11 +45,11 @@ func (s *Service) GetTeamById(id int) (teamModels.Team, error) {
 
 func (s *Service) GetTeamWithGames(teamId int) ([]*gamesModels.Game, error) {
 	var gamesIds []int
-	var gamesModels []*gamesModels.Game
+	var gamesCollection []*gamesModels.Game
 
 	gamesService := games.NewService()
 
-	tx := s.repository.dbConnection.Model(&teamModels.TeamGameStats{}).
+	tx := s.repository.DbConnection.Model(&teamsModels.TeamGameStats{}).
 		Where("team_id = ?", teamId).
 		Select("game_id").
 		Find(&gamesIds)
@@ -59,19 +60,19 @@ func (s *Service) GetTeamWithGames(teamId int) ([]*gamesModels.Game, error) {
 			return nil, err
 		}
 
-		gamesModels = append(gamesModels, game)
+		gamesCollection = append(gamesCollection, game)
 	}
 
-	return gamesModels, tx.Error
+	return gamesCollection, tx.Error
 }
 
 func (s *Service) GetTeamWithGamesMetrics(teamId int, impPers []enums.ImpPERs) ([]*impModels.GameImpMetrics, error) {
 	var gamesIds []int
-	var gamesModels []*impModels.GameImpMetrics
+	var gamesCollection []*impModels.GameImpMetrics
 
 	gamesService := games.NewService()
 
-	tx := s.repository.dbConnection.Model(&teamModels.TeamGameStats{}).
+	tx := s.repository.DbConnection.Model(&teamsModels.TeamGameStats{}).
 		Where("team_id = ?", teamId).
 		Select("game_id").
 		Find(&gamesIds)
@@ -82,8 +83,8 @@ func (s *Service) GetTeamWithGamesMetrics(teamId int, impPers []enums.ImpPERs) (
 			return nil, err
 		}
 
-		gamesModels = append(gamesModels, game)
+		gamesCollection = append(gamesCollection, game)
 	}
 
-	return gamesModels, tx.Error
+	return gamesCollection, tx.Error
 }

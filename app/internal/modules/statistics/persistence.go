@@ -10,8 +10,8 @@ import (
 	playersModels "IMP/app/internal/modules/players/domain/models"
 	"IMP/app/internal/modules/statistics/enums"
 	statisticModels "IMP/app/internal/modules/statistics/models"
-	"IMP/app/internal/modules/teams"
-	teamModels "IMP/app/internal/modules/teams/models"
+	teamsDomain "IMP/app/internal/modules/teams/domain"
+	teamsModels "IMP/app/internal/modules/teams/domain/models"
 	"IMP/app/internal/utils/string_utils"
 	"github.com/PuerkitoBio/goquery"
 	"log"
@@ -21,7 +21,7 @@ import (
 
 type Persistence struct {
 	leagueRepository  *leaguesDomain.Repository
-	teamsRepository   *teams.Repository
+	teamsRepository   *teamsDomain.Repository
 	gamesRepository   *gamesDomain.Repository
 	playersRepository *playersDomain.Repository
 
@@ -33,7 +33,7 @@ type Persistence struct {
 func NewPersistence() *Persistence {
 	return &Persistence{
 		leagueRepository:  leaguesDomain.NewRepository(),
-		teamsRepository:   teams.NewRepository(),
+		teamsRepository:   teamsDomain.NewRepository(),
 		gamesRepository:   gamesDomain.NewRepository(),
 		playersRepository: playersDomain.NewRepository(),
 		nbaComClient:      nba_com.NewClient(),
@@ -71,8 +71,8 @@ func (p *Persistence) SaveGameBoxScore(dto *statisticModels.GameBoxScoreDTO) err
 	return nil
 }
 
-func (p *Persistence) saveTeamModel(dto statisticModels.TeamBoxScoreDTO, leagueId int) (teamModels.Team, error) {
-	teamModel, err := p.teamsRepository.FirstOrCreate(teamModels.Team{
+func (p *Persistence) saveTeamModel(dto statisticModels.TeamBoxScoreDTO, leagueId int) (teamsModels.Team, error) {
+	teamModel, err := p.teamsRepository.FirstOrCreate(teamsModels.Team{
 		Alias:      dto.Alias,
 		LeagueID:   leagueId,
 		Name:       dto.Name,
@@ -95,8 +95,8 @@ func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, league
 	return gameModel, err
 }
 
-func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameModel gamesModels.Game, teamModel teamModels.Team) error {
-	teamGameModel, err := p.teamsRepository.FirstOrCreateGameStats(teamModels.TeamGameStats{
+func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameModel gamesModels.Game, teamModel teamsModels.Team) error {
+	teamGameModel, err := p.teamsRepository.FirstOrCreateGameStats(teamsModels.TeamGameStats{
 		TeamId: teamModel.ID,
 		GameId: gameModel.ID,
 		Points: dto.Scored,

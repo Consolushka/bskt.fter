@@ -4,7 +4,7 @@ import (
 	"IMP/app/internal/modules/leagues/domain/models"
 )
 
-type LeagueResponse struct {
+type LeagueResource struct {
 	Id           int    `json:"id"`
 	NameLocal    string `json:"name_local"`
 	NameEnglish  string `json:"name_english"`
@@ -12,8 +12,8 @@ type LeagueResponse struct {
 	AliasLocal   string `json:"alias_local"`
 }
 
-func NewLeagueResponse(leagueModel *models.League) LeagueResponse {
-	return LeagueResponse{
+func NewLeagueResponse(leagueModel *models.League) LeagueResource {
+	return LeagueResource{
 		Id:           leagueModel.ID,
 		NameLocal:    leagueModel.NameLocal,
 		NameEnglish:  leagueModel.NameEn,

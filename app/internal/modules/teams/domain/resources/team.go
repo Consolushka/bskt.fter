@@ -3,7 +3,7 @@ package resources
 import (
 	playersModels "IMP/app/internal/modules/players/domain/models"
 	"IMP/app/internal/modules/players/domain/resources"
-	"IMP/app/internal/modules/teams/models"
+	"IMP/app/internal/modules/teams/domain/models"
 	"IMP/app/internal/utils/array_utils"
 )
 

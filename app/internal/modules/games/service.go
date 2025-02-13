@@ -11,7 +11,7 @@ import (
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	playersDomain "IMP/app/internal/modules/players/domain/models"
 	enums2 "IMP/app/internal/modules/statistics/enums"
-	teamModels "IMP/app/internal/modules/teams/models"
+	teamModels "IMP/app/internal/modules/teams/domain/models"
 	"IMP/app/internal/utils/array_utils"
 	"database/sql"
 	"gorm.io/gorm"
