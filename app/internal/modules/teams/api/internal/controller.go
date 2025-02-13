@@ -22,9 +22,8 @@ func NewController() *Controller {
 	}
 }
 
-// todo: сделать чтобы не обязательный реквест был
 // GetTeams returns all games filtered by date
-func (c *Controller) GetTeams(w http.ResponseWriter, r *requests.GetTeamsRequest) {
+func (c *Controller) GetTeams(w http.ResponseWriter) {
 	var response []teamResponses.TeamResponse
 
 	w.Header().Set("Content-Type", "application/json")

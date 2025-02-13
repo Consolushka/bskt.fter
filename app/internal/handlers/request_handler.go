@@ -8,10 +8,35 @@ import (
 	"reflect"
 )
 
-func BindAndValidateRequestHandler[T custom_request.CustomRequest](controllerHandler func(w http.ResponseWriter, r T)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var decodedBody map[string]interface{}
+// BindAndValidateRequestHandler is a helper function that binds and validates a request
+// request must implement custom_request.CustomRequest interface
+// controller handler could not have request parameter
+func BindAndValidateRequestHandler(controllerHandler interface{}) http.HandlerFunc {
+	return bindAndValidate[custom_request.CustomRequest](controllerHandler)
+}
 
+func bindAndValidate[T custom_request.CustomRequest](controllerHandler interface{}) http.HandlerFunc {
+	handlerType := reflect.TypeOf(controllerHandler)
+
+	// Check if it's a function
+	if handlerType.Kind() != reflect.Func {
+		panic("handler must be a function")
+	}
+
+	// Get number of parameters
+	numParams := handlerType.NumIn()
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		if numParams == 1 {
+			// Simple handler with just ResponseWriter
+			reflect.ValueOf(controllerHandler).Call([]reflect.Value{
+				reflect.ValueOf(w),
+			})
+			return
+		}
+
+		// Handler with request binding
+		var decodedBody map[string]interface{}
 		var request T
 
 		if r.Body != nil && r.ContentLength > 0 {
@@ -22,7 +47,6 @@ func BindAndValidateRequestHandler[T custom_request.CustomRequest](controllerHan
 			}
 			defer r.Body.Close()
 		} else {
-			// Initialize empty map if body is nil or empty
 			decodedBody = make(map[string]interface{})
 		}
 
@@ -39,6 +63,9 @@ func BindAndValidateRequestHandler[T custom_request.CustomRequest](controllerHan
 			return
 		}
 
-		controllerHandler(w, requestInstance)
+		reflect.ValueOf(controllerHandler).Call([]reflect.Value{
+			reflect.ValueOf(w),
+			reflect.ValueOf(requestInstance),
+		})
 	}
 }
