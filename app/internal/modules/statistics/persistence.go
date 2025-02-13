@@ -5,7 +5,7 @@ import (
 	"IMP/app/internal/infrastructure/translator"
 	gamesDomain "IMP/app/internal/modules/games/domain"
 	gamesModels "IMP/app/internal/modules/games/domain/models"
-	"IMP/app/internal/modules/leagues"
+	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/statistics/enums"
 	statisticModels "IMP/app/internal/modules/statistics/models"
@@ -19,7 +19,7 @@ import (
 )
 
 type Persistence struct {
-	leagueRepository  *leagues.Repository
+	leagueRepository  *leaguesDomain.Repository
 	teamsRepository   *teams.Repository
 	gamesRepository   *gamesDomain.Repository
 	playersRepository *players.Repository
@@ -31,7 +31,7 @@ type Persistence struct {
 
 func NewPersistence() *Persistence {
 	return &Persistence{
-		leagueRepository:  leagues.NewRepository(),
+		leagueRepository:  leaguesDomain.NewRepository(),
 		teamsRepository:   teams.NewRepository(),
 		gamesRepository:   gamesDomain.NewRepository(),
 		playersRepository: players.NewRepository(),

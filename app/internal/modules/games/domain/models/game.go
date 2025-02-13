@@ -1,7 +1,7 @@
 package models
 
 import (
-	"IMP/app/internal/modules/leagues"
+	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	teamModels "IMP/app/internal/modules/teams/models"
 	"time"
 )
@@ -9,7 +9,7 @@ import (
 type Game struct {
 	ID            int                      `json:"id" gorm:"primaryKey"`
 	LeagueID      int                      `json:"league_id" gorm:"not null"`
-	League        leagues.League           `json:"league" gorm:"foreignKey:LeagueID"`
+	League        leaguesModels.League     `json:"league" gorm:"foreignKey:LeagueID"`
 	HomeTeamID    int                      `json:"home_team_id" gorm:"not null"`
 	HomeTeamStats teamModels.TeamGameStats `json:"home_team_stats" gorm:"foreignKey:GameId,TeamId;references:ID,HomeTeamID"`
 	AwayTeamID    int                      `json:"away_team_id" gorm:"not null"`

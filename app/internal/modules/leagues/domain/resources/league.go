@@ -1,6 +1,8 @@
 package resources
 
-import "IMP/app/internal/modules/leagues"
+import (
+	"IMP/app/internal/modules/leagues/domain/models"
+)
 
 type LeagueResponse struct {
 	Id           int    `json:"id"`
@@ -10,8 +12,7 @@ type LeagueResponse struct {
 	AliasLocal   string `json:"alias_local"`
 }
 
-// todo: use domain folder for each module
-func NewLeagueResponse(leagueModel *leagues.League) LeagueResponse {
+func NewLeagueResponse(leagueModel *models.League) LeagueResponse {
 	return LeagueResponse{
 		Id:           leagueModel.ID,
 		NameLocal:    leagueModel.NameLocal,
