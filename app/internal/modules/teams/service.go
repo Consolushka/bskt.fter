@@ -2,6 +2,7 @@ package teams
 
 import (
 	"IMP/app/internal/modules/games"
+	gamesModels "IMP/app/internal/modules/games/domain/models"
 	"IMP/app/internal/modules/imp/domain/enums"
 	impModels "IMP/app/internal/modules/imp/domain/models"
 	teamModels "IMP/app/internal/modules/teams/models"
@@ -41,9 +42,9 @@ func (s *Service) GetTeamById(id int) (teamModels.Team, error) {
 	return team, tx.Error
 }
 
-func (s *Service) GetTeamWithGames(teamId int) ([]*games.GameModel, error) {
+func (s *Service) GetTeamWithGames(teamId int) ([]*gamesModels.Game, error) {
 	var gamesIds []int
-	var gamesModels []*games.GameModel
+	var gamesModels []*gamesModels.Game
 
 	gamesService := games.NewService()
 

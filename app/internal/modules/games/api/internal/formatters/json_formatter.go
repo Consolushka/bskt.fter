@@ -1,7 +1,7 @@
 package formatters
 
 import (
-	"IMP/app/internal/modules/games/resources"
+	"IMP/app/internal/modules/games/domain/resources"
 	"IMP/app/internal/modules/imp/domain/models"
 	"encoding/json"
 	"net/http"

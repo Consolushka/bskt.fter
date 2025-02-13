@@ -1,10 +1,10 @@
 package internal
 
 import (
-	"IMP/app/internal/modules/games/resources"
+	gamesResources "IMP/app/internal/modules/games/domain/resources"
 	"IMP/app/internal/modules/teams"
 	"IMP/app/internal/modules/teams/api/internal/requests"
-	teamResponses "IMP/app/internal/modules/teams/api/responses"
+	teamsResponses "IMP/app/internal/modules/teams/api/responses"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -24,7 +24,7 @@ func NewController() *Controller {
 
 // GetTeams returns all games filtered by date
 func (c *Controller) GetTeams(w http.ResponseWriter) {
-	var response []teamResponses.TeamResponse
+	var response []teamsResponses.TeamResponse
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -36,7 +36,7 @@ func (c *Controller) GetTeams(w http.ResponseWriter) {
 	}
 
 	for _, team := range teamsArray {
-		response = append(response, teamResponses.NewTeamResponse(team))
+		response = append(response, teamsResponses.NewTeamResponse(team))
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -60,7 +60,7 @@ func (c *Controller) GetTeam(w http.ResponseWriter, r *requests.GetTeamByIdReque
 		return
 	}
 
-	result := teamResponses.NewTeamResponse(team)
+	result := teamsResponses.NewTeamResponse(team)
 	if err := json.NewEncoder(w).Encode(result); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,7 +71,7 @@ func (c *Controller) GetTeam(w http.ResponseWriter, r *requests.GetTeamByIdReque
 //
 // retrieve specific game and then calculate IMP metrics for every player
 func (c *Controller) GetTeamGames(w http.ResponseWriter, r *requests.GetTeamGamesRequest) {
-	var response []resources.Game
+	var response []gamesResources.Game
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -82,7 +82,7 @@ func (c *Controller) GetTeamGames(w http.ResponseWriter, r *requests.GetTeamGame
 	}
 
 	for _, game := range gamesModel {
-		response = append(response, resources.NewGameResource(*game))
+		response = append(response, gamesResources.NewGameResource(*game))
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -92,7 +92,7 @@ func (c *Controller) GetTeamGames(w http.ResponseWriter, r *requests.GetTeamGame
 }
 
 func (c *Controller) GetTeamGamesMetrics(w http.ResponseWriter, r *requests.GetTeamByIdGamesMetricsRequest) {
-	var response []resources.Metric
+	var response []gamesResources.Metric
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -103,7 +103,7 @@ func (c *Controller) GetTeamGamesMetrics(w http.ResponseWriter, r *requests.GetT
 	}
 
 	for _, game := range gameModel {
-		response = append(response, resources.NewMetricResource(*game))
+		response = append(response, gamesResources.NewMetricResource(*game))
 	}
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

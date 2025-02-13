@@ -1,7 +1,8 @@
-package games
+package domain
 
 import (
 	"IMP/app/database"
+	"IMP/app/internal/modules/games/domain/models"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -16,25 +17,25 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) First(id int) (*GameModel, error) {
-	var result GameModel
+func (r *Repository) First(id int) (*models.Game, error) {
+	var result models.Game
 
 	tx := r.dbConnection.
-		First(&result, GameModel{ID: id}).
+		First(&result, models.Game{ID: id}).
 		Preload("League")
 
 	return &result, tx.Error
 }
 
-func (r *Repository) FirstOrCreate(game GameModel) (GameModel, error) {
-	var result GameModel
+func (r *Repository) FirstOrCreate(game models.Game) (models.Game, error) {
+	var result models.Game
 
 	tx := r.dbConnection.
-		Attrs(GameModel{
+		Attrs(models.Game{
 			PlayedMinutes: game.PlayedMinutes,
 			OfficialId:    game.OfficialId,
 		}).
-		FirstOrCreate(&result, GameModel{
+		FirstOrCreate(&result, models.Game{
 			HomeTeamID:  game.HomeTeamID,
 			AwayTeamID:  game.AwayTeamID,
 			LeagueID:    game.LeagueID,
@@ -45,7 +46,7 @@ func (r *Repository) FirstOrCreate(game GameModel) (GameModel, error) {
 }
 
 // Exists checks if game exists in db. Can check by id or official_id
-func (r *Repository) Exists(game GameModel) (bool, error) {
+func (r *Repository) Exists(game models.Game) (bool, error) {
 	var exists bool
 	var condition string
 
@@ -58,7 +59,7 @@ func (r *Repository) Exists(game GameModel) (bool, error) {
 	}
 
 	err := r.dbConnection.
-		Model(&GameModel{}).
+		Model(&models.Game{}).
 		Select("count(*) > 0").
 		Where(condition).
 		Find(&exists).

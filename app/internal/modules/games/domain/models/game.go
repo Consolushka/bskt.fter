@@ -1,4 +1,4 @@
-package games
+package models
 
 import (
 	"IMP/app/internal/modules/leagues"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type GameModel struct {
+type Game struct {
 	ID            int                      `json:"id" gorm:"primaryKey"`
 	LeagueID      int                      `json:"league_id" gorm:"not null"`
 	League        leagues.League           `json:"league" gorm:"foreignKey:LeagueID"`
@@ -21,6 +21,6 @@ type GameModel struct {
 	OfficialId    string                   `json:"official_id" gorm:"not null"`
 }
 
-func (GameModel) TableName() string {
+func (Game) TableName() string {
 	return "games"
 }

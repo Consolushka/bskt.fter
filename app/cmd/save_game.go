@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"IMP/app/internal/modules/games"
+	gameDomain "IMP/app/internal/modules/games/domain"
+	gameModel "IMP/app/internal/modules/games/domain/models"
 	"IMP/app/internal/modules/statistics"
 	"IMP/app/internal/modules/statistics/enums"
 	"fmt"
@@ -24,7 +25,7 @@ func init() {
 }
 
 func SaveGame(leagueName string, gameId string) {
-	exists, err := games.NewRepository().Exists(games.GameModel{OfficialId: gameId})
+	exists, err := gameDomain.NewRepository().Exists(gameModel.Game{OfficialId: gameId})
 	if err != nil {
 		log.Fatal(err)
 	}

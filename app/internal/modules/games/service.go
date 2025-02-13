@@ -2,9 +2,11 @@ package games
 
 import (
 	"IMP/app/database"
+	"IMP/app/internal/modules/games/domain"
+	"IMP/app/internal/modules/games/domain/models"
 	"IMP/app/internal/modules/imp"
 	"IMP/app/internal/modules/imp/domain/enums"
-	"IMP/app/internal/modules/imp/domain/models"
+	impModels "IMP/app/internal/modules/imp/domain/models"
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/players"
 	enums2 "IMP/app/internal/modules/statistics/enums"
@@ -16,14 +18,14 @@ import (
 )
 
 type Service struct {
-	gamesRepository   *Repository
+	gamesRepository   *domain.Repository
 	leaguesRepository *leagues.Repository
 	dbConnection      *gorm.DB
 }
 
 func NewService() *Service {
 	return &Service{
-		gamesRepository:   NewRepository(),
+		gamesRepository:   domain.NewRepository(),
 		leaguesRepository: leagues.NewRepository(),
 		dbConnection:      database.GetDB(),
 	}
@@ -35,8 +37,8 @@ func NewService() *Service {
 //   - League
 //   - Teams
 //   - Players stats
-//   - Players models
-func (s *Service) GetGame(id int) (*GameModel, error) {
+//   - Players impModels
+func (s *Service) GetGame(id int) (*models.Game, error) {
 	gameModel, err := s.retrieveGameModelById(id)
 
 	if err != nil {
@@ -49,7 +51,7 @@ func (s *Service) GetGame(id int) (*GameModel, error) {
 // GetGameMetrics returns game metrics by specific id
 //
 // Calculates IMP metrics for every player
-func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*models.GameImpMetrics, error) {
+func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*impModels.GameImpMetrics, error) {
 	var leagueModel leagues.League
 
 	gameModel, err := s.retrieveGameModelById(id)
@@ -68,12 +70,12 @@ func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*models.GameI
 	return gameImpMetrics, nil
 }
 
-// GetGames fetches all games for specific date and preloads all related models
-func (s *Service) GetGames(date time.Time) ([]GameModel, error) {
-	var gamesModel []GameModel
+// GetGames fetches all games for specific date and preloads all related impModels
+func (s *Service) GetGames(date time.Time) ([]models.Game, error) {
+	var gamesModel []models.Game
 
 	tx := s.dbConnection.
-		Model(&GameModel{}).
+		Model(&models.Game{}).
 		Preload("League").
 		Preload("HomeTeamStats").
 		Preload("HomeTeamStats.Team").
@@ -89,8 +91,8 @@ func (s *Service) GetGames(date time.Time) ([]GameModel, error) {
 	return gamesModel, tx.Error
 }
 
-func (s *Service) retrieveGameModelById(id int) (*GameModel, error) {
-	var gameModel GameModel
+func (s *Service) retrieveGameModelById(id int) (*models.Game, error) {
+	var gameModel models.Game
 
 	tx := s.dbConnection.
 		Preload("League").
@@ -102,21 +104,21 @@ func (s *Service) retrieveGameModelById(id int) (*GameModel, error) {
 		Preload("AwayTeamStats.Team").
 		Preload("AwayTeamStats.PlayerGameStats").
 		Preload("AwayTeamStats.PlayerGameStats.Player").
-		First(&gameModel, GameModel{ID: id})
+		First(&gameModel, models.Game{ID: id})
 
 	return &gameModel, tx.Error
 }
 
-func (s *Service) mapGameModelToImpMetricsModel(gameModel *GameModel, impPers []enums.ImpPERs, league enums2.League) *models.GameImpMetrics {
-	return &models.GameImpMetrics{
+func (s *Service) mapGameModelToImpMetricsModel(gameModel *models.Game, impPers []enums.ImpPERs, league enums2.League) *impModels.GameImpMetrics {
+	return &impModels.GameImpMetrics{
 		Id:        gameModel.ID,
 		Scheduled: &gameModel.ScheduledAt,
-		Home: models.TeamImpMetrics{
+		Home: impModels.TeamImpMetrics{
 			Alias:       gameModel.HomeTeamStats.Team.Alias,
 			TotalPoints: gameModel.HomeTeamStats.Points,
 			Players:     s.mapTeamPlayersMetrics(gameModel.HomeTeamStats, gameModel.AwayTeamStats, gameModel.PlayedMinutes, impPers, league),
 		},
-		Away: models.TeamImpMetrics{
+		Away: impModels.TeamImpMetrics{
 			Alias:       gameModel.AwayTeamStats.Team.Alias,
 			TotalPoints: gameModel.AwayTeamStats.Points,
 			Players:     s.mapTeamPlayersMetrics(gameModel.AwayTeamStats, gameModel.HomeTeamStats, gameModel.PlayedMinutes, impPers, league),
@@ -125,25 +127,25 @@ func (s *Service) mapGameModelToImpMetricsModel(gameModel *GameModel, impPers []
 	}
 }
 
-func (s *Service) mapTeamPlayersMetrics(currentTeam teamModels.TeamGameStats, oposingTeam teamModels.TeamGameStats, fullGameTime int, impPers []enums.ImpPERs, league enums2.League) []models.PlayerImpMetrics {
-	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats players.PlayerGameStats) models.PlayerImpMetrics {
-		playerImpPers := make([]models.PlayerImpPersMetrics, len(impPers))
+func (s *Service) mapTeamPlayersMetrics(currentTeam teamModels.TeamGameStats, oposingTeam teamModels.TeamGameStats, fullGameTime int, impPers []enums.ImpPERs, league enums2.League) []impModels.PlayerImpMetrics {
+	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats players.PlayerGameStats) impModels.PlayerImpMetrics {
+		playerImpPers := make([]impModels.PlayerImpPersMetrics, len(impPers))
 
 		cleanImp := imp.EvaluateClean(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, fullGameTime)
 
 		for i, impPer := range impPers {
 
-			playerImpPers[i] = models.PlayerImpPersMetrics{
+			playerImpPers[i] = impModels.PlayerImpPersMetrics{
 				Per: impPer,
 				IMP: imp.EvaluatePer(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, fullGameTime, impPer, league, &cleanImp),
 			}
 		}
 
-		playerImpPers = array_utils.Sort(playerImpPers, func(a, b models.PlayerImpPersMetrics) bool {
+		playerImpPers = array_utils.Sort(playerImpPers, func(a, b impModels.PlayerImpPersMetrics) bool {
 			return a.Per.Order() < b.Per.Order()
 		})
 
-		return models.PlayerImpMetrics{
+		return impModels.PlayerImpMetrics{
 			FullNameLocal: playerGameStats.Player.FullNameLocal,
 			FullNameEn:    playerGameStats.Player.FullNameEn,
 			SecondsPlayed: playerGameStats.PlayedSeconds,

@@ -4,7 +4,7 @@ import (
 	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/games/api/internal/formatters"
 	"IMP/app/internal/modules/games/api/internal/requests"
-	"IMP/app/internal/modules/games/resources"
+	"IMP/app/internal/modules/games/domain/resources"
 	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"net/http"

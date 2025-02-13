@@ -3,7 +3,8 @@ package statistics
 import (
 	"IMP/app/internal/infrastructure/nba_com"
 	"IMP/app/internal/infrastructure/translator"
-	"IMP/app/internal/modules/games"
+	gamesDomain "IMP/app/internal/modules/games/domain"
+	gamesModels "IMP/app/internal/modules/games/domain/models"
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/statistics/enums"
@@ -20,7 +21,7 @@ import (
 type Persistence struct {
 	leagueRepository  *leagues.Repository
 	teamsRepository   *teams.Repository
-	gamesRepository   *games.Repository
+	gamesRepository   *gamesDomain.Repository
 	playersRepository *players.Repository
 
 	nbaComClient *nba_com.Client
@@ -32,7 +33,7 @@ func NewPersistence() *Persistence {
 	return &Persistence{
 		leagueRepository:  leagues.NewRepository(),
 		teamsRepository:   teams.NewRepository(),
-		gamesRepository:   games.NewRepository(),
+		gamesRepository:   gamesDomain.NewRepository(),
 		playersRepository: players.NewRepository(),
 		nbaComClient:      nba_com.NewClient(),
 	}
@@ -80,8 +81,8 @@ func (p *Persistence) saveTeamModel(dto statisticModels.TeamBoxScoreDTO, leagueI
 	return teamModel, err
 }
 
-func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, leagueId int, homeTeamId int, awayTeamId int) (games.GameModel, error) {
-	gameModel, err := p.gamesRepository.FirstOrCreate(games.GameModel{
+func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, leagueId int, homeTeamId int, awayTeamId int) (gamesModels.Game, error) {
+	gameModel, err := p.gamesRepository.FirstOrCreate(gamesModels.Game{
 		HomeTeamID:    homeTeamId,
 		AwayTeamID:    awayTeamId,
 		LeagueID:      leagueId,
@@ -93,7 +94,7 @@ func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, league
 	return gameModel, err
 }
 
-func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameModel games.GameModel, teamModel teamModels.Team) error {
+func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameModel gamesModels.Game, teamModel teamModels.Team) error {
 	teamGameModel, err := p.teamsRepository.FirstOrCreateGameStats(teamModels.TeamGameStats{
 		TeamId: teamModel.ID,
 		GameId: gameModel.ID,
