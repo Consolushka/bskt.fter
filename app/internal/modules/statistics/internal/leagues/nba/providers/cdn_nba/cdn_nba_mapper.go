@@ -2,28 +2,39 @@ package cdn_nba
 
 import (
 	"IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
+	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/internal/utils/time_utils"
+	"IMP/app/log"
 	"strconv"
 )
 
-type mapper struct{}
+type mapper struct {
+	leagueRepository *leaguesDomain.Repository
+}
 
 func newMapper() *mapper {
-	return &mapper{}
+	return &mapper{
+		leagueRepository: leaguesDomain.NewRepository(),
+	}
 }
 
 func (c *mapper) mapGame(gameDto boxscore.GameDTO) models.GameBoxScoreDTO {
+	league, err := c.leagueRepository.GetLeagueByAliasEn("nba")
+	if err != nil {
+		log.Fatalln(err)
+		panic(err)
+	}
 	// calculate full game duration
 	duration := 0
-	duration = 4 * league.QuarterDuration()
-	for i := 5; i < gameDto.Period; i++ {
-		duration += league.OvertimeDuration()
+	duration = league.PeriodsNumber * league.PeriodDuration
+	for i := 0; i < gameDto.Period-league.PeriodsNumber; i++ {
+		duration += league.OvertimeDuration
 	}
 	gameBoxScoreDto := models.GameBoxScoreDTO{
 		Id:            gameDto.GameId,
-		League:        league,
+		LeagueAliasEn: league.AliasEn,
 		HomeTeam:      c.mapTeam(gameDto.HomeTeam),
 		AwayTeam:      c.mapTeam(gameDto.AwayTeam),
 		PlayedMinutes: duration,

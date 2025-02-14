@@ -5,14 +5,14 @@ import (
 	"math"
 )
 
-const lowerEdgeCoef = 0.3947
+const lowerEdgeCoefficient = 0.3947
 
 func CalculateReliability(minutesPlayed float64, timeBase domain.TimeBasedImpCoefficient) float64 {
 	timeBaseMinutes := float64(timeBase.Minutes())
-	lowerEdge := lowerEdgeCoef * timeBaseMinutes
+	lowerEdge := lowerEdgeCoefficient * timeBaseMinutes
 
 	if minutesPlayed < lowerEdge {
-		return timeBase.InsufficientDistanceCoef() * math.Pow(minutesPlayed, timeBase.InsufficientDistancePower())
+		return timeBase.InsufficientDistanceCoefficient() * math.Pow(minutesPlayed, timeBase.InsufficientDistancePower())
 	}
 
 	if minutesPlayed < timeBaseMinutes {

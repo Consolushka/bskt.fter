@@ -27,6 +27,7 @@ func Error(args ...interface{}) {
 	log.Error(args...)
 }
 
+// todo: make lines under fatalln unreacheable
 func Fatalln(args ...interface{}) {
 	log.Fatalln(args...)
 }

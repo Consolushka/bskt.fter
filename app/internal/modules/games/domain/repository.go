@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// todo: refactor all repositories
 type Repository struct {
 	dbConnection *gorm.DB
 }

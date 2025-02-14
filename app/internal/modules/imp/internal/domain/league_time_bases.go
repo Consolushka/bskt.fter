@@ -1,8 +1,8 @@
 package domain
 
 import (
-	enums2 "IMP/app/internal/modules/imp/domain/enums"
-	"IMP/app/internal/modules/statistics/enums"
+	"IMP/app/internal/modules/imp/domain/enums"
+	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 )
 
 type TimeBasedImpCoefficient int
@@ -19,24 +19,24 @@ const (
 	Per48 TimeBasedImpCoefficient = 48
 )
 
-func TimeBasesByLeagueAndPers(league enums.League, impPer enums2.ImpPERs) TimeBasedImpCoefficient {
-	switch league {
-	case enums.NBA:
+func TimeBasesByLeagueAndPers(league leaguesModels.League, impPer enums.ImpPERs) TimeBasedImpCoefficient {
+	switch league.AliasEn {
+	case "NBA":
 		switch impPer {
-		case enums2.Bench:
+		case enums.Bench:
 			return Per24
-		case enums2.Start:
+		case enums.Start:
 			return Per38
-		case enums2.FullGame:
+		case enums.FullGame:
 			return Per48
 		}
-	case enums.MLBL:
+	case "MLBL":
 		switch impPer {
-		case enums2.Bench:
+		case enums.Bench:
 			return Per20
-		case enums2.Start:
+		case enums.Start:
 			return Per30
-		case enums2.FullGame:
+		case enums.FullGame:
 			return Per40
 		}
 	}
@@ -67,7 +67,7 @@ func (t TimeBasedImpCoefficient) Seconds() int {
 	return t.Minutes() * 60
 }
 
-func (t TimeBasedImpCoefficient) InsufficientDistanceCoef() float64 {
+func (t TimeBasedImpCoefficient) InsufficientDistanceCoefficient() float64 {
 	switch t {
 	case Per20:
 		return 0.05

@@ -2,6 +2,8 @@ package models
 
 import "time"
 
+//todo: add constraints for leagues
+
 type League struct {
 	ID               int       `db:"id" json:"id"`
 	NameLocal        string    `db:"name_local" json:"name_local"`

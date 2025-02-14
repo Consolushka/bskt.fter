@@ -3,11 +3,11 @@ package cmd
 import (
 	gameDomain "IMP/app/internal/modules/games/domain"
 	gameModel "IMP/app/internal/modules/games/domain/models"
+	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	"IMP/app/internal/modules/statistics"
-	"IMP/app/internal/modules/statistics/enums"
+	"IMP/app/log"
 	"fmt"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var saveGameCmd = &cobra.Command{
@@ -25,25 +25,32 @@ func init() {
 }
 
 func SaveGame(leagueName string, gameId string) {
+	leagueRepository := leaguesDomain.NewRepository()
+	league, err := leagueRepository.GetLeagueByAliasEn(leagueName)
+	if err != nil {
+		log.Fatalln(err)
+		panic(err)
+	}
+
 	exists, err := gameDomain.NewRepository().Exists(gameModel.Game{OfficialId: gameId})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	if exists {
 		fmt.Println("Game with official_id " + gameId + " already exists")
 		return
 	}
 
-	leagueProvider := statistics.NewLeagueProvider(enums.FromString(leagueName))
+	leagueProvider := statistics.NewLeagueProvider(league.AliasEn)
 	model, err := leagueProvider.GameBoxScore(gameId)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	persistence := statistics.NewPersistence()
 	err = persistence.SaveGameBoxScore(model)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	fmt.Println("Game with id " + gameId + " was saved into db")

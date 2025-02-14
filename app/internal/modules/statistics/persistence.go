@@ -6,9 +6,9 @@ import (
 	gamesDomain "IMP/app/internal/modules/games/domain"
 	gamesModels "IMP/app/internal/modules/games/domain/models"
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
+	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	playersDomain "IMP/app/internal/modules/players/domain"
 	playersModels "IMP/app/internal/modules/players/domain/models"
-	"IMP/app/internal/modules/statistics/enums"
 	statisticModels "IMP/app/internal/modules/statistics/models"
 	teamsDomain "IMP/app/internal/modules/teams/domain"
 	teamsModels "IMP/app/internal/modules/teams/domain/models"
@@ -27,7 +27,7 @@ type Persistence struct {
 
 	nbaComClient *nba_com.Client
 
-	league enums.League
+	league *leaguesModels.League
 }
 
 func NewPersistence() *Persistence {
@@ -41,24 +41,23 @@ func NewPersistence() *Persistence {
 }
 
 func (p *Persistence) SaveGameBoxScore(dto *statisticModels.GameBoxScoreDTO) error {
-	p.league = dto.League
-
-	leagueModel, err := p.leagueRepository.GetLeagueByAliasEn(strings.ToLower(dto.League.String()))
+	var err error
+	p.league, err = p.leagueRepository.GetLeagueByAliasEn(strings.ToLower(dto.LeagueAliasEn))
 	if err != nil {
 		return err
 	}
 
-	homeTeamModel, err := p.saveTeamModel(dto.HomeTeam, leagueModel.ID)
+	homeTeamModel, err := p.saveTeamModel(dto.HomeTeam)
 	if err != nil {
 		return err
 	}
 
-	awayTeamModel, err := p.saveTeamModel(dto.AwayTeam, leagueModel.ID)
+	awayTeamModel, err := p.saveTeamModel(dto.AwayTeam)
 	if err != nil {
 		return err
 	}
 
-	gameModel, err := p.saveGameModel(dto, leagueModel.ID, homeTeamModel.ID, awayTeamModel.ID)
+	gameModel, err := p.saveGameModel(dto, homeTeamModel.ID, awayTeamModel.ID)
 	if err != nil {
 		return err
 	}
@@ -71,10 +70,10 @@ func (p *Persistence) SaveGameBoxScore(dto *statisticModels.GameBoxScoreDTO) err
 	return nil
 }
 
-func (p *Persistence) saveTeamModel(dto statisticModels.TeamBoxScoreDTO, leagueId int) (teamsModels.Team, error) {
+func (p *Persistence) saveTeamModel(dto statisticModels.TeamBoxScoreDTO) (teamsModels.Team, error) {
 	teamModel, err := p.teamsRepository.FirstOrCreate(teamsModels.Team{
 		Alias:      dto.Alias,
-		LeagueID:   leagueId,
+		LeagueID:   p.league.ID,
 		Name:       dto.Name,
 		OfficialId: dto.LeagueId,
 	})
@@ -82,11 +81,11 @@ func (p *Persistence) saveTeamModel(dto statisticModels.TeamBoxScoreDTO, leagueI
 	return teamModel, err
 }
 
-func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, leagueId int, homeTeamId int, awayTeamId int) (gamesModels.Game, error) {
+func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, homeTeamId int, awayTeamId int) (gamesModels.Game, error) {
 	gameModel, err := p.gamesRepository.FirstOrCreate(gamesModels.Game{
 		HomeTeamID:    homeTeamId,
 		AwayTeamID:    awayTeamId,
-		LeagueID:      leagueId,
+		LeagueID:      p.league.ID,
 		ScheduledAt:   dto.ScheduledAt,
 		PlayedMinutes: dto.PlayedMinutes,
 		OfficialId:    dto.Id,
@@ -130,7 +129,7 @@ func (p *Persistence) savePlayerModel(player statisticModels.PlayerDTO) playersM
 		log.Println("Player not found in database: ", player.LeaguePlayerID, ". Fetching from client")
 
 		if player.BirthDate == nil || player.FullNameLocal == "" {
-			playerLocalFullName, playerEnFullName, birthdate := p.getPlayerBio(p.league, player.LeaguePlayerID)
+			playerLocalFullName, playerEnFullName, birthdate := p.getPlayerBio(player.LeaguePlayerID)
 			player.BirthDate = birthdate
 			player.FullNameLocal = playerLocalFullName
 			player.FullNameEn = playerEnFullName
@@ -150,8 +149,8 @@ func (p *Persistence) savePlayerModel(player statisticModels.PlayerDTO) playersM
 	return *playerModel
 }
 
-func (p *Persistence) getPlayerBio(league enums.League, playerId string) (string, string, *time.Time) {
-	if league == enums.NBA {
+func (p *Persistence) getPlayerBio(playerId string) (string, string, *time.Time) {
+	if p.league.AliasEn == "NBA" {
 
 		playerInfo := p.nbaComClient.PlayerInfoPage(playerId)
 		if playerInfo == nil {

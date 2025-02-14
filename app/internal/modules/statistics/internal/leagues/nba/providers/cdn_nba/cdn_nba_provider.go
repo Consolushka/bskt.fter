@@ -4,7 +4,6 @@ import (
 	"IMP/app/internal/infrastructure/cdn_nba"
 	"IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
 	"IMP/app/internal/infrastructure/cdn_nba/dtos/schedule_league"
-	"IMP/app/internal/modules/statistics/enums"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/log"
@@ -12,7 +11,6 @@ import (
 	"time"
 )
 
-const league = enums.NBA
 const playedTimeFormat = "PT%mM%sS"
 
 type Provider struct {

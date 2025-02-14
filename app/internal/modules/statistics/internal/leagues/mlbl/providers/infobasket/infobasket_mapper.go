@@ -2,32 +2,41 @@ package infobasket
 
 import (
 	"IMP/app/internal/infrastructure/infobasket/dtos/boxscore"
-	"IMP/app/internal/modules/statistics/enums"
+	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
+	"IMP/app/log"
 	"strconv"
 	"time"
 )
 
-type mapper struct{}
+type mapper struct {
+	leagueRepository *leaguesDomain.Repository
+}
 
 func newMapper() *mapper {
-	return &mapper{}
+	return &mapper{
+		leagueRepository: leaguesDomain.NewRepository(),
+	}
 }
 
 func (m *mapper) mapGame(game boxscore.GameInfo) *models.GameBoxScoreDTO {
-	league := enums.MLBL
+	league, err := m.leagueRepository.GetLeagueByAliasEn("MLBL")
+	if err != nil {
+		log.Fatalln(err)
+		panic(err)
+	}
 
 	duration := 0
-	duration = 4 * league.QuarterDuration()
-	for i := 0; i < game.MaxPeriod-4; i++ {
-		duration += league.OvertimeDuration()
+	duration = league.PeriodsNumber * league.PeriodDuration
+	for i := 0; i < game.MaxPeriod-league.PeriodsNumber; i++ {
+		duration += league.OvertimeDuration
 	}
 
 	scheduled, _ := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTime)
 
 	gameBoxScoreDto := models.GameBoxScoreDTO{
-		League:        league,
+		LeagueAliasEn: league.AliasEn,
 		HomeTeam:      m.mapTeam(game.GameTeams[0]),
 		AwayTeam:      m.mapTeam(game.GameTeams[1]),
 		PlayedMinutes: duration,
@@ -37,13 +46,13 @@ func (m *mapper) mapGame(game boxscore.GameInfo) *models.GameBoxScoreDTO {
 	return &gameBoxScoreDto
 }
 
-func (m *mapper) mapTeam(teamBoxscore boxscore.TeamBoxscore) models.TeamBoxScoreDTO {
+func (m *mapper) mapTeam(teamBoxScore boxscore.TeamBoxscore) models.TeamBoxScoreDTO {
 	return models.TeamBoxScoreDTO{
-		Alias:    teamBoxscore.TeamName.CompTeamAbcNameEn,
-		Name:     teamBoxscore.TeamName.CompTeamNameEn,
-		LeagueId: strconv.Itoa(teamBoxscore.TeamID),
-		Scored:   teamBoxscore.Score,
-		Players: array_utils.Map(teamBoxscore.Players, func(player boxscore.PlayerBoxscore) models.PlayerDTO {
+		Alias:    teamBoxScore.TeamName.CompTeamAbcNameEn,
+		Name:     teamBoxScore.TeamName.CompTeamNameEn,
+		LeagueId: strconv.Itoa(teamBoxScore.TeamID),
+		Scored:   teamBoxScore.Score,
+		Players: array_utils.Map(teamBoxScore.Players, func(player boxscore.PlayerBoxscore) models.PlayerDTO {
 			return m.mapPlayer(player)
 		}),
 	}

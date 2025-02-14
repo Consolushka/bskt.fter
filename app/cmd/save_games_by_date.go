@@ -1,8 +1,9 @@
 package cmd
 
 import (
+	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	"IMP/app/internal/modules/statistics"
-	"IMP/app/internal/modules/statistics/enums"
+	"IMP/app/log"
 	"fmt"
 	"github.com/spf13/cobra"
 	"time"
@@ -35,7 +36,13 @@ func init() {
 }
 
 func SaveGameByDate(leagueName string, date time.Time) {
-	nbaProvider := statistics.NewLeagueProvider(enums.FromString(leagueName))
+	leagueRepository := leaguesDomain.NewRepository()
+	league, err := leagueRepository.GetLeagueByAliasEn(leagueName)
+	if err != nil {
+		log.Fatalln(err)
+		panic(err)
+	}
+	nbaProvider := statistics.NewLeagueProvider(league.AliasEn)
 
 	gameIds, err := nbaProvider.GamesByDate(date)
 	if err != nil {

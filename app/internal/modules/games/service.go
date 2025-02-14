@@ -10,7 +10,6 @@ import (
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	playersDomain "IMP/app/internal/modules/players/domain/models"
-	enums2 "IMP/app/internal/modules/statistics/enums"
 	teamModels "IMP/app/internal/modules/teams/domain/models"
 	"IMP/app/internal/utils/array_utils"
 	"database/sql"
@@ -64,9 +63,8 @@ func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*impModels.Ga
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	league := enums2.FromString(leagueModel.AliasEn)
 
-	gameImpMetrics := s.mapGameModelToImpMetricsModel(gameModel, impPers, league)
+	gameImpMetrics := s.mapGameModelToImpMetricsModel(gameModel, impPers, leagueModel)
 
 	return gameImpMetrics, nil
 }
@@ -110,7 +108,7 @@ func (s *Service) retrieveGameModelById(id int) (*gamesModels.Game, error) {
 	return &gameModel, tx.Error
 }
 
-func (s *Service) mapGameModelToImpMetricsModel(gameModel *gamesModels.Game, impPers []enums.ImpPERs, league enums2.League) *impModels.GameImpMetrics {
+func (s *Service) mapGameModelToImpMetricsModel(gameModel *gamesModels.Game, impPers []enums.ImpPERs, league leaguesModels.League) *impModels.GameImpMetrics {
 	return &impModels.GameImpMetrics{
 		Id:        gameModel.ID,
 		Scheduled: &gameModel.ScheduledAt,
@@ -128,17 +126,17 @@ func (s *Service) mapGameModelToImpMetricsModel(gameModel *gamesModels.Game, imp
 	}
 }
 
-func (s *Service) mapTeamPlayersMetrics(currentTeam teamModels.TeamGameStats, oposingTeam teamModels.TeamGameStats, fullGameTime int, impPers []enums.ImpPERs, league enums2.League) []impModels.PlayerImpMetrics {
+func (s *Service) mapTeamPlayersMetrics(currentTeam teamModels.TeamGameStats, opposingTeam teamModels.TeamGameStats, fullGameTime int, impPers []enums.ImpPERs, league leaguesModels.League) []impModels.PlayerImpMetrics {
 	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats playersDomain.PlayerGameStats) impModels.PlayerImpMetrics {
 		playerImpPers := make([]impModels.PlayerImpPersMetrics, len(impPers))
 
-		cleanImp := imp.EvaluateClean(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, fullGameTime)
+		cleanImp := imp.EvaluateClean(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-opposingTeam.Points, fullGameTime)
 
 		for i, impPer := range impPers {
 
 			playerImpPers[i] = impModels.PlayerImpPersMetrics{
 				Per: impPer,
-				IMP: imp.EvaluatePer(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-oposingTeam.Points, fullGameTime, impPer, league, &cleanImp),
+				IMP: imp.EvaluatePer(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-opposingTeam.Points, fullGameTime, impPer, league, &cleanImp),
 			}
 		}
 
