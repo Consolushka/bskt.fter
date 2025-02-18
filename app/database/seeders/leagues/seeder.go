@@ -3,6 +3,7 @@ package leagues
 import (
 	"IMP/app/database"
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
+	"strings"
 )
 
 type Seeder struct {
@@ -17,9 +18,9 @@ func (l Seeder) Seed() {
 
 	nbaLeague := &leaguesModels.League{
 		NameLocal:        "National Basketball Association",
-		AliasLocal:       "NBA",
+		AliasLocal:       strings.ToUpper(leaguesModels.NBAAlias),
 		NameEn:           "National Basketball Association",
-		AliasEn:          "NBA",
+		AliasEn:          strings.ToUpper(leaguesModels.NBAAlias),
 		PeriodsNumber:    4,
 		PeriodDuration:   12,
 		OvertimeDuration: 6,
@@ -29,12 +30,12 @@ func (l Seeder) Seed() {
 		NameLocal:        "Межрегиональная любительская баскетбольная лига",
 		AliasLocal:       "МЛБЛ",
 		NameEn:           "Interregional Amateur Basketball League",
-		AliasEn:          "MLBL",
+		AliasEn:          strings.ToUpper(leaguesModels.MLBLAlias),
 		PeriodsNumber:    4,
 		PeriodDuration:   10,
 		OvertimeDuration: 5,
 	}
 
-	dbConnection.FirstOrCreate(nbaLeague, leaguesModels.League{AliasEn: "NBA"})
-	dbConnection.FirstOrCreate(mlblLeague, leaguesModels.League{AliasEn: "MLBL"})
+	dbConnection.FirstOrCreate(nbaLeague, leaguesModels.League{AliasEn: strings.ToUpper(leaguesModels.NBAAlias)})
+	dbConnection.FirstOrCreate(mlblLeague, leaguesModels.League{AliasEn: strings.ToUpper(leaguesModels.MLBLAlias)})
 }

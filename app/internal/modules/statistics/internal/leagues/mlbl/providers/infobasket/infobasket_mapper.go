@@ -3,10 +3,12 @@ package infobasket
 import (
 	"IMP/app/internal/infrastructure/infobasket/dtos/boxscore"
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
+	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/log"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -21,7 +23,7 @@ func newMapper() *mapper {
 }
 
 func (m *mapper) mapGame(game boxscore.GameInfo) *models.GameBoxScoreDTO {
-	league, err := m.leagueRepository.GetLeagueByAliasEn("MLBL")
+	league, err := m.leagueRepository.GetLeagueByAliasEn(strings.ToUpper(leaguesModels.MLBLAlias))
 	if err != nil {
 		log.Fatalln(err)
 		panic(err)

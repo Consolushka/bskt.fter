@@ -3,6 +3,7 @@ package domain
 import (
 	"IMP/app/internal/modules/imp/domain/enums"
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
+	"strings"
 )
 
 type TimeBasedImpCoefficient int
@@ -21,7 +22,7 @@ const (
 
 func TimeBasesByLeagueAndPers(league leaguesModels.League, impPer enums.ImpPERs) TimeBasedImpCoefficient {
 	switch league.AliasEn {
-	case "NBA":
+	case strings.ToUpper(leaguesModels.NBAAlias):
 		switch impPer {
 		case enums.Bench:
 			return Per24
@@ -30,7 +31,7 @@ func TimeBasesByLeagueAndPers(league leaguesModels.League, impPer enums.ImpPERs)
 		case enums.FullGame:
 			return Per48
 		}
-	case "MLBL":
+	case strings.ToUpper(leaguesModels.MLBLAlias):
 		switch impPer {
 		case enums.Bench:
 			return Per20

@@ -150,7 +150,7 @@ func (p *Persistence) savePlayerModel(player statisticModels.PlayerDTO) playersM
 }
 
 func (p *Persistence) getPlayerBio(playerId string) (string, string, *time.Time) {
-	if p.league.AliasEn == "NBA" {
+	if p.league.AliasEn == strings.ToUpper(leaguesModels.NBAAlias) {
 
 		playerInfo := p.nbaComClient.PlayerInfoPage(playerId)
 		if playerInfo == nil {

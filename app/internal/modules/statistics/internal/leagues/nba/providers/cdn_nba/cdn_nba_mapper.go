@@ -3,11 +3,13 @@ package cdn_nba
 import (
 	"IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
+	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/internal/utils/time_utils"
 	"IMP/app/log"
 	"strconv"
+	"strings"
 )
 
 type mapper struct {
@@ -21,7 +23,7 @@ func newMapper() *mapper {
 }
 
 func (c *mapper) mapGame(gameDto boxscore.GameDTO) models.GameBoxScoreDTO {
-	league, err := c.leagueRepository.GetLeagueByAliasEn("nba")
+	league, err := c.leagueRepository.GetLeagueByAliasEn(strings.ToUpper(leaguesModels.NBAAlias))
 	if err != nil {
 		log.Fatalln(err)
 		panic(err)

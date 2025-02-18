@@ -13,6 +13,7 @@ const (
 
 // NewNbaStatsProvider based on provider returns provider for statistics
 func NewNbaStatsProvider() abstract.StatsProvider {
+	//todo: set providers from env
 	provider := "NBA"
 
 	switch provider {
