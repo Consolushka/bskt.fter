@@ -30,5 +30,4 @@ func Error(args ...interface{}) {
 // Fatalln is equivalent to [Println] followed by a call to [os.Exit](1).
 func Fatalln(args ...interface{}) {
 	log.Fatalln(args...)
-	os.Exit(1)
 }

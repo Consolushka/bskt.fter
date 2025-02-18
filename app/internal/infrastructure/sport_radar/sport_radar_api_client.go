@@ -2,6 +2,7 @@ package sport_radar
 
 import (
 	"IMP/app/internal/abstract/http"
+	"os"
 )
 
 const (
@@ -22,7 +23,7 @@ func NewSportRadarApiClient() *Client {
 		baseUrl:    "https://api.sportradar.com/nba/trial/v8",
 		version:    "v8",
 		lang:       "en",
-		apiKey:     "piUTvn6SPhj5EX8NIS9vOxHDGKRaMNwYLXVD5u9O",
+		apiKey:     os.Getenv("SPORTRADAR_API_KEY"),
 		httpClient: http.NewHttpClient(),
 	}
 }

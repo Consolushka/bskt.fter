@@ -4,17 +4,19 @@ import (
 	"IMP/app/internal/modules/statistics/internal/abstract"
 	"IMP/app/internal/modules/statistics/internal/leagues/nba/providers/cdn_nba"
 	"IMP/app/internal/modules/statistics/internal/leagues/nba/providers/sport_radar"
+	"os"
 )
 
 const (
 	SPORTRADAR = "SPORTRADAR"
-	NBA        = "NBA"
+	NBA        = "CND.NBA"
 )
 
 // NewNbaStatsProvider based on provider returns provider for statistics
 func NewNbaStatsProvider() abstract.StatsProvider {
+
 	//todo: set providers from env
-	provider := "NBA"
+	provider := os.Getenv("NBA_STATS_PROVIDER")
 
 	switch provider {
 	case SPORTRADAR:

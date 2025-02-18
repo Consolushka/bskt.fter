@@ -13,6 +13,8 @@ func NewHttpClient() *Client {
 }
 
 // Get send GET request to given url w/o body and headers (yet)
+//
+//todo:use better abstraction
 func (c *Client) Get(url string, apiKey *string) interface{} {
 	var result interface{}
 
