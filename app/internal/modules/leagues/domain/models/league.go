@@ -2,8 +2,6 @@ package models
 
 import "time"
 
-//todo: add constraints for leagues
-
 const MLBLAlias = "mlbl"
 const NBAAlias = "nba"
 

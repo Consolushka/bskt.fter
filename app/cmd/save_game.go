@@ -29,7 +29,6 @@ func SaveGame(leagueName string, gameId string) {
 	league, err := leagueRepository.GetLeagueByAliasEn(leagueName)
 	if err != nil {
 		log.Fatalln(err)
-		panic(err)
 	}
 
 	exists, err := gameDomain.NewRepository().Exists(gameModel.Game{OfficialId: gameId})

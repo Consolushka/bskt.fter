@@ -26,6 +26,7 @@ func NewController() *Controller {
 func (c *Controller) GetTeams(w http.ResponseWriter) {
 	var response []teamsResponses.TeamResponse
 
+	//todo: add to header
 	w.Header().Set("Content-Type", "application/json")
 
 	teamsArray, err := c.service.GetTeams()
