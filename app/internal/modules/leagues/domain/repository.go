@@ -25,3 +25,14 @@ func (r *Repository) GetLeagueByAliasEn(aliasEn string) (*models.League, error) 
 
 	return &result, nil
 }
+
+func (r *Repository) FirstById(id int) (*models.League, error) {
+	var leagueModel models.League
+
+	tx := r.db.First(&leagueModel, models.League{ID: id})
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	return &leagueModel, nil
+}
