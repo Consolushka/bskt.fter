@@ -23,7 +23,7 @@ func NewController() *Controller {
 }
 
 // GetTeams returns all games filtered by date
-func (c *Controller) GetTeams(w http.ResponseWriter) {
+func (c *Controller) GetTeams(w http.ResponseWriter, r *requests.GetTeamsRequest) {
 	var response []teamsResponses.TeamResponse
 
 	//todo: add to header
