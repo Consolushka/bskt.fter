@@ -1,6 +1,7 @@
 package api
 
 import (
+	"IMP/app/api/middleware"
 	games "IMP/app/internal/modules/games/api"
 	teams "IMP/app/internal/modules/teams/api"
 	"github.com/gorilla/mux"
@@ -10,6 +11,8 @@ import (
 // Serve register all application routes and serve HTTP server
 func Serve() *mux.Router {
 	serverInstance := newServer()
+
+	serverInstance.router.Use(middleware.ContentTypeMiddleware)
 	return serverInstance.setupRoutes()
 }
 

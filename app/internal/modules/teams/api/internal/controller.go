@@ -26,9 +26,6 @@ func NewController() *Controller {
 func (c *Controller) GetTeams(w http.ResponseWriter, r *requests.GetTeamsRequest) {
 	var response []teamsResponses.TeamResponse
 
-	//todo: add to header
-	w.Header().Set("Content-Type", "application/json")
-
 	teamsArray, err := c.service.GetTeams()
 	if err != nil {
 		c.logger.Errorln(err)
@@ -53,8 +50,6 @@ func (c *Controller) GetTeams(w http.ResponseWriter, r *requests.GetTeamsRequest
 //
 // id should be an id of existing game. If there is no game with given id, returns InternalServerError
 func (c *Controller) GetTeam(w http.ResponseWriter, r *requests.GetTeamByIdRequest) {
-	w.Header().Set("Content-Type", "application/json")
-
 	team, err := c.service.GetTeamById(r.Id())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -74,8 +69,6 @@ func (c *Controller) GetTeam(w http.ResponseWriter, r *requests.GetTeamByIdReque
 func (c *Controller) GetTeamGames(w http.ResponseWriter, r *requests.GetTeamGamesRequest) {
 	var response []gamesResources.Game
 
-	w.Header().Set("Content-Type", "application/json")
-
 	gamesModel, err := c.service.GetTeamWithGames(r.Id())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -94,8 +87,6 @@ func (c *Controller) GetTeamGames(w http.ResponseWriter, r *requests.GetTeamGame
 
 func (c *Controller) GetTeamGamesMetrics(w http.ResponseWriter, r *requests.GetTeamByIdGamesMetricsRequest) {
 	var response []gamesResources.Metric
-
-	w.Header().Set("Content-Type", "application/json")
 
 	gameModel, err := c.service.GetTeamWithGamesMetrics(r.Id(), r.Pers())
 	if err != nil {

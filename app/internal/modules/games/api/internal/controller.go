@@ -25,7 +25,6 @@ func NewController() *Controller {
 // GetGames returns all games filtered by date
 func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest) {
 	var gamesResponse []resources.Game
-	w.Header().Set("Content-Type", "application/json")
 
 	gamesModels, err := c.service.GetGames(*r.Date())
 	if err != nil {
@@ -50,8 +49,6 @@ func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest
 //
 // id should be an id of existing game. If there is no game with given id, returns InternalServerError
 func (c *Controller) GetGame(w http.ResponseWriter, r *requests.GetSpecificGameRequest) {
-	w.Header().Set("Content-Type", "application/json")
-
 	gameModel, err := c.service.GetGame(r.Id())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

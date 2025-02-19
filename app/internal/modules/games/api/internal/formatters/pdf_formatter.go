@@ -40,7 +40,6 @@ func (f *pdfFormatter) Format(w http.ResponseWriter, data *models.GameImpMetrics
 		return err
 	}
 
-	w.Header().Set("Content-Type", "application/pdf")
 	w.Header().Set("Content-Disposition", "attachment; filename="+fileName+".pdf")
 	w.Header().Set("Content-Length", strconv.Itoa(len(filePdf)))
 
