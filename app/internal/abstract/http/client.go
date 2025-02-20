@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// todo: use headers
 func Get[T any](url string, apiKey *string) T {
 	var result T
 
