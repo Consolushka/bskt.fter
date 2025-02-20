@@ -23,6 +23,7 @@ func (i *Provider) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error)
 
 func (i *Provider) GamesByDate(date time.Time) ([]string, error) {
 	panic("implement me")
+	//todo: implement
 }
 
 func (i *Provider) GamesByTeam(teamId string) ([]string, error) {
