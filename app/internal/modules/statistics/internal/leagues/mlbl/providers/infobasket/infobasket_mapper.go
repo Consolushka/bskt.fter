@@ -1,7 +1,7 @@
 package infobasket
 
 import (
-	"IMP/app/internal/infrastructure/infobasket/dtos/boxscore"
+	"IMP/app/internal/infrastructure/infobasket"
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	"IMP/app/internal/modules/statistics/models"
@@ -22,7 +22,7 @@ func newMapper() *mapper {
 	}
 }
 
-func (m *mapper) mapGame(game boxscore.GameInfo) *models.GameBoxScoreDTO {
+func (m *mapper) mapGame(game infobasket.GameBoxScoreDto) *models.GameBoxScoreDTO {
 	league, err := m.leagueRepository.FirstByAliasEn(strings.ToUpper(leaguesModels.MLBLAlias))
 	if err != nil {
 		log.Fatalln(err)
@@ -48,19 +48,19 @@ func (m *mapper) mapGame(game boxscore.GameInfo) *models.GameBoxScoreDTO {
 	return &gameBoxScoreDto
 }
 
-func (m *mapper) mapTeam(teamBoxScore boxscore.TeamBoxscore) models.TeamBoxScoreDTO {
+func (m *mapper) mapTeam(teamBoxScore infobasket.TeamBoxScoreDto) models.TeamBoxScoreDTO {
 	return models.TeamBoxScoreDTO{
 		Alias:    teamBoxScore.TeamName.CompTeamAbcNameEn,
 		Name:     teamBoxScore.TeamName.CompTeamNameEn,
 		LeagueId: strconv.Itoa(teamBoxScore.TeamID),
 		Scored:   teamBoxScore.Score,
-		Players: array_utils.Map(teamBoxScore.Players, func(player boxscore.PlayerBoxscore) models.PlayerDTO {
+		Players: array_utils.Map(teamBoxScore.Players, func(player infobasket.PlayerBoxScoreDto) models.PlayerDTO {
 			return m.mapPlayer(player)
 		}),
 	}
 }
 
-func (m *mapper) mapPlayer(player boxscore.PlayerBoxscore) models.PlayerDTO {
+func (m *mapper) mapPlayer(player infobasket.PlayerBoxScoreDto) models.PlayerDTO {
 	birthdate, _ := time.Parse("02.01.2006", player.PersonBirth)
 
 	return models.PlayerDTO{

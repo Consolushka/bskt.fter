@@ -2,10 +2,8 @@ package infobasket
 
 import (
 	"IMP/app/internal/infrastructure/infobasket"
-	"IMP/app/internal/infrastructure/infobasket/dtos/boxscore"
 	models2 "IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
-	"encoding/json"
 	"strconv"
 	"time"
 )
@@ -16,15 +14,7 @@ type Provider struct {
 }
 
 func (i *Provider) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error) {
-	var gameDto boxscore.GameInfo
-
-	boxscoreJson := i.client.BoxScore(gameId)
-	boxscoreRaw, _ := json.Marshal(boxscoreJson)
-
-	err := json.Unmarshal(boxscoreRaw, &gameDto)
-	if err != nil {
-		return nil, err
-	}
+	gameDto := i.client.BoxScore(gameId)
 
 	game := i.mapper.mapGame(gameDto)
 	game.Id = gameId
@@ -38,9 +28,9 @@ func (i *Provider) GamesByDate(date time.Time) ([]string, error) {
 func (i *Provider) GamesByTeam(teamId string) ([]string, error) {
 	scheduleJson := i.client.TeamGames(teamId)
 
-	gamesIds := array_utils.Map(scheduleJson, func(game map[string]interface{}) string {
-		if game["GameStatus"].(float64) == 1 {
-			return strconv.FormatFloat(game["GameID"].(float64), 'f', 0, 64)
+	gamesIds := array_utils.Map(scheduleJson.Games, func(game infobasket.GameScheduleDto) string {
+		if game.GameStatus == 1 {
+			return strconv.Itoa(game.GameID)
 		}
 
 		return ""

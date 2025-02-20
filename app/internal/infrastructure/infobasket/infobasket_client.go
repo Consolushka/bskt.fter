@@ -12,32 +12,22 @@ const (
 
 type Client struct {
 	baseUrl string
-
-	httpClient *http.Client
 }
 
-func (c *Client) BoxScore(gameId string) map[string]interface{} {
-	result := c.httpClient.Get(c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
+func (c *Client) BoxScore(gameId string) GameBoxScoreDto {
+	result := http.Get[GameBoxScoreDto](c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
 
-	return result.(map[string]interface{})
+	return result
 }
 
-func (c *Client) TeamGames(teamId string) []map[string]interface{} {
-	rawResult := c.httpClient.Get(c.baseUrl+fmt.Sprintf(teamGamesEndpointPattern, teamId), nil)
-
-	interfaceSlice := rawResult.([]interface{})
-	result := make([]map[string]interface{}, len(interfaceSlice))
-
-	for i, v := range interfaceSlice {
-		result[i] = v.(map[string]interface{})
-	}
+func (c *Client) TeamGames(teamId string) TeamScheduleResponse {
+	result := http.Get[TeamScheduleResponse](c.baseUrl+fmt.Sprintf(teamGamesEndpointPattern, teamId), nil)
 
 	return result
 }
 
 func NewInfobasketClient() *Client {
 	return &Client{
-		baseUrl:    "https://reg.infobasket.su/Widget",
-		httpClient: http.NewHttpClient(),
+		baseUrl: "https://reg.infobasket.su/Widget",
 	}
 }
