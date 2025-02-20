@@ -1,6 +1,49 @@
-package dtos
+package sport_radar
 
-type PlayerStatsDTO struct {
+type GameBoxScoreDTO struct {
+	ID           string          `json:"id"`
+	Status       string          `json:"status"`
+	Coverage     string          `json:"coverage"`
+	Scheduled    string          `json:"scheduled"`
+	Duration     string          `json:"duration"`
+	Attendance   int             `json:"attendance"`
+	LeadChanges  int             `json:"lead_changes"`
+	TimesTied    int             `json:"times_tied"`
+	Clock        string          `json:"clock"`
+	Quarter      int             `json:"quarter"`
+	TrackOnCourt bool            `json:"track_on_court"`
+	Reference    string          `json:"reference"`
+	EntryMode    string          `json:"entry_mode"`
+	SrID         string          `json:"sr_id"`
+	ClockDecimal string          `json:"clock_decimal"`
+	Home         TeamBoxScoreDto `json:"home"`
+	Away         TeamBoxScoreDto `json:"away"`
+}
+
+type TeamBoxScoreDto struct {
+	Alias   string              `json:"alias"`
+	Points  int                 `json:"points"`
+	Players []PlayerBoxScoreDto `json:"players"`
+}
+
+type PlayerBoxScoreDto struct {
+	FullName        string                 `json:"full_name"`
+	JerseyNumber    string                 `json:"jersey_number"`
+	ID              string                 `json:"id"`
+	FirstName       string                 `json:"first_name"`
+	LastName        string                 `json:"last_name"`
+	Position        string                 `json:"position"`
+	PrimaryPosition string                 `json:"primary_position"`
+	Played          bool                   `json:"played"`
+	Active          bool                   `json:"active"`
+	Starter         bool                   `json:"starter"`
+	OnCourt         bool                   `json:"on_court"`
+	SrID            string                 `json:"sr_id"`
+	Reference       string                 `json:"reference"`
+	Statistics      PlayerStatsBoxScoreDto `json:"statistics"`
+}
+
+type PlayerStatsBoxScoreDto struct {
 	Minutes              string  `json:"minutes"`
 	FieldGoalsMade       int     `json:"field_goals_made"`
 	FieldGoalsAtt        int     `json:"field_goals_att"`
