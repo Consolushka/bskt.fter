@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-// todo: rename to general nem patterns
 type Repository struct {
 	dbConnection *gorm.DB
 }
@@ -18,16 +17,6 @@ func NewRepository() *Repository {
 	return &Repository{
 		dbConnection: database.GetDB(),
 	}
-}
-
-func (r *Repository) First(id int) (*models.Game, error) {
-	var result models.Game
-
-	tx := r.dbConnection.
-		First(&result, models.Game{ID: id}).
-		Preload("League")
-
-	return &result, tx.Error
 }
 
 func (r *Repository) FirstOrCreate(game models.Game) (models.Game, error) {
@@ -75,7 +64,7 @@ func (r *Repository) Exists(game models.Game) (bool, error) {
 	return exists, nil
 }
 
-func (r *Repository) GamesStatsByDate(date time.Time) ([]models.Game, error) {
+func (r *Repository) GamesStatsByDateList(date time.Time) ([]models.Game, error) {
 	var gamesModel []models.Game
 
 	tx := r.gameStatsBuilder().
@@ -85,7 +74,7 @@ func (r *Repository) GamesStatsByDate(date time.Time) ([]models.Game, error) {
 	return gamesModel, tx.Error
 }
 
-func (r *Repository) GameStatsById(id int) (*models.Game, error) {
+func (r *Repository) FirstGameStatsById(id int) (*models.Game, error) {
 	var gameModel models.Game
 
 	tx := r.gameStatsBuilder().
@@ -94,9 +83,13 @@ func (r *Repository) GameStatsById(id int) (*models.Game, error) {
 	return &gameModel, tx.Error
 }
 
-func (r *Repository) gameStatsBuilder() *gorm.DB {
+func (r *Repository) gameBuilder() *gorm.DB {
 	return r.dbConnection.
-		Preload("League").
+		Preload("League")
+}
+
+func (r *Repository) gameStatsBuilder() *gorm.DB {
+	return r.gameBuilder().
 		Preload("HomeTeamStats").
 		Preload("HomeTeamStats.Team").
 		Preload("HomeTeamStats.PlayerGameStats").

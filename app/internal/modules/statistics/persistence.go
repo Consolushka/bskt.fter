@@ -42,7 +42,7 @@ func NewPersistence() *Persistence {
 
 func (p *Persistence) SaveGameBoxScore(dto *statisticModels.GameBoxScoreDTO) error {
 	var err error
-	p.league, err = p.leagueRepository.GetLeagueByAliasEn(strings.ToLower(dto.LeagueAliasEn))
+	p.league, err = p.leagueRepository.FirstByAliasEn(strings.ToLower(dto.LeagueAliasEn))
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, homeTe
 }
 
 func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameModel gamesModels.Game, teamModel teamsModels.Team) error {
-	teamGameModel, err := p.teamsRepository.FirstOrCreateGameStats(teamsModels.TeamGameStats{
+	teamGameModel, err := p.teamsRepository.FirstOrCreateTeamGameStats(teamsModels.TeamGameStats{
 		TeamId: teamModel.ID,
 		GameId: gameModel.ID,
 		Points: dto.Scored,
@@ -107,7 +107,7 @@ func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameMod
 	for _, player := range dto.Players {
 		playerModel := p.savePlayerModel(player)
 
-		err := p.playersRepository.FirstOrCreateGameStat(playersModels.PlayerGameStats{
+		err := p.playersRepository.FirstOrCreatePlayerGameStats(playersModels.PlayerGameStats{
 			PlayerID:      playerModel.ID,
 			TeamGameId:    teamGameModel.Id,
 			PlayedSeconds: player.Statistic.PlayedSeconds,

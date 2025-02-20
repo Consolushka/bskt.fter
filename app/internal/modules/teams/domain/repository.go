@@ -7,19 +7,19 @@ import (
 )
 
 type Repository struct {
-	DbConnection *gorm.DB
+	dbConnection *gorm.DB
 }
 
 func NewRepository() *Repository {
 	return &Repository{
-		DbConnection: database.GetDB(),
+		dbConnection: database.GetDB(),
 	}
 }
 
 func (r *Repository) FirstOrCreate(team teamsModels.Team) (teamsModels.Team, error) {
 	var result teamsModels.Team
 
-	tx := r.DbConnection.
+	tx := r.dbConnection.
 		Attrs(
 			teamsModels.Team{
 				Name:       team.Name,
@@ -35,10 +35,10 @@ func (r *Repository) FirstOrCreate(team teamsModels.Team) (teamsModels.Team, err
 	return result, tx.Error
 }
 
-func (r *Repository) FirstOrCreateGameStats(stats teamsModels.TeamGameStats) (teamsModels.TeamGameStats, error) {
+func (r *Repository) FirstOrCreateTeamGameStats(stats teamsModels.TeamGameStats) (teamsModels.TeamGameStats, error) {
 	var result teamsModels.TeamGameStats
 
-	tx := r.DbConnection.Attrs(
+	tx := r.dbConnection.Attrs(
 		teamsModels.TeamGameStats{
 			Points: stats.Points,
 		}).
@@ -50,4 +50,36 @@ func (r *Repository) FirstOrCreateGameStats(stats teamsModels.TeamGameStats) (te
 			})
 
 	return result, tx.Error
+}
+
+func (r *Repository) List() ([]teamsModels.Team, error) {
+	var teams []teamsModels.Team
+
+	tx := r.dbConnection.Model(&teamsModels.Team{}).
+		Preload("League").
+		Find(&teams)
+
+	return teams, tx.Error
+}
+
+func (r *Repository) FirstById(id int) (teamsModels.Team, error) {
+	var team teamsModels.Team
+
+	tx := r.dbConnection.Model(&teamsModels.Team{}).
+		Preload("League").
+		Where("id = ?", id).
+		First(&team)
+
+	return team, tx.Error
+}
+
+func (r *Repository) TeamGameIdListByTeamId(teamId int) ([]int, error) {
+	var gamesIds []int
+
+	tx := r.dbConnection.Model(&teamsModels.TeamGameStats{}).
+		Where("team_id = ?", teamId).
+		Select("game_id").
+		Find(&gamesIds)
+
+	return gamesIds, tx.Error
 }

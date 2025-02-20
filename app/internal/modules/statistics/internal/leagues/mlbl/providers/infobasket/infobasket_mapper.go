@@ -23,7 +23,7 @@ func newMapper() *mapper {
 }
 
 func (m *mapper) mapGame(game boxscore.GameInfo) *models.GameBoxScoreDTO {
-	league, err := m.leagueRepository.GetLeagueByAliasEn(strings.ToUpper(leaguesModels.MLBLAlias))
+	league, err := m.leagueRepository.FirstByAliasEn(strings.ToUpper(leaguesModels.MLBLAlias))
 	if err != nil {
 		log.Fatalln(err)
 		panic(err)

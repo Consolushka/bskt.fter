@@ -34,7 +34,7 @@ func NewService() *Service {
 //   - Players stats
 //   - Players impModels
 func (s *Service) GetGame(id int) (*gamesModels.Game, error) {
-	gameModel, err := s.gamesRepository.GameStatsById(id)
+	gameModel, err := s.gamesRepository.FirstGameStatsById(id)
 
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (s *Service) GetGame(id int) (*gamesModels.Game, error) {
 //
 // Calculates IMP metrics for every player
 func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*impModels.GameImpMetrics, error) {
-	gameModel, err := s.gamesRepository.GameStatsById(id)
+	gameModel, err := s.gamesRepository.FirstGameStatsById(id)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*impModels.Ga
 
 // GetGames fetches all games for specific date and preloads all related impModels
 func (s *Service) GetGames(date time.Time) ([]gamesModels.Game, error) {
-	return s.gamesRepository.GamesStatsByDate(date)
+	return s.gamesRepository.GamesStatsByDateList(date)
 }
 
 func (s *Service) mapGameModelToImpMetricsModel(gameModel *gamesModels.Game, impPers []enums.ImpPERs, league *leaguesModels.League) *impModels.GameImpMetrics {

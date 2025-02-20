@@ -16,7 +16,7 @@ func NewRepository() *Repository {
 	}
 }
 
-func (r *Repository) GetLeagueByAliasEn(aliasEn string) (*models.League, error) {
+func (r *Repository) FirstByAliasEn(aliasEn string) (*models.League, error) {
 	var result models.League
 	tx := r.db.Model(models.League{AliasEn: aliasEn}).First(&result)
 	if tx.Error != nil {

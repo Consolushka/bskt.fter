@@ -37,7 +37,7 @@ func init() {
 
 func SaveGameByDate(leagueName string, date time.Time) {
 	leagueRepository := leaguesDomain.NewRepository()
-	league, err := leagueRepository.GetLeagueByAliasEn(leagueName)
+	league, err := leagueRepository.FirstByAliasEn(leagueName)
 	if err != nil {
 		log.Fatalln(err)
 		panic(err)

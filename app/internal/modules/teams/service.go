@@ -23,36 +23,22 @@ func NewService() *Service {
 }
 
 func (s *Service) GetTeams() ([]teamsModels.Team, error) {
-	var teams []teamsModels.Team
-
-	tx := s.repository.DbConnection.Model(&teamsModels.Team{}).
-		Preload("League").
-		Find(&teams)
-
-	return teams, tx.Error
+	return s.repository.List()
 }
 
 func (s *Service) GetTeamById(id int) (teamsModels.Team, error) {
-	var team teamsModels.Team
-
-	tx := s.repository.DbConnection.Model(&teamsModels.Team{}).
-		Preload("League").
-		Where("id = ?", id).
-		First(&team)
-
-	return team, tx.Error
+	return s.repository.FirstById(id)
 }
 
 func (s *Service) GetTeamWithGames(teamId int) ([]*gamesModels.Game, error) {
-	var gamesIds []int
 	var gamesCollection []*gamesModels.Game
 
 	gamesService := games.NewService()
 
-	tx := s.repository.DbConnection.Model(&teamsModels.TeamGameStats{}).
-		Where("team_id = ?", teamId).
-		Select("game_id").
-		Find(&gamesIds)
+	gamesIds, err := s.repository.TeamGameIdListByTeamId(teamId)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, gameId := range gamesIds {
 		game, err := gamesService.GetGame(gameId)
@@ -63,19 +49,18 @@ func (s *Service) GetTeamWithGames(teamId int) ([]*gamesModels.Game, error) {
 		gamesCollection = append(gamesCollection, game)
 	}
 
-	return gamesCollection, tx.Error
+	return gamesCollection, nil
 }
 
 func (s *Service) GetTeamWithGamesMetrics(teamId int, impPers []enums.ImpPERs) ([]*impModels.GameImpMetrics, error) {
-	var gamesIds []int
 	var gamesCollection []*impModels.GameImpMetrics
 
 	gamesService := games.NewService()
 
-	tx := s.repository.DbConnection.Model(&teamsModels.TeamGameStats{}).
-		Where("team_id = ?", teamId).
-		Select("game_id").
-		Find(&gamesIds)
+	gamesIds, err := s.repository.TeamGameIdListByTeamId(teamId)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, gameId := range gamesIds {
 		game, err := gamesService.GetGameMetrics(gameId, impPers)
@@ -86,5 +71,5 @@ func (s *Service) GetTeamWithGamesMetrics(teamId int, impPers []enums.ImpPERs) (
 		gamesCollection = append(gamesCollection, game)
 	}
 
-	return gamesCollection, tx.Error
+	return gamesCollection, nil
 }

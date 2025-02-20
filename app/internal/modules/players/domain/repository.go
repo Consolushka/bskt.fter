@@ -52,7 +52,7 @@ func (r *Repository) FirstOrCreate(player models.Player) (*models.Player, error)
 	return &result, tx.Error
 }
 
-func (r *Repository) FirstOrCreateGameStat(stats models.PlayerGameStats) error {
+func (r *Repository) FirstOrCreatePlayerGameStats(stats models.PlayerGameStats) error {
 	tx := r.dbConnection.Attrs(
 		models.PlayerGameStats{
 			PlayedSeconds: stats.PlayedSeconds,
