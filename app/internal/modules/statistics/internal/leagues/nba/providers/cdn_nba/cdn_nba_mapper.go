@@ -1,7 +1,7 @@
 package cdn_nba
 
 import (
-	"IMP/app/internal/infrastructure/cdn_nba/dtos/boxscore"
+	"IMP/app/internal/infrastructure/cdn_nba"
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	"IMP/app/internal/modules/statistics/models"
@@ -22,7 +22,7 @@ func newMapper() *mapper {
 	}
 }
 
-func (c *mapper) mapGame(gameDto boxscore.GameDTO) models.GameBoxScoreDTO {
+func (c *mapper) mapGame(gameDto cdn_nba.BoxScoreDto) models.GameBoxScoreDTO {
 	league, err := c.leagueRepository.FirstByAliasEn(strings.ToUpper(leaguesModels.NBAAlias))
 	if err != nil {
 		log.Fatalln(err)
@@ -46,25 +46,25 @@ func (c *mapper) mapGame(gameDto boxscore.GameDTO) models.GameBoxScoreDTO {
 	return gameBoxScoreDto
 }
 
-func (c *mapper) mapTeam(dto boxscore.TeamDTO) models.TeamBoxScoreDTO {
+func (c *mapper) mapTeam(dto cdn_nba.TeamBoxScoreDto) models.TeamBoxScoreDTO {
 	return models.TeamBoxScoreDTO{
 		Alias:    dto.TeamTricode,
 		Name:     dto.TeamName,
 		LeagueId: strconv.Itoa(dto.TeamId),
 		Scored:   dto.Score,
-		Players: array_utils.Map(dto.Players, func(player boxscore.PlayerDTO) models.PlayerDTO {
+		Players: array_utils.Map(dto.Players, func(player cdn_nba.PlayerBoxScoreDto) models.PlayerDTO {
 			return c.mapPlayer(player)
 		}),
 	}
 }
 
-func (c *mapper) mapPlayer(dto boxscore.PlayerDTO) models.PlayerDTO {
+func (c *mapper) mapPlayer(dto cdn_nba.PlayerBoxScoreDto) models.PlayerDTO {
 	return models.PlayerDTO{
 		FullNameLocal:  dto.Name,
 		BirthDate:      nil,
 		LeaguePlayerID: strconv.Itoa(dto.PersonId),
 		Statistic: models.PlayerStatisticDTO{
-			PlsMin:        dto.Statistics.Plus - dto.Statistics.Minus,
+			PlsMin:        int(dto.Statistics.Plus - dto.Statistics.Minus),
 			PlayedSeconds: time_utils.FormattedMinutesToSeconds(dto.Statistics.Minutes, playedTimeFormat),
 			IsBench:       dto.Starter != "1",
 		},

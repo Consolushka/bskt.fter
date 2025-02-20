@@ -21,14 +21,14 @@ func NewCdnNbaClient() *Client {
 	}
 }
 
-func (c Client) BoxScore(gameId string) map[string]interface{} {
-	result := c.httpClient.Get(c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
+func (c Client) BoxScore(gameId string) BoxScoreDto {
+	result := http.Get[GameBoxScoreResponse](c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
 
-	return result.(map[string]interface{})["game"].(map[string]interface{})
+	return result.Game
 }
 
-func (c Client) ScheduleSeason() map[string]interface{} {
-	result := c.httpClient.Get(c.baseUrl+fullSeasonEndpoint, nil)
+func (c Client) ScheduleSeason() SeasonScheduleDto {
+	result := http.Get[ScheduleResponse](c.baseUrl+fullSeasonEndpoint, nil)
 
-	return result.(map[string]interface{})["leagueSchedule"].(map[string]interface{})
+	return result.Schedule
 }
