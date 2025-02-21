@@ -6,15 +6,15 @@ import (
 	"net/http"
 )
 
-// todo: use headers
-func Get[T any](url string, apiKey *string) T {
+func Get[T any](url string, headers *map[string]string) T {
 	var result T
 
 	req, _ := http.NewRequest("GET", url, nil)
 
-	req.Header.Add("accept", "application/json")
-	if apiKey != nil {
-		req.Header.Add("Authorization", *apiKey)
+	if headers != nil {
+		for key, value := range *headers {
+			req.Header.Add(key, value)
+		}
 	}
 
 	res, _ := http.DefaultClient.Do(req)

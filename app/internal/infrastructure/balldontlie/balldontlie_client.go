@@ -11,7 +11,10 @@ type Client struct {
 }
 
 func (c *Client) GetAllPlayers(firstNameSearch string, lastNameSearch string) Player {
-	result := http.Get[PlayersResponse](c.baseUrl+"/players?first_name="+firstNameSearch+"&last_name="+lastNameSearch, &c.apiKey)
+	headers := make(map[string]string)
+	headers["Authorization"] = c.apiKey
+
+	result := http.Get[PlayersResponse](c.baseUrl+"/players?first_name="+firstNameSearch+"&last_name="+lastNameSearch, &headers)
 
 	return result.Data[0]
 }
