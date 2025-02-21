@@ -28,9 +28,9 @@ func (c *Client) TeamGames(teamId string) TeamScheduleResponse {
 }
 
 func (c *Client) ScheduledGames(compId int) []GameScheduleDto {
-	result := http.Get[SeasonScheduleResponse](c.baseUrl+fmt.Sprintf(scheduleEndpointPattern, compId), nil)
+	result := http.Get[[]GameScheduleDto](c.baseUrl+fmt.Sprintf(scheduleEndpointPattern, compId), nil)
 
-	return result.Games
+	return result
 }
 
 func NewInfobasketClient() *Client {

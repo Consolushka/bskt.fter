@@ -4,6 +4,7 @@ import (
 	"IMP/app/database"
 	"IMP/app/internal/modules/leagues/domain/models"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type Repository struct {
@@ -18,7 +19,7 @@ func NewRepository() *Repository {
 
 func (r *Repository) FirstByAliasEn(aliasEn string) (*models.League, error) {
 	var result models.League
-	tx := r.db.Model(models.League{AliasEn: aliasEn}).First(&result)
+	tx := r.db.First(&result, models.League{AliasEn: strings.ToUpper(aliasEn)})
 	if tx.Error != nil {
 		return nil, tx.Error
 	}

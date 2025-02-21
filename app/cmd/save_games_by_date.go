@@ -42,9 +42,9 @@ func SaveGameByDate(leagueName string, date time.Time) {
 		log.Fatalln(err)
 		panic(err)
 	}
-	nbaProvider := statistics.NewLeagueProvider(league.AliasEn)
+	leagueProvider := statistics.NewLeagueProvider(league.AliasEn)
 
-	gameIds, err := nbaProvider.GamesByDate(date)
+	gameIds, err := leagueProvider.GamesByDate(date)
 	if err != nil {
 		panic(err)
 	}
