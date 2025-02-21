@@ -27,6 +27,10 @@ func Error(args ...interface{}) {
 	log.Error(args...)
 }
 
+func Info(args ...interface{}) {
+	log.Info(args...)
+}
+
 // Fatalln is equivalent to [Println] followed by a call to [os.Exit](1).
 func Fatalln(args ...interface{}) {
 	log.Fatalln(args...)

@@ -6,6 +6,8 @@ import (
 	"IMP/app/log"
 	"fmt"
 	"github.com/spf13/cobra"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -45,6 +47,7 @@ func SaveGameByDate(leagueName string, date time.Time) {
 	leagueProvider := statistics.NewLeagueProvider(league.AliasEn)
 
 	gameIds, err := leagueProvider.GamesByDate(date)
+	log.Info("On date " + date.Format("02-01-2006") + " there are " + strconv.Itoa(len(gameIds)) + " games in " + strings.ToUpper(leagueName))
 	if err != nil {
 		panic(err)
 	}

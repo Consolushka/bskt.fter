@@ -24,6 +24,7 @@ func (c Client) BoxScore(gameId string) BoxScoreDto {
 	return result.Game
 }
 
+// todo: save to static file
 func (c Client) ScheduleSeason() SeasonScheduleDto {
 	result := http.Get[ScheduleResponse](c.baseUrl+fullSeasonEndpoint, nil)
 
