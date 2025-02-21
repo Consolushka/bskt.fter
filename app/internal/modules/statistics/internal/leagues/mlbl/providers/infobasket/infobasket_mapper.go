@@ -22,7 +22,7 @@ func newMapper() *mapper {
 	}
 }
 
-func (m *mapper) mapGame(game infobasket.GameBoxScoreDto) *models.GameBoxScoreDTO {
+func (m *mapper) mapGame(game infobasket.GameBoxScoreResponse) *models.GameBoxScoreDTO {
 	league, err := m.leagueRepository.FirstByAliasEn(strings.ToUpper(leaguesModels.MLBLAlias))
 	if err != nil {
 		log.Fatalln(err)
@@ -39,6 +39,7 @@ func (m *mapper) mapGame(game infobasket.GameBoxScoreDto) *models.GameBoxScoreDT
 
 	gameBoxScoreDto := models.GameBoxScoreDTO{
 		LeagueAliasEn: league.AliasEn,
+		IsFinal:       game.GameStatus == 1,
 		HomeTeam:      m.mapTeam(game.GameTeams[0]),
 		AwayTeam:      m.mapTeam(game.GameTeams[1]),
 		PlayedMinutes: duration,

@@ -45,6 +45,9 @@ func SaveGame(leagueName string, gameId string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	if !model.IsFinal {
+		log.Fatalln("Game with Id" + gameId + " is not final")
+	}
 
 	persistence := statistics.NewPersistence()
 	err = persistence.SaveGameBoxScore(model)

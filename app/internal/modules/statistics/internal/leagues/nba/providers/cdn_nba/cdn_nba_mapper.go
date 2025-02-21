@@ -37,6 +37,7 @@ func (c *mapper) mapGame(gameDto cdn_nba.BoxScoreDto) models.GameBoxScoreDTO {
 	gameBoxScoreDto := models.GameBoxScoreDTO{
 		Id:            gameDto.GameId,
 		LeagueAliasEn: league.AliasEn,
+		IsFinal:       gameDto.GameStatus == 3,
 		HomeTeam:      c.mapTeam(gameDto.HomeTeam),
 		AwayTeam:      c.mapTeam(gameDto.AwayTeam),
 		PlayedMinutes: duration,

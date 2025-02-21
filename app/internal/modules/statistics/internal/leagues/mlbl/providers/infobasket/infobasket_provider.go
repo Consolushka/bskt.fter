@@ -22,8 +22,18 @@ func (i *Provider) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error)
 }
 
 func (i *Provider) GamesByDate(date time.Time) ([]string, error) {
-	panic("implement me")
-	//todo: implement
+	var result []string
+	compId := 89960
+
+	seasonGames := i.client.ScheduledGames(compId)
+
+	for _, game := range seasonGames {
+		if game.GameDate == date.Format("02.01.2006") {
+			result = append(result, strconv.Itoa(game.GameID))
+		}
+	}
+
+	return result, nil
 }
 
 func (i *Provider) GamesByTeam(teamId string) ([]string, error) {
