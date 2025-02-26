@@ -1,13 +1,18 @@
 package cmd
 
 import (
-	"IMP/app/internal/modules/leagues/domain/models"
+	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	"IMP/app/log"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"time"
 )
 
+// cronCmd starts cron scheduler for background tasks at 12:00 AM Moscow time.
+//
+// If the current time is after 12:00 AM, the job will run immediately.
+//
+// Saves yesterday's games for each league.
 var cronCmd = &cobra.Command{
 	Use:   "cron",
 	Short: "Start cron scheduler for background tasks",
@@ -18,9 +23,22 @@ var cronCmd = &cobra.Command{
 		timeZone := "Europe/Moscow"
 		loc, _ := time.LoadLocation(timeZone)
 		cronJob := cron.New(cron.WithLocation(loc))
-		cronJob.AddJob("0 12 * * *", saveYesterdayGamesJob{})
 
+		job := newSaveYesterdayGamesJob()
+		cronJob.AddJob("0 12 * * *", job)
+
+		now := time.Now().In(loc)
+		noon := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, loc)
+
+		// Если сейчас позже 12:00, запускаем задачу немедленно
+		if now.After(noon) {
+			log.Info("Current time is after 12:00, running job immediately...")
+			go job.Run()
+		}
+
+		// Запускаем планировщик
 		cronJob.Start()
+
 		select {}
 	},
 }
@@ -30,10 +48,24 @@ func init() {
 }
 
 type saveYesterdayGamesJob struct {
+	leaguesRepository *leaguesDomain.Repository
+}
+
+func newSaveYesterdayGamesJob() *saveYesterdayGamesJob {
+	return &saveYesterdayGamesJob{
+		leaguesRepository: leaguesDomain.NewRepository(),
+	}
 }
 
 func (s saveYesterdayGamesJob) Run() {
 	yesterday := time.Now().AddDate(0, 0, -1)
-	SaveGameByDate(models.NBAAlias, yesterday)
-	SaveGameByDate(models.MLBLAlias, yesterday)
+
+	leagues, err := s.leaguesRepository.List()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, league := range leagues {
+		SaveGameByDate(league.AliasEn, yesterday)
+	}
 }

@@ -17,6 +17,14 @@ func NewRepository() *Repository {
 	}
 }
 
+func (r *Repository) List() ([]models.League, error) {
+	var result []models.League
+
+	tx := r.db.Find(&result)
+
+	return result, tx.Error
+}
+
 func (r *Repository) FirstByAliasEn(aliasEn string) (*models.League, error) {
 	var result models.League
 	tx := r.db.First(&result, models.League{AliasEn: strings.ToUpper(aliasEn)})
