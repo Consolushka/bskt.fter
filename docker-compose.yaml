@@ -23,9 +23,28 @@ services:
       - db
     networks:
       - imp
-    # forever read special empty linux file
-    # added because golang container always stops after up
     command: tail -f /dev/null
+
+  scheduler:
+    container_name: scheduler
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
+    tty: true
+    build:
+      context: .
+      dockerfile: docker/local/Dockerfile
+    restart: on-failure
+    volumes:
+      - ./:/IMP
+    depends_on:
+      - db
+    networks:
+      - imp
+    command: go run main.go cron
 
   db:
     image: postgres:16.6
