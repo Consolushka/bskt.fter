@@ -1,6 +1,5 @@
 version: '3.9'
 
-#todo: add scheduled cmd
 services:
   app:
     container_name: golang
