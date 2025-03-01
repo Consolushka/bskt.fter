@@ -74,7 +74,7 @@ func (n *Provider) cachedSeasonSchedule() cdn_nba.SeasonScheduleDto {
 	if err == nil {
 		log.Info("Saving schedule to cache...")
 		// Even if there is an error, we still return the schedule from response
-		os.WriteFile(cacheFilePath, data, 0644)
+		_ = os.WriteFile(cacheFilePath, data, 0644)
 	}
 
 	return schedule
