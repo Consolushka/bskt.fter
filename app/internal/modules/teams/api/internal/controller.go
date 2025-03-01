@@ -65,7 +65,7 @@ func (c *Controller) GetTeam(w http.ResponseWriter, r *requests.GetTeamByIdReque
 
 // GetTeamGames
 //
-// retrieve specific game and then calculate IMP metrics for every player
+// Retrieve all games box score for given team
 func (c *Controller) GetTeamGames(w http.ResponseWriter, r *requests.GetTeamGamesRequest) {
 	var response []gamesResources.Game
 

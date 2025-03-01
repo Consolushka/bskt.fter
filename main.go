@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// todo: save "best" (top-25) players by average IMP with PERS
 func main() {
 	log.Init()
 

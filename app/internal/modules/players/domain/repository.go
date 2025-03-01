@@ -7,6 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// todo: endpoint to search players by name
+// todo: endpoint to search players by id
+// todo: endpoint to search players by team
+
 type Repository struct {
 	dbConnection *gorm.DB
 }
