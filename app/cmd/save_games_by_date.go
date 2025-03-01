@@ -12,9 +12,9 @@ import (
 )
 
 var saveGameByDateCmd = &cobra.Command{
-	Use:   "save-game-by-date",
-	Short: "Saves game into application",
-	Long:  "Saves game results into database",
+	Use:   "save-games-by-date",
+	Short: "Saves games into application by date",
+	Long:  "Fetch games ids from league schedule and saves them into database",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var dateString string

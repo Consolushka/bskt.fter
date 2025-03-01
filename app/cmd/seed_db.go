@@ -9,8 +9,7 @@ import (
 
 var seedDbCmd = &cobra.Command{
 	Use:   "seed:db",
-	Short: "",
-	Long:  "",
+	Short: "seed database with existing seeders",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		seeders := strings.Split(args[0], ",")

@@ -9,8 +9,7 @@ import (
 
 var seedListCmd = &cobra.Command{
 	Use:   "seed:list",
-	Short: "",
-	Long:  "",
+	Short: "Returns list of all available models for seeding",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		showSeedersList()

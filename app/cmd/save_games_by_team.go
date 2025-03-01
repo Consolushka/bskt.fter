@@ -9,8 +9,8 @@ import (
 
 var saveGameByTeamCmd = &cobra.Command{
 	Use:   "save-game-by-team",
-	Short: "Saves game into application",
-	Long:  "Saves game results into database",
+	Short: "Saves games into application by team",
+	Long:  "Fetch game ids for team and saves them into application",
 	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		SaveGameByTeam(args[0], args[1])
