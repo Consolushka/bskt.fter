@@ -1,3 +1,0 @@
-GET http://localhost:8001/api/games/5
-Content-Type: application/json
-Accept: application/json

@@ -1,3 +1,0 @@
-GET http://localhost:8001/api/games?date=15-09-2024
-Content-Type: application/json
-Accept: application/json

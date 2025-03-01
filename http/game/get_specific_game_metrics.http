@@ -1,3 +1,0 @@
-GET http://localhost:8001/api/games/7/metrics?pers=Start,Bench&format=pdf
-Accept: application/json
-Content-Type: application/json

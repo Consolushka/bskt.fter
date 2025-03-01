@@ -1,3 +1,0 @@
-GET http://localhost:8001/api/teams/3/games/metrics?pers=Start
-Content-Type: application/json
-Accept: application/json
