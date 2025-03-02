@@ -7,9 +7,6 @@ import (
 	"strings"
 )
 
-// todo: create endpoint to fetch leagues
-// todo: endpoint to fetch games by date
-// todo: endpoint to fetch teams
 // todo: endpoint to fetch "best" players
 
 type Repository struct {

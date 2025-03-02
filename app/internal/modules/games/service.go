@@ -64,7 +64,7 @@ func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*impModels.Ga
 
 // GetGames fetches all games for specific date and preloads all related impModels
 func (s *Service) GetGames(date time.Time) ([]gamesModels.Game, error) {
-	return s.gamesRepository.GamesStatsByDateList(date)
+	return s.gamesRepository.GamesStatsByDateList(date, nil)
 }
 
 func (s *Service) mapGameModelToImpMetricsModel(gameModel *gamesModels.Game, impPers []enums.ImpPERs, league *leaguesModels.League) *impModels.GameImpMetrics {
