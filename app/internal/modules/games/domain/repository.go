@@ -64,11 +64,18 @@ func (r *Repository) Exists(game models.Game) (bool, error) {
 	return exists, nil
 }
 
-func (r *Repository) GamesStatsByDateList(date time.Time) ([]models.Game, error) {
+func (r *Repository) GamesStatsByDateList(date time.Time, leagueId *int) ([]models.Game, error) {
 	var gamesModel []models.Game
 
-	tx := r.gameStatsBuilder().
-		Where("DATE(scheduled_at) = @date", sql.Named("date", date.Format("2006-01-02"))).
+	builder := r.gameStatsBuilder().
+		Where("DATE(scheduled_at) = @date", sql.Named("date", date.Format("2006-01-02")))
+
+	if leagueId != nil {
+		builder = builder.Where("league_id = ?", *leagueId)
+	}
+
+	tx := builder.
+		Debug().
 		Find(&gamesModel)
 
 	return gamesModel, tx.Error
