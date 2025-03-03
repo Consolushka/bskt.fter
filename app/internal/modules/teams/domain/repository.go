@@ -83,3 +83,13 @@ func (r *Repository) TeamGameIdListByTeamId(teamId int) ([]int, error) {
 
 	return gamesIds, tx.Error
 }
+
+func (r *Repository) ListByLeague(leagueId int) ([]teamsModels.Team, error) {
+	var teams []teamsModels.Team
+
+	tx := r.dbConnection.
+		Where("league_id = ?", leagueId).
+		Find(&teams)
+
+	return teams, tx.Error
+}

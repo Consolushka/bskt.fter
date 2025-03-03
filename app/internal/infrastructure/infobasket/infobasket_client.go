@@ -22,9 +22,11 @@ func (c *Client) BoxScore(gameId string) GameBoxScoreResponse {
 }
 
 func (c *Client) TeamGames(teamId string) TeamScheduleResponse {
-	result := http.Get[TeamScheduleResponse](c.baseUrl+fmt.Sprintf(teamGamesEndpointPattern, teamId), nil)
+	result := http.Get[[]GameScheduleDto](c.baseUrl+fmt.Sprintf(teamGamesEndpointPattern, teamId), nil)
 
-	return result
+	return TeamScheduleResponse{
+		Games: result,
+	}
 }
 
 func (c *Client) ScheduledGames(compId int) []GameScheduleDto {
