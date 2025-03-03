@@ -5,15 +5,13 @@ import (
 	"IMP/app/internal/modules/games/api/internal/formatters"
 	"IMP/app/internal/modules/games/api/internal/requests"
 	"IMP/app/internal/modules/games/domain/resources"
+	"IMP/app/log"
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 type Controller struct {
 	service *games.Service
-
-	logger *logrus.Logger
 }
 
 func NewController() *Controller {
@@ -28,7 +26,7 @@ func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest
 
 	gamesModels, err := c.service.GetGames(*r.Date())
 	if err != nil {
-		c.logger.Errorln(err)
+		log.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -37,7 +35,7 @@ func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest
 		gamesResponse = append(gamesResponse, resources.NewGameResource(game))
 	}
 	if err := json.NewEncoder(w).Encode(gamesResponse); err != nil {
-		c.logger.Errorln(err)
+		log.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

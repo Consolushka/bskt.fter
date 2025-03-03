@@ -7,8 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// todo: endpoint to search players by name
-// todo: endpoint to search players by id
+// todo: endpoint to search players by id - return imp
 // todo: endpoint to search players by team
 
 type Repository struct {
@@ -71,4 +70,15 @@ func (r *Repository) FirstOrCreatePlayerGameStats(stats models.PlayerGameStats) 
 			})
 
 	return tx.Error
+}
+
+func (r *Repository) ListByFullName(fullName string) ([]models.Player, error) {
+	var result []models.Player
+
+	tx := r.dbConnection.Debug().
+		Where("full_name_local LIKE ?", "%"+fullName+"%").
+		Or("full_name_en LIKE ?", "%"+fullName+"%").
+		Find(&result)
+
+	return result, tx.Error
 }
