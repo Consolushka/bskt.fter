@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"IMP/app/internal/base/components/request_components"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/players/api/internal/requests"
 	"IMP/app/internal/modules/players/api/internal/responses"
@@ -39,7 +40,23 @@ func (c *Controller) Search(w http.ResponseWriter, r *requests.SearchPlayerByFul
 		}
 	})
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	if err = json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (c *Controller) PlayerGamesBoxScore(w http.ResponseWriter, r *request_components.HasIdPathParam) {
+	games, err := c.service.GetPlayerGamesBoxScore(r.Id())
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := responses.NewPlayerGamesBoxScoreResponse(games)
+
+	if err = json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

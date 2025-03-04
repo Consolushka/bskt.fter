@@ -18,4 +18,6 @@ func NewRouter() *Router {
 
 func (router *Router) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/players/search", handlers.BindAndValidateRequestHandler(router.controller.Search)).Methods("GET")
+
+	r.HandleFunc("/players/{id}/games", handlers.BindAndValidateRequestHandler(router.controller.PlayerGamesBoxScore)).Methods("GET")
 }

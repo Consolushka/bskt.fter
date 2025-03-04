@@ -67,7 +67,7 @@ func (r *Repository) Exists(game models.Game) (bool, error) {
 func (r *Repository) GamesStatsByDateList(date time.Time, leagueId *int) ([]models.Game, error) {
 	var gamesModel []models.Game
 
-	builder := r.gameStatsBuilder().
+	builder := r.gameStatsBuilder(nil).
 		Where("DATE(scheduled_at) = @date", sql.Named("date", date.Format("2006-01-02")))
 
 	if leagueId != nil {
@@ -81,10 +81,20 @@ func (r *Repository) GamesStatsByDateList(date time.Time, leagueId *int) ([]mode
 	return gamesModel, tx.Error
 }
 
+func (r *Repository) ListOfGamesByGamesIdsAndPlayerId(gamesIds []int, playerId int) ([]models.Game, error) {
+	var gamesModel []models.Game
+
+	tx := r.gameStatsBuilder(&playerId).
+		Where("id IN (?)", gamesIds).
+		Find(&gamesModel)
+
+	return gamesModel, tx.Error
+}
+
 func (r *Repository) FirstGameStatsById(id int) (*models.Game, error) {
 	var gameModel models.Game
 
-	tx := r.gameStatsBuilder().
+	tx := r.gameStatsBuilder(nil).
 		First(&gameModel, models.Game{ID: id})
 
 	return &gameModel, tx.Error
@@ -95,14 +105,19 @@ func (r *Repository) gameBuilder() *gorm.DB {
 		Preload("League")
 }
 
-func (r *Repository) gameStatsBuilder() *gorm.DB {
-	return r.gameBuilder().
+func (r *Repository) gameStatsBuilder(playerId *int) *gorm.DB {
+	tx := r.gameBuilder().
 		Preload("HomeTeamStats").
 		Preload("HomeTeamStats.Team").
-		Preload("HomeTeamStats.PlayerGameStats").
 		Preload("HomeTeamStats.PlayerGameStats.Player").
 		Preload("AwayTeamStats").
 		Preload("AwayTeamStats.Team").
-		Preload("AwayTeamStats.PlayerGameStats").
 		Preload("AwayTeamStats.PlayerGameStats.Player")
+
+	if playerId != nil {
+		tx = tx.
+			Preload("HomeTeamStats.PlayerGameStats", "player_id", *playerId).
+			Preload("AwayTeamStats.PlayerGameStats", "player_id", *playerId)
+	}
+	return tx
 }
