@@ -67,6 +67,17 @@ func (s *Service) GetGames(date time.Time) ([]gamesModels.Game, error) {
 	return s.gamesRepository.GamesStatsByDateList(date, nil)
 }
 
+func (s *Service) GetGamesMetrics(games []gamesModels.Game, impPers []enums.ImpPERs) ([]*impModels.GameImpMetrics, error) {
+	var result []*impModels.GameImpMetrics
+	for _, game := range games {
+		gameImpMetrics := s.mapGameModelToImpMetricsModel(&game, impPers, &game.League)
+
+		result = append(result, gameImpMetrics)
+	}
+
+	return result, nil
+}
+
 func (s *Service) mapGameModelToImpMetricsModel(gameModel *gamesModels.Game, impPers []enums.ImpPERs, league *leaguesModels.League) *impModels.GameImpMetrics {
 	return &impModels.GameImpMetrics{
 		Id:        gameModel.ID,

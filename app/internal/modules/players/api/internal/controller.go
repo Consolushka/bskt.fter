@@ -61,3 +61,19 @@ func (c *Controller) PlayerGamesBoxScore(w http.ResponseWriter, r *request_compo
 		return
 	}
 }
+
+func (c *Controller) PlayerGamesMetrics(w http.ResponseWriter, r *requests.PlayerGamesMetricsRequest) {
+	games, err := c.service.GetPlayerGamesMetrics(r.Id(), r.Pers())
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := responses.NewPlayerGamesMetricsResponse(games)
+
+	if err = json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}

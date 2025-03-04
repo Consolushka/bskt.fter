@@ -7,8 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// todo: endpoint to search player games by player id - return metrics
-
 type Repository struct {
 	dbConnection *gorm.DB
 }
