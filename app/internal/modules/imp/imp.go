@@ -7,13 +7,13 @@ import (
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 )
 
-func EvaluateClean(playedSeconds int, plsMin int, finalDifference int, fullGameTime int) float64 {
+func EvaluateClean(playedSeconds int, plsMin int, finalDifference int, fullGameTimeInMinutes int) float64 {
 	if playedSeconds == 0 {
 		return 0
 	}
 
 	playerImpPerMinute := float64(plsMin) / (float64(playedSeconds) / 60)
-	fullGameImpPerMinute := float64(finalDifference) / float64(fullGameTime)
+	fullGameImpPerMinute := float64(finalDifference) / float64(fullGameTimeInMinutes)
 
 	rawValue := playerImpPerMinute - fullGameImpPerMinute
 

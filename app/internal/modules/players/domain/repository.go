@@ -72,7 +72,7 @@ func (r *Repository) FirstOrCreatePlayerGameStats(stats models.PlayerGameStats) 
 func (r *Repository) ListByFullName(fullName string) ([]models.Player, error) {
 	var result []models.Player
 
-	tx := r.dbConnection.Debug().
+	tx := r.dbConnection.
 		Where("full_name_local LIKE ?", "%"+fullName+"%").
 		Or("full_name_en LIKE ?", "%"+fullName+"%").
 		Find(&result)
@@ -83,7 +83,7 @@ func (r *Repository) ListByFullName(fullName string) ([]models.Player, error) {
 func (r *Repository) ListOfGamesByPlayerId(playerId int) ([]int, error) {
 	var gameIds []int
 
-	tx := r.dbConnection.Debug().
+	tx := r.dbConnection.
 		Table("team_game_stats").
 		Select("team_game_stats.game_id").
 		Where("team_game_stats.id IN (?)",
@@ -93,4 +93,21 @@ func (r *Repository) ListOfGamesByPlayerId(playerId int) ([]int, error) {
 		Find(&gameIds)
 
 	return gameIds, tx.Error
+}
+
+func (r *Repository) CreatePlayerMetric(playerMetric models.PlayerMetrics) error {
+	tx := r.dbConnection.
+		Create(&playerMetric)
+
+	return tx.Error
+}
+
+func (r *Repository) ListOfPlayersIds() ([]int, error) {
+	var playerIds []int
+
+	tx := r.dbConnection.Model(models.Player{}).
+		Select("id").
+		Find(&playerIds)
+
+	return playerIds, tx.Error
 }
