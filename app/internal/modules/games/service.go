@@ -100,13 +100,11 @@ func (s *Service) mapTeamPlayersMetrics(currentTeam teamModels.TeamGameStats, op
 	return array_utils.Map(currentTeam.PlayerGameStats, func(playerGameStats playersDomain.PlayerGameStats) impModels.PlayerImpMetrics {
 		playerImpPers := make([]impModels.PlayerImpPersMetrics, len(impPers))
 
-		cleanImp := imp.EvaluateClean(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-opposingTeam.Points, fullGameTime)
-
 		for i, impPer := range impPers {
 
 			playerImpPers[i] = impModels.PlayerImpPersMetrics{
 				Per: impPer,
-				IMP: imp.EvaluatePer(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-opposingTeam.Points, fullGameTime, impPer, league, &cleanImp),
+				IMP: imp.EvaluatePer(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-opposingTeam.Points, fullGameTime, impPer, league, &playerGameStats.IMPClean),
 			}
 		}
 

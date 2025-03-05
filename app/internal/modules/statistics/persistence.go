@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/infrastructure/translator"
 	gamesDomain "IMP/app/internal/modules/games/domain"
 	gamesModels "IMP/app/internal/modules/games/domain/models"
+	"IMP/app/internal/modules/imp"
 	leaguesDomain "IMP/app/internal/modules/leagues/domain"
 	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	playersDomain "IMP/app/internal/modules/players/domain"
@@ -63,9 +64,9 @@ func (p *Persistence) SaveGameBoxScore(dto *statisticModels.GameBoxScoreDTO) err
 	}
 
 	// save players statistics
-	err = p.saveTeamStats(dto.HomeTeam, gameModel, homeTeamModel)
+	err = p.saveTeamStats(dto.HomeTeam, dto.AwayTeam, gameModel, homeTeamModel)
 
-	err = p.saveTeamStats(dto.AwayTeam, gameModel, awayTeamModel)
+	err = p.saveTeamStats(dto.AwayTeam, dto.HomeTeam, gameModel, awayTeamModel)
 
 	return nil
 }
@@ -94,7 +95,7 @@ func (p *Persistence) saveGameModel(dto *statisticModels.GameBoxScoreDTO, homeTe
 	return gameModel, err
 }
 
-func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameModel gamesModels.Game, teamModel teamsModels.Team) error {
+func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, opponents statisticModels.TeamBoxScoreDTO, gameModel gamesModels.Game, teamModel teamsModels.Team) error {
 	teamGameModel, err := p.teamsRepository.FirstOrCreateTeamGameStats(teamsModels.TeamGameStats{
 		TeamId: teamModel.ID,
 		GameId: gameModel.ID,
@@ -113,6 +114,7 @@ func (p *Persistence) saveTeamStats(dto statisticModels.TeamBoxScoreDTO, gameMod
 			PlayedSeconds: player.Statistic.PlayedSeconds,
 			PlsMin:        player.Statistic.PlsMin,
 			IsBench:       player.Statistic.IsBench,
+			IMPClean:      imp.EvaluateClean(player.Statistic.PlayedSeconds, player.Statistic.PlsMin, dto.Scored-opponents.Scored, gameModel.PlayedMinutes),
 		})
 
 		if err != nil {

@@ -11,6 +11,7 @@ type PlayerGameStats struct {
 	PlsMin        int       `json:"pls_min" db:"pls_min"`
 	PlayedSeconds int       `json:"played_min" db:"played_seconds"`
 	IsBench       bool      `json:"is_bench" db:"is_bench"`
+	IMPClean      float64   `json:"imp_clean" db:"imp_clean"`
 	CreatedAt     time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
 }

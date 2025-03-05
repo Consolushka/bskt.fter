@@ -58,6 +58,7 @@ func (r *Repository) FirstOrCreatePlayerGameStats(stats models.PlayerGameStats) 
 			PlayedSeconds: stats.PlayedSeconds,
 			PlsMin:        stats.PlsMin,
 			IsBench:       stats.IsBench,
+			IMPClean:      stats.IMPClean,
 		}).
 		FirstOrCreate(
 			&models.PlayerGameStats{},
@@ -95,11 +96,14 @@ func (r *Repository) ListOfGamesByPlayerId(playerId int) ([]int, error) {
 	return gameIds, tx.Error
 }
 
-func (r *Repository) CreatePlayerMetric(playerMetric models.PlayerMetrics) error {
-	tx := r.dbConnection.
-		Create(&playerMetric)
+func (r *Repository) ListOfPlayersGamesStats() ([]models.PlayerGameStats, error) {
+	var playerGameStats []models.PlayerGameStats
 
-	return tx.Error
+	tx := r.dbConnection.
+		Model(models.PlayerGameStats{}).
+		Find(&playerGameStats)
+
+	return playerGameStats, tx.Error
 }
 
 func (r *Repository) ListOfPlayersIds() ([]int, error) {
