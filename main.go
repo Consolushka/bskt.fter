@@ -7,7 +7,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// todo: custom hostname
 // todo: abstract controller
 // todo: add tests
 // todo: swagger documentation
