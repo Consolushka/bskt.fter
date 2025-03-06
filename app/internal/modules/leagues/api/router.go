@@ -21,4 +21,5 @@ func (router *Router) RegisterRoutes(r *mux.Router) {
 
 	r.HandleFunc("/leagues/{id}/games", handlers.BindAndValidateRequestHandler(router.controller.GetGamesByLeagueAndDate)).Methods("GET")
 	r.HandleFunc("/leagues/{id}/teams", handlers.BindAndValidateRequestHandler(router.controller.GetTeamsByLeague)).Methods("GET")
+	r.HandleFunc("/leagues/{id}/ranking", handlers.BindAndValidateRequestHandler(router.controller.PlayersRanking)).Methods("GET")
 }

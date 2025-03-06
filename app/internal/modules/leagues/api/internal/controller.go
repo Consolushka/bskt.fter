@@ -2,12 +2,16 @@ package internal
 
 import (
 	"IMP/app/internal/base/components/request_components"
+	impResources "IMP/app/internal/modules/imp/domain/resources"
 	"IMP/app/internal/modules/leagues"
 	"IMP/app/internal/modules/leagues/api/internal/requests"
 	"IMP/app/internal/modules/leagues/api/internal/responses"
+	"IMP/app/internal/modules/leagues/domain/models"
 	"IMP/app/internal/modules/leagues/domain/resources"
+	playersResources "IMP/app/internal/modules/players/domain/resources"
 	teamsModels "IMP/app/internal/modules/teams/domain/models"
 	"IMP/app/internal/utils/array_utils"
+	"IMP/app/internal/utils/time_utils"
 	"encoding/json"
 	"net/http"
 )
@@ -75,6 +79,39 @@ func (c *Controller) GetTeamsByLeague(w http.ResponseWriter, r *request_componen
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (c *Controller) PlayersRanking(w http.ResponseWriter, r *requests.PlayersByMetricsRankingRequest) {
+	var rankingResources []resources.PlayerMetricRank
+
+	ranking, err := c.service.GetPlayersRanking(r.Id(), r.Limit(), r.MinMinutesPerGame(), r.AvgMinutesPerGame(), r.MinGamesPlayed())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rankingResources = array_utils.Map(*ranking, func(playerMetricRank models.PlayerImpRanking) resources.PlayerMetricRank {
+		impPers := make([]impResources.Metric, 1)
+		impPers[0] = impResources.Metric{
+			Base: "Clean",
+			Imp:  playerMetricRank.AvgImpClean,
+		}
+
+		return resources.PlayerMetricRank{
+			Rank: playerMetricRank.Rank,
+			PlayerImpMetric: playersResources.AvgMetric{
+				FullName:         playerMetricRank.FullNameLocal,
+				AvgMinutesPlayed: time_utils.SecondsToFormat(int(playerMetricRank.AvgPlayedSeconds), time_utils.PlayedTimeFormat),
+				GamesPlayed:      playerMetricRank.GamesPlayed,
+				ImpPers:          impPers,
+			},
+		}
+	})
+
+	if err := json.NewEncoder(w).Encode(rankingResources); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

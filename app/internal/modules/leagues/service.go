@@ -39,3 +39,7 @@ func (s *Service) GetLeague(id int) (*leaguesModels.League, error) {
 func (s *Service) GetTeamsByLeague(leagueId int) ([]teamsModels.Team, error) {
 	return s.teamsRepository.ListByLeague(leagueId)
 }
+
+func (s *Service) GetPlayersRanking(leagueId int, limit *int, minMinuterPerGame int, avgMinutes int, gamesPlayed int) (*[]leaguesModels.PlayerImpRanking, error) {
+	return s.leaguesRepository.ListPlayerRankingByImpClean(leagueId, limit, minMinuterPerGame, avgMinutes, gamesPlayed)
+}
