@@ -76,7 +76,6 @@ func (r *Repository) FirstById(id int) (teamsModels.Team, error) {
 func (r *Repository) TeamGameIdListByTeamId(teamId int) ([]int, error) {
 	var gamesIds []int
 
-	// todo: remove string columns everywhere
 	tx := r.dbConnection.Model(&teamsModels.TeamGameStats{}).
 		Where("team_id = ?", teamId).
 		Select("game_id").

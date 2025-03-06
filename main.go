@@ -7,7 +7,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// todo: save "best" (top-25) players by average IMP with PERS
+// todo: custom hostname
+// todo: abstract controller
+// todo: add tests
+// todo: swagger documentation
+// todo: elasticsearch to search players by name
 func main() {
 	log.Init()
 
