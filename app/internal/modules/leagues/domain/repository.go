@@ -52,7 +52,7 @@ func (r *Repository) ListPlayerRankingByImpClean(leagueId int, limit *int, minMi
 
 	query := `
 		SELECT 
-			ROW_NUMBER() OVER (ORDER BY avg_imp_clean DESC) as rank, * 
+			* 
 		FROM 
 			(SELECT  
 				 p.id, p.full_name_local, AVG(pgs.imp_clean) as avg_imp_clean, AVG(pgs.played_seconds) as avg_played_seconds, COUNT(*) as games_played 
@@ -74,7 +74,7 @@ func (r *Repository) ListPlayerRankingByImpClean(leagueId int, limit *int, minMi
 		`
 
 	if limit != nil {
-		query += " LIMIT " + strconv.Itoa(*limit)
+		query += " LIMIT " + strconv.Itoa(*limit*2)
 	}
 
 	err := r.db.Raw(query, leagueId, minMinuterPerGame*60, gamesPlayed, avgMinutes*60).Scan(&rankings).Error

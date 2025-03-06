@@ -3,18 +3,19 @@ package requests
 import (
 	"IMP/app/internal/abstract/custom_request"
 	"IMP/app/internal/base/components/request_components"
+	"IMP/app/internal/modules/imp/domain/enums"
 	"strconv"
 )
 
 type PlayersByMetricsRankingRequest struct {
 	custom_request.BaseRequest
 	request_components.HasIdPathParam
-	request_components.HasPersQueryParam
 
 	limit             *int
 	minGamesPlayed    int
 	minMinutesPerGame int
 	avgMinutesPerGame int
+	per               enums.ImpPERs
 }
 
 func (s *PlayersByMetricsRankingRequest) Validators() []func(storage custom_request.CustomRequestStorage) error {
@@ -24,14 +25,10 @@ func (s *PlayersByMetricsRankingRequest) Validators() []func(storage custom_requ
 		s.parseLimit,
 		s.parseMinGamesPlayed,
 		s.parseMinMinutesPerGame,
-		s.HasIdPathParam.Validators()[0],
+		s.parsePer,
 	}
 
 	for _, validator := range s.HasIdPathParam.Validators() {
-		parentValidators = append(parentValidators, validator)
-	}
-
-	for _, validator := range s.HasPersQueryParam.Validators() {
 		parentValidators = append(parentValidators, validator)
 	}
 
@@ -123,4 +120,18 @@ func (s *PlayersByMetricsRankingRequest) parseAvgMinutesPerGame(storage custom_r
 
 func (s *PlayersByMetricsRankingRequest) AvgMinutesPerGame() int {
 	return s.avgMinutesPerGame
+}
+
+func (s *PlayersByMetricsRankingRequest) parsePer(storage custom_request.CustomRequestStorage) error {
+	per := storage.GetQueryParam("per")
+	if per == "" {
+		s.per = enums.Clean
+		return nil
+	}
+	s.per = enums.ImpPERs(per)
+	return nil
+}
+
+func (s *PlayersByMetricsRankingRequest) Per() enums.ImpPERs {
+	return s.per
 }

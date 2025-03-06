@@ -20,11 +20,11 @@ func EvaluateClean(playedSeconds int, plsMin int, finalDifference int, fullGameT
 	return rawValue
 }
 
-func EvaluatePer(playedSeconds int, plsMin int, finalDifferential int, fullGameTime int, impPer enums.ImpPERs, league *leaguesModels.League, cleanImpPointer *float64) float64 {
+func EvaluatePer(playedSeconds int, plsMin *int, finalDifferential *int, fullGameTime *int, impPer enums.ImpPERs, league *leaguesModels.League, cleanImpPointer *float64) float64 {
 	var cleanImp float64
 
 	if cleanImpPointer == nil {
-		cleanImp = EvaluateClean(playedSeconds, plsMin, finalDifferential, fullGameTime)
+		cleanImp = EvaluateClean(playedSeconds, *plsMin, *finalDifferential, *fullGameTime)
 	} else {
 		cleanImp = *cleanImpPointer
 	}

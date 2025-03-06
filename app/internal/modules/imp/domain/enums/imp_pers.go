@@ -23,3 +23,7 @@ func (ip ImpPERs) Order() int {
 
 	return -1
 }
+
+func (ip ImpPERs) ToString() string {
+	return string(ip)
+}

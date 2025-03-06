@@ -102,9 +102,10 @@ func (s *Service) mapTeamPlayersMetrics(currentTeam teamModels.TeamGameStats, op
 
 		for i, impPer := range impPers {
 
+			differential := currentTeam.Points - opposingTeam.Points
 			playerImpPers[i] = impModels.PlayerImpPersMetrics{
 				Per: impPer,
-				IMP: imp.EvaluatePer(playerGameStats.PlayedSeconds, playerGameStats.PlsMin, currentTeam.Points-opposingTeam.Points, fullGameTime, impPer, league, &playerGameStats.IMPClean),
+				IMP: imp.EvaluatePer(playerGameStats.PlayedSeconds, &playerGameStats.PlsMin, &differential, &fullGameTime, impPer, league, &playerGameStats.IMPClean),
 			}
 		}
 

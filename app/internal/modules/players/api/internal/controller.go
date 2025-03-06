@@ -77,5 +77,3 @@ func (c *Controller) PlayerGamesMetrics(w http.ResponseWriter, r *requests.Playe
 		return
 	}
 }
-
-//todo: best players by IMP (clear + by pers) with limit, games played and avg seconds
