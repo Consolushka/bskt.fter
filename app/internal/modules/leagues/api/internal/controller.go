@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"IMP/app/internal/abstract"
 	"IMP/app/internal/base/components/request_components"
 	"IMP/app/internal/modules/imp"
 	"IMP/app/internal/modules/leagues"
@@ -11,11 +12,12 @@ import (
 	teamsModels "IMP/app/internal/modules/teams/domain/models"
 	"IMP/app/internal/utils/array_utils"
 	"IMP/app/internal/utils/time_utils"
-	"encoding/json"
 	"net/http"
 )
 
 type Controller struct {
+	abstract.BaseController
+
 	service *leagues.Service
 }
 
@@ -30,7 +32,7 @@ func (c *Controller) GetLeagues(w http.ResponseWriter, r *requests.GetLeaguesReq
 
 	leagueModels, err := c.service.GetAllLeagues()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
@@ -38,32 +40,26 @@ func (c *Controller) GetLeagues(w http.ResponseWriter, r *requests.GetLeaguesReq
 		response = append(response, resources.NewLeagueResponse(&league))
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	c.Ok(w, response)
 }
 
 func (c *Controller) GetGamesByLeagueAndDate(w http.ResponseWriter, r *requests.GetGamesByLeagueAndDate) {
 	gamesModel, err := c.service.GetGamesByLeagueAndDate(r.Id(), *r.Date())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
 	response := responses.NewGamesByDateResponse(*r.Date(), gamesModel)
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	c.Ok(w, response)
 }
 
 func (c *Controller) GetTeamsByLeague(w http.ResponseWriter, r *request_components.HasIdPathParam) {
 	leagueModel, err := c.service.GetLeague(r.Id())
 	teamsModel, err := c.service.GetTeamsByLeague(r.Id())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
@@ -77,10 +73,7 @@ func (c *Controller) GetTeamsByLeague(w http.ResponseWriter, r *request_componen
 		}),
 	}
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	c.Ok(w, response)
 }
 
 func (c *Controller) PlayersRanking(w http.ResponseWriter, r *requests.PlayersByMetricsRankingRequest) {
@@ -91,7 +84,7 @@ func (c *Controller) PlayersRanking(w http.ResponseWriter, r *requests.PlayersBy
 
 	ranking, err := c.service.GetPlayersRanking(r.Id(), limit, r.MinMinutesPerGame(), r.AvgMinutesPerGame(), r.MinGamesPlayed())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
@@ -117,8 +110,9 @@ func (c *Controller) PlayersRanking(w http.ResponseWriter, r *requests.PlayersBy
 		rankingResources[i].Rank = i + 1
 	}
 
-	if err := json.NewEncoder(w).Encode(rankingResources); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	response := responses.RankingResponse{
+		Ranking: rankingResources,
 	}
+
+	c.Ok(w, response)
 }

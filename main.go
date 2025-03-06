@@ -7,7 +7,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// todo: abstract controller
 // todo: add tests
 // todo: swagger documentation
 // todo: elasticsearch to search players by name

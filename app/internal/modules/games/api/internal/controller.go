@@ -1,16 +1,16 @@
 package internal
 
 import (
+	"IMP/app/internal/abstract"
 	"IMP/app/internal/modules/games"
 	"IMP/app/internal/modules/games/api/internal/formatters"
 	"IMP/app/internal/modules/games/api/internal/requests"
 	"IMP/app/internal/modules/games/domain/resources"
-	"IMP/app/log"
-	"encoding/json"
 	"net/http"
 )
 
 type Controller struct {
+	abstract.BaseController
 	service *games.Service
 }
 
@@ -26,19 +26,15 @@ func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest
 
 	gamesModels, err := c.service.GetGames(*r.Date())
 	if err != nil {
-		log.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
 	for _, game := range gamesModels {
 		gamesResponse = append(gamesResponse, resources.NewGameResource(game))
 	}
-	if err := json.NewEncoder(w).Encode(gamesResponse); err != nil {
-		log.Error(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+
+	c.Ok(w, gamesResponse)
 }
 
 // GetGame
@@ -49,15 +45,13 @@ func (c *Controller) GetGames(w http.ResponseWriter, r *requests.GetGamesRequest
 func (c *Controller) GetGame(w http.ResponseWriter, r *requests.GetSpecificGameRequest) {
 	gameModel, err := c.service.GetGame(r.Id())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
 	response := resources.NewGameResource(*gameModel)
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+
+	c.Ok(w, response)
 }
 
 // GetGameMetrics
@@ -65,8 +59,9 @@ func (c *Controller) GetGame(w http.ResponseWriter, r *requests.GetSpecificGameR
 // retrieve specific game and then calculate IMP metrics for every player
 func (c *Controller) GetGameMetrics(w http.ResponseWriter, r *requests.GetSpecificGameMetricsRequest) {
 	gameModel, err := c.service.GetGameMetrics(r.Id(), r.Pers())
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 

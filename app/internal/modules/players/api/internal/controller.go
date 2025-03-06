@@ -1,17 +1,18 @@
 package internal
 
 import (
+	"IMP/app/internal/abstract"
 	"IMP/app/internal/base/components/request_components"
 	"IMP/app/internal/modules/players"
 	"IMP/app/internal/modules/players/api/internal/requests"
 	"IMP/app/internal/modules/players/api/internal/responses"
 	"IMP/app/internal/modules/players/domain/models"
 	"IMP/app/internal/utils/array_utils"
-	"encoding/json"
 	"net/http"
 )
 
 type Controller struct {
+	abstract.BaseController
 	service *players.Service
 }
 
@@ -27,7 +28,7 @@ func (c *Controller) Search(w http.ResponseWriter, r *requests.SearchPlayerByFul
 
 	playersModels, err := c.service.GetPlayerByFullName(r.FullName())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
@@ -40,40 +41,31 @@ func (c *Controller) Search(w http.ResponseWriter, r *requests.SearchPlayerByFul
 		}
 	})
 
-	if err = json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	c.Ok(w, response)
 }
 
 func (c *Controller) PlayerGamesBoxScore(w http.ResponseWriter, r *request_components.HasIdPathParam) {
 	games, err := c.service.GetPlayerGamesBoxScore(r.Id())
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
 	response := responses.NewPlayerGamesBoxScoreResponse(games)
 
-	if err = json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	c.Ok(w, response)
 }
 
 func (c *Controller) PlayerGamesMetrics(w http.ResponseWriter, r *requests.PlayerGamesMetricsRequest) {
 	games, err := c.service.GetPlayerGamesMetrics(r.Id(), r.Pers())
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.InternalServerError(w, err)
 		return
 	}
 
 	response := responses.NewPlayerGamesMetricsResponse(games)
 
-	if err = json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	c.Ok(w, response)
 }
