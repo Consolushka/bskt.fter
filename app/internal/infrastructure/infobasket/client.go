@@ -35,7 +35,7 @@ func (c *Client) ScheduledGames(compId int) []GameScheduleDto {
 	return result
 }
 
-func NewInfobasketClient() *Client {
+func NewInfobasketClient() ClientInterface {
 	return &Client{
 		baseUrl: "https://reg.infobasket.su",
 	}

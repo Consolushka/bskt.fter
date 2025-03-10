@@ -9,7 +9,7 @@ import (
 )
 
 type Provider struct {
-	client *infobasket.Client
+	client infobasket.ClientInterface
 	mapper *mapper
 }
 
