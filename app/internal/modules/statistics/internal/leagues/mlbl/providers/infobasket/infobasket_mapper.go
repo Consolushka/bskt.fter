@@ -2,43 +2,29 @@ package infobasket
 
 import (
 	"IMP/app/internal/infrastructure/infobasket"
-	leaguesDomain "IMP/app/internal/modules/leagues/domain"
-	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
 	"IMP/app/internal/modules/statistics/models"
 	"IMP/app/internal/utils/array_utils"
-	"IMP/app/log"
 	"strconv"
-	"strings"
 	"time"
 )
 
-type mapper struct {
-	leagueRepository *leaguesDomain.Repository
-}
+type mapper struct{}
 
 func newMapper() *mapper {
-	return &mapper{
-		leagueRepository: leaguesDomain.NewRepository(),
-	}
+	return &mapper{}
 }
 
-func (m *mapper) mapGame(game infobasket.GameBoxScoreResponse) *models.GameBoxScoreDTO {
-	league, err := m.leagueRepository.FirstByAliasEn(strings.ToUpper(leaguesModels.MLBLAlias))
-	if err != nil {
-		log.Fatalln(err)
-		panic(err)
-	}
-
+func (m *mapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) *models.GameBoxScoreDTO {
 	duration := 0
-	duration = league.PeriodsNumber * league.PeriodDuration
-	for i := 0; i < game.MaxPeriod-league.PeriodsNumber; i++ {
-		duration += league.OvertimeDuration
+	duration = regulationPeriodsNumber * periodDuration
+	for i := 0; i < game.MaxPeriod-regulationPeriodsNumber; i++ {
+		duration += overtimeDuration
 	}
 
 	scheduled, _ := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTime)
 
 	gameBoxScoreDto := models.GameBoxScoreDTO{
-		LeagueAliasEn: league.AliasEn,
+		LeagueAliasEn: leagueAlias,
 		IsFinal:       game.GameStatus == 1,
 		HomeTeam:      m.mapTeam(game.GameTeams[0]),
 		AwayTeam:      m.mapTeam(game.GameTeams[1]),

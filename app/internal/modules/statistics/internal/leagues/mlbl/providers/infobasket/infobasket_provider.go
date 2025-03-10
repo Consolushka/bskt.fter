@@ -16,7 +16,7 @@ type Provider struct {
 func (i *Provider) GameBoxScore(gameId string) (*models2.GameBoxScoreDTO, error) {
 	gameDto := i.client.BoxScore(gameId)
 
-	game := i.mapper.mapGame(gameDto)
+	game := i.mapper.mapGame(gameDto, 4, 10, 5, "MLBL")
 	game.Id = gameId
 	return game, nil
 }
