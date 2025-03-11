@@ -40,7 +40,7 @@ func TestNewProvider(t *testing.T) {
 func TestProvider_GameBoxScore(t *testing.T) {
 	// Setup mock data
 	testGameId := "12345"
-	mockBoxScore := infobasket.CreateMockGameBoxScoreResponse()
+	mockBoxScore := infobasket.CreateMockGameBoxScoreResponse(101, 111, 1, 4, "23.12.2022", "13.00")
 
 	// Mapping tested in mapper_test
 	expectedGame := &models.GameBoxScoreDTO{

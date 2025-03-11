@@ -22,6 +22,28 @@ services:
       - imp
     command: tail -f /dev/null
 
+  app_tests:
+    container_name: tests
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
+    tty: true
+    build:
+      context: .
+      dockerfile: docker/local/Dockerfile
+    ports:
+      - "8001:8080"
+    restart: on-failure
+    volumes:
+      - ./:/IMP
+    depends_on:
+      - db
+    networks:
+      - imp
+
   scheduler:
     container_name: scheduler
     environment:
