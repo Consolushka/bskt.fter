@@ -2,6 +2,7 @@ package infobasket
 
 import (
 	"IMP/app/internal/infrastructure/infobasket"
+	"IMP/app/internal/infrastructure/infobasket/mock_data"
 	"IMP/app/internal/modules/statistics/models"
 	"testing"
 	"time"
@@ -40,7 +41,7 @@ func TestNewProvider(t *testing.T) {
 func TestProvider_GameBoxScore(t *testing.T) {
 	// Setup mock data
 	testGameId := "12345"
-	mockBoxScore := infobasket.CreateMockGameBoxScoreResponse(101, 111, 1, 4, "23.12.2022", "13.00")
+	mockBoxScore := mock_data.CreateMockGameBoxScoreResponse(101, 111, 1, 4, "23.12.2022", "13.00")
 
 	// Mapping tested in mapper_test
 	expectedGame := &models.GameBoxScoreDTO{
@@ -81,17 +82,17 @@ func TestProvider_GamesByDate(t *testing.T) {
 		ScheduledGamesFunc: func(compId int) []infobasket.GameScheduleDto {
 			if compId == 89960 {
 				return []infobasket.GameScheduleDto{
-					infobasket.CreateMockGameScheduleDto(1, searchingDate.Format(format), 1),
-					infobasket.CreateMockGameScheduleDto(2, firstWrongDate.Format(format), -1),
-					infobasket.CreateMockGameScheduleDto(3, secondWrongDate.Format(format), 0),
-					infobasket.CreateMockGameScheduleDto(4, searchingDate.Format(format), 99999),
+					mock_data.CreateMockGameScheduleDto(1, searchingDate.Format(format), 1),
+					mock_data.CreateMockGameScheduleDto(2, firstWrongDate.Format(format), -1),
+					mock_data.CreateMockGameScheduleDto(3, secondWrongDate.Format(format), 0),
+					mock_data.CreateMockGameScheduleDto(4, searchingDate.Format(format), 99999),
 				}
 			} else if compId == 89962 {
 				return []infobasket.GameScheduleDto{
-					infobasket.CreateMockGameScheduleDto(5, searchingDate.Format(format), 1),
-					infobasket.CreateMockGameScheduleDto(6, searchingDate.Format(format), 0),
-					infobasket.CreateMockGameScheduleDto(7, secondWrongDate.Format(format), 1),
-					infobasket.CreateMockGameScheduleDto(8, firstWrongDate.Format(format), 1),
+					mock_data.CreateMockGameScheduleDto(5, searchingDate.Format(format), 1),
+					mock_data.CreateMockGameScheduleDto(6, searchingDate.Format(format), 0),
+					mock_data.CreateMockGameScheduleDto(7, secondWrongDate.Format(format), 1),
+					mock_data.CreateMockGameScheduleDto(8, firstWrongDate.Format(format), 1),
 				}
 			}
 			panic("Unexpected compId")
@@ -118,10 +119,10 @@ func TestProvider_GamesByTeam(t *testing.T) {
 	mockClient := &infobasket.MockClient{
 		TeamGamesFunc: func(teamId string) infobasket.TeamScheduleResponse {
 			return infobasket.TeamScheduleResponse{Games: []infobasket.GameScheduleDto{
-				infobasket.CreateMockGameScheduleDto(1, "01.01.2025", 1),
-				infobasket.CreateMockGameScheduleDto(2, "02.01.2025", -1),
-				infobasket.CreateMockGameScheduleDto(3, "03.01.2025", 0),
-				infobasket.CreateMockGameScheduleDto(4, "04.01.2025", 99999),
+				mock_data.CreateMockGameScheduleDto(1, "01.01.2025", 1),
+				mock_data.CreateMockGameScheduleDto(2, "02.01.2025", -1),
+				mock_data.CreateMockGameScheduleDto(3, "03.01.2025", 0),
+				mock_data.CreateMockGameScheduleDto(4, "04.01.2025", 99999),
 			}}
 		}}
 

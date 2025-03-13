@@ -1,7 +1,7 @@
 package infobasket
 
 import (
-	"IMP/app/internal/infrastructure/infobasket"
+	"IMP/app/internal/infrastructure/infobasket/mock_data"
 	"IMP/app/internal/modules/statistics/models"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -23,7 +23,7 @@ func TestMapper_mapPlayer(t *testing.T) {
 	enLastName := "Jokic"
 	birthdate := time.Date(1995, 5, 12, 0, 0, 0, 0, time.UTC)
 
-	infobasketDto := infobasket.CreateMockPlayer(id, plusMnius, seconds, localFirstName, localLastName, enFirstName, enLastName, birthdate, isStart)
+	infobasketDto := mock_data.CreateMockPlayer(id, plusMnius, seconds, localFirstName, localLastName, enFirstName, enLastName, birthdate, isStart)
 
 	excpectedStatisticDto := models.PlayerDTO{
 		FullNameLocal:  localLastName + " " + localFirstName,
@@ -52,7 +52,7 @@ func TestMapper_mapTeam(t *testing.T) {
 	score := 110
 	playersCount := 12
 
-	infobasketDto := infobasket.CreateMockTeamBoxScoreDto(alias, name, score, teamId, playersCount)
+	infobasketDto := mock_data.CreateMockTeamBoxScoreDto(alias, name, score, teamId, playersCount)
 
 	excpectedStatisticDto := models.TeamBoxScoreDTO{
 		Alias:    alias,
@@ -103,7 +103,7 @@ func TestMapper_mapGame(t *testing.T) {
 		ScheduledAt:   scheduled,
 	}
 
-	infobasketDto := infobasket.CreateMockGameBoxScoreResponse(homeTeamId, awayTeamId, gameStatus, maxPeriods, scheduled.Format("02.01.2006"), scheduled.Format("15.04"))
+	infobasketDto := mock_data.CreateMockGameBoxScoreResponse(homeTeamId, awayTeamId, gameStatus, maxPeriods, scheduled.Format("02.01.2006"), scheduled.Format("15.04"))
 
 	mapperDto := mapper.mapGame(infobasketDto, regulationPeriodsNumber, periodDuration, overtimeDuration, leagueAlias)
 
