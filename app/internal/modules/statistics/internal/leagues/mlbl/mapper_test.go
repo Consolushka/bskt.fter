@@ -1,4 +1,4 @@
-package infobasket
+package mlbl
 
 import (
 	"IMP/app/internal/infrastructure/infobasket/mock_data"

@@ -13,7 +13,7 @@ func NewLeagueProvider(leagueAliasEn string) abstract.StatsProvider {
 	case strings.ToUpper(leaguesModels.NBAAlias):
 		return nba.NewNbaStatsProvider()
 	case strings.ToUpper(leaguesModels.MLBLAlias):
-		return mlbl.NewMLBLProvider()
+		return mlbl.NewProvider()
 	default:
 		return nil
 	}
