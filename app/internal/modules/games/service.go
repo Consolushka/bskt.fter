@@ -11,7 +11,6 @@ import (
 	playersDomain "IMP/app/internal/modules/players/domain/models"
 	teamModels "IMP/app/internal/modules/teams/domain/models"
 	"IMP/app/internal/utils/array_utils"
-	"time"
 )
 
 type Service struct {
@@ -60,11 +59,6 @@ func (s *Service) GetGameMetrics(id int, impPers []enums.ImpPERs) (*impModels.Ga
 	gameImpMetrics := s.mapGameModelToImpMetricsModel(gameModel, impPers, leagueModel)
 
 	return gameImpMetrics, nil
-}
-
-// GetGames fetches all games for specific date and preloads all related impModels
-func (s *Service) GetGames(date time.Time) ([]gamesModels.Game, error) {
-	return s.gamesRepository.GamesStatsByDateList(date, nil)
 }
 
 func (s *Service) GetGamesMetrics(games []gamesModels.Game, impPers []enums.ImpPERs) ([]*impModels.GameImpMetrics, error) {
