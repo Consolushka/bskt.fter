@@ -2,18 +2,25 @@ package statistics
 
 import (
 	"IMP/app/internal/domain"
-	"IMP/app/internal/statistics/internal/abstract"
-	"IMP/app/internal/statistics/internal/leagues/mlbl"
-	"IMP/app/internal/statistics/internal/leagues/nba"
 	"strings"
+	"time"
 )
 
-func NewLeagueProvider(leagueAliasEn string) abstract.StatsProvider {
+type StatsProvider interface {
+	// GameBoxScore returns boxscore data from stats provider
+	GameBoxScore(gameId string) (*GameBoxScoreDTO, error)
+	// GamesByDate returns list of games for given date
+	GamesByDate(date time.Time) ([]string, error)
+	// GamesByTeam returns list of already played games for given team
+	GamesByTeam(teamId string) ([]string, error)
+}
+
+func NewLeagueProvider(leagueAliasEn string) StatsProvider {
 	switch leagueAliasEn {
 	case strings.ToUpper(domain.NBAAlias):
-		return nba.NewNbaStatsProvider()
+		return newNbaProvider()
 	case strings.ToUpper(domain.MLBLAlias):
-		return mlbl.NewProvider()
+		return newMlblProvider()
 	default:
 		return nil
 	}
