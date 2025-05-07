@@ -19,15 +19,13 @@ func Serve() *mux.Router {
 type server struct {
 	router *mux.Router
 
-	teamsRouter   *teams.Router
-	playersRouter *players.Router
+	teamsRouter *teams.Router
 }
 
 func newServer() *server {
 	return &server{
-		router:        mux.NewRouter(),
-		teamsRouter:   teams.NewRouter(),
-		playersRouter: players.NewRouter(),
+		router:      mux.NewRouter(),
+		teamsRouter: teams.NewRouter(),
 	}
 }
 
@@ -36,7 +34,6 @@ func (s *server) setupRoutes() *mux.Router {
 
 	// Register module routes
 	s.teamsRouter.RegisterRoutes(apiRouter)
-	s.playersRouter.RegisterRoutes(apiRouter)
 
 	s.printRoutes()
 
