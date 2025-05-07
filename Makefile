@@ -9,12 +9,9 @@ ENV_FILE := $(ROOT_DIR)/.env
 
 .DEFAULT_GOAL := help
 
-# create outputs folder
-
 setup: ## copy env
 	echo "127.0.0.1 bskt.imp" | sudo tee -a /etc/hosts
 	@[ -f $(ENV_FILE) ] && echo .env exists || cp .example.env .env
-	mkdir -p outputs
 	mkdir -p app/db/migrations
 
 build: ## build
