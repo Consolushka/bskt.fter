@@ -2,8 +2,6 @@ package api
 
 import (
 	"IMP/app/api/middleware"
-	players "IMP/app/internal/modules/players/api"
-	teams "IMP/app/internal/modules/teams/api"
 	"github.com/gorilla/mux"
 	"log"
 )
@@ -18,22 +16,16 @@ func Serve() *mux.Router {
 
 type server struct {
 	router *mux.Router
-
-	teamsRouter *teams.Router
 }
 
 func newServer() *server {
 	return &server{
-		router:      mux.NewRouter(),
-		teamsRouter: teams.NewRouter(),
+		router: mux.NewRouter(),
 	}
 }
 
 func (s *server) setupRoutes() *mux.Router {
-	apiRouter := s.router.PathPrefix("/api").Subrouter()
-
-	// Register module routes
-	s.teamsRouter.RegisterRoutes(apiRouter)
+	s.router.PathPrefix("/api").Subrouter()
 
 	s.printRoutes()
 
