@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	leaguesDomain "IMP/app/internal/modules/leagues/domain"
+	"IMP/app/internal/domain"
 	"IMP/app/log"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
@@ -25,7 +25,10 @@ var cronCmd = &cobra.Command{
 		cronJob := cron.New(cron.WithLocation(loc))
 
 		job := newSaveYesterdayGamesJob()
-		cronJob.AddJob("0 12 * * *", job)
+		_, err := cronJob.AddJob("0 12 * * *", job)
+		if err != nil {
+			log.Error("Couldn't start scheduled job: ", job)
+		}
 
 		now := time.Now().In(loc)
 		noon := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, loc)
@@ -48,12 +51,12 @@ func init() {
 }
 
 type saveYesterdayGamesJob struct {
-	leaguesRepository *leaguesDomain.Repository
+	leaguesRepository *domain.LeaguesRepository
 }
 
 func newSaveYesterdayGamesJob() *saveYesterdayGamesJob {
 	return &saveYesterdayGamesJob{
-		leaguesRepository: leaguesDomain.NewRepository(),
+		leaguesRepository: domain.NewLeaguesRepository(),
 	}
 }
 

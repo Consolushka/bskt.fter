@@ -8,12 +8,13 @@ import (
 )
 
 // todo: add tests
-// todo: swagger documentation
-// todo: elasticsearch to search players by name
 func main() {
 	log.Init()
 
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		panic("Couldn't load env file")
+	}
 
 	database.OpenDbConnection()
 

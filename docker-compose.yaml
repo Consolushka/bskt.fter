@@ -80,26 +80,6 @@ services:
     networks:
       - imp
 
-  air:
-    container_name: air_server
-    image: cosmtrek/air
-    # working_dir value has to be the same of mapped volume
-    working_dir: /IMP
-    depends_on:
-      - db
-    ports:
-      - "80:8080"
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-      - DATABASE_HOST=${DB_HOST}
-      - DATABASE_PORT=${DB_PORT}
-    volumes:
-      - ./:/IMP
-    networks:
-      - imp
-
 volumes:
   pg_data:
 

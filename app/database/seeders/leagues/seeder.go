@@ -2,7 +2,7 @@ package leagues
 
 import (
 	"IMP/app/database"
-	leaguesModels "IMP/app/internal/modules/leagues/domain/models"
+	"IMP/app/internal/domain"
 	"strings"
 )
 
@@ -10,32 +10,32 @@ type Seeder struct {
 }
 
 func (l Seeder) Model() interface{} {
-	return leaguesModels.League{}
+	return domain.League{}
 }
 
 func (l Seeder) Seed() {
 	dbConnection := database.OpenDbConnection()
 
-	nbaLeague := &leaguesModels.League{
+	nbaLeague := &domain.League{
 		NameLocal:        "National Basketball Association",
-		AliasLocal:       strings.ToUpper(leaguesModels.NBAAlias),
+		AliasLocal:       strings.ToUpper(domain.NBAAlias),
 		NameEn:           "National Basketball Association",
-		AliasEn:          strings.ToUpper(leaguesModels.NBAAlias),
+		AliasEn:          strings.ToUpper(domain.NBAAlias),
 		PeriodsNumber:    4,
 		PeriodDuration:   12,
 		OvertimeDuration: 6,
 	}
 
-	mlblLeague := &leaguesModels.League{
+	mlblLeague := &domain.League{
 		NameLocal:        "Межрегиональная любительская баскетбольная лига",
 		AliasLocal:       "МЛБЛ",
 		NameEn:           "Interregional Amateur Basketball League",
-		AliasEn:          strings.ToUpper(leaguesModels.MLBLAlias),
+		AliasEn:          strings.ToUpper(domain.MLBLAlias),
 		PeriodsNumber:    4,
 		PeriodDuration:   10,
 		OvertimeDuration: 5,
 	}
 
-	dbConnection.FirstOrCreate(nbaLeague, leaguesModels.League{AliasEn: strings.ToUpper(leaguesModels.NBAAlias)})
-	dbConnection.FirstOrCreate(mlblLeague, leaguesModels.League{AliasEn: strings.ToUpper(leaguesModels.MLBLAlias)})
+	dbConnection.FirstOrCreate(nbaLeague, domain.League{AliasEn: strings.ToUpper(domain.NBAAlias)})
+	dbConnection.FirstOrCreate(mlblLeague, domain.League{AliasEn: strings.ToUpper(domain.MLBLAlias)})
 }
