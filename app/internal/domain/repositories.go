@@ -18,7 +18,6 @@ func NewGamesRepository() *GamesRepository {
 	}
 }
 
-// todo: desc
 func (r *GamesRepository) FirstOrCreate(game Game) (Game, error) {
 	var result Game
 
