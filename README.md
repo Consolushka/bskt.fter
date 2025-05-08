@@ -22,51 +22,39 @@ IMP provides deep analysis of player performance considering actual playing time
 
 <ul>
     <li>
-        cron
+        <b>cron</b>
         <p>
             Every day at 12AM service saves yesterday played games for each league.
         </p>
     </li>
     <li>
-        seed:list
+        <b>seed:list</b>
         <p>
             Prints all available database seeders.
         </p>
     </li>
     <li>
-        seed:db
+        <b>seed:db</b>
         <p>
             Seed database with provided seeder.
         </p>
     </li>
     <li>
-        save-game
+        <b>save-game</b>
         <p>
             Save game from provided league with provided game id.
         </p>
     </li>
     <li>
-        save-games-by-date
+        <b>save-games-by-date</b>
         <p>
             Save already played games for provided league and date (in format dd-mm-yyyy). If date is not provided, saves today games.
         </p>
     </li>
     <li>
-        save-game-by-team
+        <b>save-game-by-team</b>
         <p>
             Save already played games for provided league and team id
         </p>
     </li>
-    <li>
-        serve
-        <p>
-            Starts API server. On <b>air</b>
-        </p>
-    </li>
 </ul>
-
-### API
-
-Base path: <b>http://localhost:8001/api</b>
-
-Swagger documentation: <b>http://localhost:8001/api/docs</b>
