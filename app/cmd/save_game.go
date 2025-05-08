@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	gameDomain "IMP/app/internal/modules/games/domain"
-	gameModel "IMP/app/internal/modules/games/domain/models"
-	leaguesDomain "IMP/app/internal/modules/leagues/domain"
-	"IMP/app/internal/modules/statistics"
+	"IMP/app/internal/domain"
+	"IMP/app/internal/persistence"
+	statistics2 "IMP/app/internal/statistics"
 	"IMP/app/log"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -25,13 +24,13 @@ func init() {
 }
 
 func SaveGame(leagueName string, gameId string) {
-	leagueRepository := leaguesDomain.NewRepository()
+	leagueRepository := domain.NewLeaguesRepository()
 	league, err := leagueRepository.FirstByAliasEn(leagueName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	exists, err := gameDomain.NewRepository().Exists(gameModel.Game{OfficialId: gameId})
+	exists, err := domain.NewGamesRepository().Exists(domain.Game{OfficialId: gameId})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -40,7 +39,7 @@ func SaveGame(leagueName string, gameId string) {
 		return
 	}
 
-	leagueProvider := statistics.NewLeagueProvider(league.AliasEn)
+	leagueProvider := statistics2.NewLeagueProvider(league.AliasEn)
 	model, err := leagueProvider.GameBoxScore(gameId)
 	if err != nil {
 		log.Fatalln(err)
@@ -49,7 +48,7 @@ func SaveGame(leagueName string, gameId string) {
 		log.Fatalln("Game with Id" + gameId + " is not final")
 	}
 
-	persistence := statistics.NewPersistence()
+	persistence := persistence.NewService()
 	err = persistence.SaveGameBoxScore(model)
 	if err != nil {
 		log.Fatalln(err)

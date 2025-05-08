@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type Persistence struct {
+type Service struct {
 	leagueRepository  *domain.LeaguesRepository
 	teamsRepository   *domain.TeamsRepository
 	gamesRepository   *domain.GamesRepository
@@ -24,8 +24,8 @@ type Persistence struct {
 	league *domain.League
 }
 
-func NewPersistence() *Persistence {
-	return &Persistence{
+func NewService() *Service {
+	return &Service{
 		leagueRepository:  domain.NewLeaguesRepository(),
 		teamsRepository:   domain.NewTeamsRepository(),
 		gamesRepository:   domain.NewGamesRepository(),
@@ -34,7 +34,7 @@ func NewPersistence() *Persistence {
 	}
 }
 
-func (p *Persistence) SaveGameBoxScore(dto *statistics.GameBoxScoreDTO) error {
+func (p *Service) SaveGameBoxScore(dto *statistics.GameBoxScoreDTO) error {
 	var err error
 	p.league, err = p.leagueRepository.FirstByAliasEn(strings.ToLower(dto.LeagueAliasEn))
 	if err != nil {
@@ -64,7 +64,7 @@ func (p *Persistence) SaveGameBoxScore(dto *statistics.GameBoxScoreDTO) error {
 	return nil
 }
 
-func (p *Persistence) saveTeamModel(dto statistics.TeamBoxScoreDTO) (domain.Team, error) {
+func (p *Service) saveTeamModel(dto statistics.TeamBoxScoreDTO) (domain.Team, error) {
 	teamModel, err := p.teamsRepository.FirstOrCreate(domain.Team{
 		Alias:      dto.Alias,
 		LeagueID:   p.league.ID,
@@ -75,7 +75,7 @@ func (p *Persistence) saveTeamModel(dto statistics.TeamBoxScoreDTO) (domain.Team
 	return teamModel, err
 }
 
-func (p *Persistence) saveGameModel(dto *statistics.GameBoxScoreDTO, homeTeamId int, awayTeamId int) (domain.Game, error) {
+func (p *Service) saveGameModel(dto *statistics.GameBoxScoreDTO, homeTeamId int, awayTeamId int) (domain.Game, error) {
 	gameModel, err := p.gamesRepository.FirstOrCreate(domain.Game{
 		HomeTeamID:    homeTeamId,
 		AwayTeamID:    awayTeamId,
@@ -88,7 +88,7 @@ func (p *Persistence) saveGameModel(dto *statistics.GameBoxScoreDTO, homeTeamId 
 	return gameModel, err
 }
 
-func (p *Persistence) saveTeamStats(dto statistics.TeamBoxScoreDTO, opponents statistics.TeamBoxScoreDTO, gameModel domain.Game, teamModel domain.Team) error {
+func (p *Service) saveTeamStats(dto statistics.TeamBoxScoreDTO, opponents statistics.TeamBoxScoreDTO, gameModel domain.Game, teamModel domain.Team) error {
 	teamGameModel, err := p.teamsRepository.FirstOrCreateTeamGameStats(domain.TeamGameStats{
 		TeamId: teamModel.ID,
 		GameId: gameModel.ID,
@@ -118,7 +118,7 @@ func (p *Persistence) saveTeamStats(dto statistics.TeamBoxScoreDTO, opponents st
 	return nil
 }
 
-func (p *Persistence) savePlayerModel(player statistics.PlayerDTO) domain.Player {
+func (p *Service) savePlayerModel(player statistics.PlayerDTO) domain.Player {
 	playerModel, err := p.playersRepository.FirstByOfficialId(player.LeaguePlayerID)
 	if playerModel == nil {
 		log.Println("Player not found in database: ", player.LeaguePlayerID, ". Fetching from client")
@@ -144,7 +144,7 @@ func (p *Persistence) savePlayerModel(player statistics.PlayerDTO) domain.Player
 	return *playerModel
 }
 
-func (p *Persistence) getPlayerBio(playerId string) (string, string, *time.Time) {
+func (p *Service) getPlayerBio(playerId string) (string, string, *time.Time) {
 	if p.league.AliasEn == strings.ToUpper(domain.NBAAlias) {
 
 		playerInfo := p.nbaComClient.PlayerInfoPage(playerId)

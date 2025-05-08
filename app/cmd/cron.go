@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	leaguesDomain "IMP/app/internal/modules/leagues/domain"
+	"IMP/app/internal/domain"
 	"IMP/app/log"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
@@ -48,12 +48,12 @@ func init() {
 }
 
 type saveYesterdayGamesJob struct {
-	leaguesRepository *leaguesDomain.Repository
+	leaguesRepository *domain.LeaguesRepository
 }
 
 func newSaveYesterdayGamesJob() *saveYesterdayGamesJob {
 	return &saveYesterdayGamesJob{
-		leaguesRepository: leaguesDomain.NewRepository(),
+		leaguesRepository: domain.NewLeaguesRepository(),
 	}
 }
 
