@@ -4,16 +4,16 @@ import (
 	"IMP/app/internal/domain"
 )
 
-type ImpPERs string
+type PERs string
 
 const (
-	Clean    ImpPERs = "Clean"
-	Bench    ImpPERs = "Bench"
-	Start    ImpPERs = "Start"
-	FullGame ImpPERs = "FullGame"
+	Clean    PERs = "Clean"
+	Bench    PERs = "Bench"
+	Start    PERs = "Start"
+	FullGame PERs = "FullGame"
 )
 
-func (ip ImpPERs) Order() int {
+func (ip PERs) Order() int {
 	switch ip {
 	case Clean:
 		return 0
@@ -28,7 +28,7 @@ func (ip ImpPERs) Order() int {
 	return -1
 }
 
-func (ip ImpPERs) ToString() string {
+func (ip PERs) ToString() string {
 	return string(ip)
 }
 
@@ -45,7 +45,8 @@ func EvaluateClean(playedSeconds int, plsMin int, finalDifference int, fullGameT
 	return rawValue
 }
 
-func EvaluatePer(playedSeconds int, plsMin *int, finalDifferential *int, fullGameTime *int, impPer ImpPERs, league *domain.League, cleanImpPointer *float64) float64 {
+// EvaluatePer calculates the IMP per given PER
+func EvaluatePer(playedSeconds int, plsMin *int, finalDifferential *int, fullGameTime *int, impPer PERs, league *domain.League, cleanImpPointer *float64) float64 {
 	var cleanImp float64
 
 	if cleanImpPointer == nil {

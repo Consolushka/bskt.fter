@@ -48,8 +48,8 @@ func SaveGame(leagueName string, gameId string) {
 		log.Fatalln("Game with Id" + gameId + " is not final")
 	}
 
-	persistence := persistence.NewService()
-	err = persistence.SaveGameBoxScore(model)
+	service := persistence.NewService()
+	err = service.SaveGameBoxScore(model)
 	if err != nil {
 		log.Fatalln(err)
 	}

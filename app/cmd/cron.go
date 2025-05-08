@@ -25,7 +25,10 @@ var cronCmd = &cobra.Command{
 		cronJob := cron.New(cron.WithLocation(loc))
 
 		job := newSaveYesterdayGamesJob()
-		cronJob.AddJob("0 12 * * *", job)
+		_, err := cronJob.AddJob("0 12 * * *", job)
+		if err != nil {
+			log.Error("Couldn't start scheduled job: ", job)
+		}
 
 		now := time.Now().In(loc)
 		noon := time.Date(now.Year(), now.Month(), now.Day(), 12, 0, 0, 0, loc)

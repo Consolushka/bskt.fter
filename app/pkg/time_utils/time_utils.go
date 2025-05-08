@@ -1,13 +1,8 @@
 package time_utils
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
-)
-
-const (
-	PlayedTimeFormat = "%d:%02d"
 )
 
 func FormattedMinutesToSeconds(timeStr string, pattern string) int {
@@ -44,11 +39,4 @@ func FormattedMinutesToSeconds(timeStr string, pattern string) int {
 	seconds, _ := strconv.Atoi(timeStr[secondsStart:secondsEnd])
 
 	return minutes*60 + seconds
-}
-
-func SecondsToFormat(totalSeconds int, format string) string {
-	minutes := totalSeconds / 60
-	seconds := totalSeconds % 60
-
-	return fmt.Sprintf(format, minutes, seconds)
 }

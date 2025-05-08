@@ -19,7 +19,7 @@ const (
 	Per48 TimeBasedImpCoefficient = 48
 )
 
-func TimeBasesByLeagueAndPers(league *domain.League, impPer ImpPERs) TimeBasedImpCoefficient {
+func TimeBasesByLeagueAndPers(league *domain.League, impPer PERs) TimeBasedImpCoefficient {
 	switch league.AliasEn {
 	case strings.ToUpper(domain.NBAAlias):
 		switch impPer {

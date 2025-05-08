@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"github.com/PuerkitoBio/goquery"
+	"io"
 	"net/http"
 )
 
@@ -10,7 +11,12 @@ func FetchPage(url string) (*goquery.Document, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			panic(err)
+		}
+	}(resp.Body)
 
 	return goquery.NewDocumentFromReader(resp.Body)
 }
