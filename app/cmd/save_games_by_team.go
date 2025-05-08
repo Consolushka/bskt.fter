@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	leaguesDomain "IMP/app/internal/modules/leagues/domain"
-	"IMP/app/internal/modules/statistics"
+	"IMP/app/internal/domain"
+	"IMP/app/internal/statistics"
 	"IMP/app/log"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +22,7 @@ func init() {
 }
 
 func SaveGameByTeam(leagueName string, teamId string) {
-	leagueRepository := leaguesDomain.NewRepository()
+	leagueRepository := domain.NewLeaguesRepository()
 	league, err := leagueRepository.FirstByAliasEn(leagueName)
 	if err != nil {
 		log.Fatalln(err)
