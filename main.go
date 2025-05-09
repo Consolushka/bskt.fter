@@ -5,10 +5,14 @@ import (
 	"IMP/app/database"
 	"IMP/app/log"
 	"github.com/joho/godotenv"
+	"time"
 )
 
 // todo: add tests
 func main() {
+	loc, _ := time.LoadLocation("Europe/Moscow")
+	time.Local = loc
+
 	log.Init()
 
 	err := godotenv.Load()
