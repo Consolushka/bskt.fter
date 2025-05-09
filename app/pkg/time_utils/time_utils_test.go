@@ -9,15 +9,16 @@ import (
 // Verify that pattern %m:%s with leading 0 is correctly converted to seconds
 // Verify that pattern %m:%s with zero seconds is correctly converted to seconds
 // Verify that patterns with text ('%m %s', '%m minutes, %s seconds') are correctly converted to seconds
-// Verify that strings without seconds or minutes returns 0 (error)
-// Verify that invalid string format returns 0 (error)
+// Verify that strings without seconds or minutes returns error with message "pattern must contain both %m and %s"
+// Verify that invalid string format returns error with message "time string does not match the pattern"
 // Verify that pattern with reversed minutes and seconds are correctly converted to seconds
 func TestFormattedMinutesToSeconds(t *testing.T) {
 	tests := []struct {
-		name     string
-		timeStr  string
-		pattern  string
-		expected int
+		name         string
+		timeStr      string
+		pattern      string
+		expected     int
+		errorMessage string
 	}{
 		{
 			name:     "basic minutes and seconds",
@@ -56,28 +57,28 @@ func TestFormattedMinutesToSeconds(t *testing.T) {
 			expected: 2*60 + 30,
 		},
 		{
-			name:     "missing minutes in pattern",
-			timeStr:  "45s",
-			pattern:  "%ss",
-			expected: 0, // Function requires both %m and %s
+			name:         "missing minutes in pattern",
+			timeStr:      "45s",
+			pattern:      "%ss",
+			errorMessage: "pattern must contain both %m and %s",
 		},
 		{
-			name:     "missing seconds in pattern",
-			timeStr:  "5m",
-			pattern:  "%mm",
-			expected: 0, // Function requires both %m and %s
+			name:         "missing seconds in pattern",
+			timeStr:      "5m",
+			pattern:      "%mm",
+			errorMessage: "pattern must contain both %m and %s",
 		},
 		{
-			name:     "timeStr shorter than pattern",
-			timeStr:  "1:2",
-			pattern:  "%m:%s extra",
-			expected: 0,
+			name:         "timeStr shorter than pattern",
+			timeStr:      "1:2",
+			pattern:      "%m:%s extra",
+			errorMessage: "time string does not match the pattern",
 		},
 		{
-			name:     "invalid time string",
-			timeStr:  "abc",
-			pattern:  "%m:%s",
-			expected: 0,
+			name:         "invalid time string",
+			timeStr:      "abc",
+			pattern:      "%m:%s",
+			errorMessage: "time string does not match the pattern",
 		},
 		{
 			name:     "reversed pattern",
@@ -89,7 +90,19 @@ func TestFormattedMinutesToSeconds(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := FormattedMinutesToSeconds(tt.timeStr, tt.pattern)
+			result, err := FormattedMinutesToSeconds(tt.timeStr, tt.pattern)
+			if tt.errorMessage != "" {
+				if err == nil || err.Error() != tt.errorMessage {
+					t.Errorf("FormattedMinutesToSeconds(%q, %q) error = %v, expected %v",
+						tt.timeStr, tt.pattern, err, tt.errorMessage)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("FormattedMinutesToSeconds(%q, %q) error = %v, expected nil",
+					tt.timeStr, tt.pattern, err)
+				return
+			}
 			if result != tt.expected {
 				t.Errorf("FormattedMinutesToSeconds(%q, %q) = %d, expected %d",
 					tt.timeStr, tt.pattern, result, tt.expected)
