@@ -1,6 +1,10 @@
 package string_utils
 
-import "errors"
+import (
+	"errors"
+	"strings"
+	"unicode"
+)
 
 type Language int
 
@@ -27,10 +31,24 @@ func HasNonLanguageChars(text string, language Language) (bool, error) {
 		return false, err
 	}
 
-	for _, r := range text {
+	trimmedText := RemovePunctuationAndSpaces(text)
+
+	for _, r := range trimmedText {
 		if r < minBorder || r > maxBorder {
 			return true, nil
 		}
 	}
 	return false, nil
+}
+
+func RemovePunctuationAndSpaces(text string) string {
+	var result strings.Builder
+
+	for _, r := range text {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			result.WriteRune(r)
+		}
+	}
+
+	return result.String()
 }
