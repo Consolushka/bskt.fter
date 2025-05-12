@@ -57,13 +57,11 @@ func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error
 }
 
 func (c *nbaMapper) mapTeam(dto cdn_nba.TeamBoxScoreDto) (TeamBoxScoreDTO, error) {
-	dtos := make([]PlayerDTO, len(dto.Players))
-	for i, player := range dto.Players {
-		dto, err := c.mapPlayer(player)
-		if err != nil {
-			return TeamBoxScoreDTO{}, err
-		}
-		dtos[i] = dto
+	dtos, err := array_utils.Map(dto.Players, func(player cdn_nba.PlayerBoxScoreDto) (PlayerDTO, error) {
+		return c.mapPlayer(player)
+	})
+	if err != nil {
+		return TeamBoxScoreDTO{}, err
 	}
 
 	return TeamBoxScoreDTO{
@@ -106,9 +104,9 @@ func (n *nbaProvider) GamesByDate(date time.Time) ([]string, error) {
 
 	for _, gameDate := range schedule.Games {
 		if gameDate.GameDate == formattedSearchedDate {
-			return array_utils.Map(gameDate.Games, func(game cdn_nba.GameSeasonScheduleDto) string {
-				return game.GameId
-			}), nil
+			return array_utils.Map(gameDate.Games, func(game cdn_nba.GameSeasonScheduleDto) (string, error) {
+				return game.GameId, nil
+			})
 		}
 	}
 
