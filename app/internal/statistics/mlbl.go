@@ -3,6 +3,7 @@ package statistics
 import (
 	"IMP/app/internal/statistics/infobasket"
 	"IMP/app/pkg/array_utils"
+	"errors"
 	"strconv"
 	"time"
 )
@@ -13,41 +14,58 @@ func newMlblMapper() *mlblMapper {
 	return &mlblMapper{}
 }
 
-func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) *GameBoxScoreDTO {
+func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) (*GameBoxScoreDTO, error) {
 	duration := 0
 	duration = regulationPeriodsNumber * periodDuration
 	for i := 0; i < game.MaxPeriod-regulationPeriodsNumber; i++ {
 		duration += overtimeDuration
 	}
 
-	scheduled, _ := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTime)
+	scheduled, err := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTime)
+	if err != nil {
+		return nil, err
+	}
+
+	homeTeamDto, err := m.mapTeam(game.GameTeams[0])
+	awayTeamDto, err := m.mapTeam(game.GameTeams[1])
+	if err != nil {
+		return nil, err
+	}
 
 	gameBoxScoreDto := GameBoxScoreDTO{
 		LeagueAliasEn: leagueAlias,
 		IsFinal:       game.GameStatus == 1,
-		HomeTeam:      m.mapTeam(game.GameTeams[0]),
-		AwayTeam:      m.mapTeam(game.GameTeams[1]),
+		HomeTeam:      homeTeamDto,
+		AwayTeam:      awayTeamDto,
 		PlayedMinutes: duration,
 		ScheduledAt:   scheduled,
 	}
 
-	return &gameBoxScoreDto
+	return &gameBoxScoreDto, nil
 }
 
-func (m *mlblMapper) mapTeam(teamBoxScore infobasket.TeamBoxScoreDto) TeamBoxScoreDTO {
+func (m *mlblMapper) mapTeam(teamBoxScore infobasket.TeamBoxScoreDto) (TeamBoxScoreDTO, error) {
+	playersDtos, err := array_utils.Map(teamBoxScore.Players, func(player infobasket.PlayerBoxScoreDto) (PlayerDTO, error) {
+		return m.mapPlayer(player)
+	})
+	if err != nil {
+		return TeamBoxScoreDTO{}, err
+	}
+
 	return TeamBoxScoreDTO{
 		Alias:    teamBoxScore.TeamName.CompTeamAbcNameEn,
 		Name:     teamBoxScore.TeamName.CompTeamNameEn,
 		LeagueId: strconv.Itoa(teamBoxScore.TeamID),
 		Scored:   teamBoxScore.Score,
-		Players: array_utils.Map(teamBoxScore.Players, func(player infobasket.PlayerBoxScoreDto) PlayerDTO {
-			return m.mapPlayer(player)
-		}),
-	}
+		Players:  playersDtos,
+	}, nil
 }
 
-func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) PlayerDTO {
-	birthdate, _ := time.Parse("02.01.2006", player.PersonBirth)
+func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, error) {
+	birthdate, err := time.Parse("02.01.2006", player.PersonBirth)
+	if err != nil {
+		return PlayerDTO{}, err
+	}
 
 	return PlayerDTO{
 		FullNameLocal:  player.PersonNameRu,
@@ -59,7 +77,7 @@ func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) PlayerDTO {
 			PlayedSeconds: player.Seconds,
 			IsBench:       !player.IsStart,
 		},
-	}
+	}, nil
 }
 
 type mlblProvider struct {
@@ -70,7 +88,11 @@ type mlblProvider struct {
 func (i *mlblProvider) GameBoxScore(gameId string) (*GameBoxScoreDTO, error) {
 	gameDto := i.client.BoxScore(gameId)
 
-	game := i.mapper.mapGame(gameDto, 4, 10, 5, "MLBL")
+	game, err := i.mapper.mapGame(gameDto, 4, 10, 5, "MLBL")
+	if err != nil {
+		return nil, err
+	}
+
 	game.Id = gameId
 	return game, nil
 }
@@ -95,13 +117,16 @@ func (i *mlblProvider) GamesByDate(date time.Time) ([]string, error) {
 func (i *mlblProvider) GamesByTeam(teamId string) ([]string, error) {
 	scheduleJson := i.client.TeamGames(teamId)
 
-	gamesIds := array_utils.Map(scheduleJson.Games, func(game infobasket.GameScheduleDto) string {
+	gamesIds, err := array_utils.Map(scheduleJson.Games, func(game infobasket.GameScheduleDto) (string, error) {
 		if game.GameStatus == 1 {
-			return strconv.Itoa(game.GameID)
+			return strconv.Itoa(game.GameID), nil
 		}
 
-		return ""
+		return "", errors.New("game is not final. or game status is: " + strconv.Itoa(game.GameStatus))
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	return array_utils.Filter(gamesIds, func(gameId string) bool {
 		return gameId != ""
