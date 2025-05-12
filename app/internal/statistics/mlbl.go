@@ -2,7 +2,9 @@ package statistics
 
 import (
 	"IMP/app/internal/statistics/infobasket"
+	"IMP/app/internal/statistics/translator"
 	"IMP/app/pkg/array_utils"
+	"IMP/app/pkg/string_utils"
 	"errors"
 	"strconv"
 	"time"
@@ -64,12 +66,26 @@ func (m *mlblMapper) mapTeam(teamBoxScore infobasket.TeamBoxScoreDto) (TeamBoxSc
 func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, error) {
 	birthdate, err := time.Parse("02.01.2006", player.PersonBirth)
 	if err != nil {
+		return PlayerDTO{}, errors.New("can't parse player birthdate. given birthdate: " + player.PersonBirth + " doesn't match format 02.01.2006")
+	}
+
+	var enPersonName string
+
+	hasNonLatinChars, err := string_utils.HasNonLanguageChars(player.PersonNameEn, string_utils.Latin)
+	if err != nil {
 		return PlayerDTO{}, err
+	}
+
+	if hasNonLatinChars {
+		ruCode := "ru"
+		enPersonName = translator.Translate(player.PersonNameEn, &ruCode, "en")
+	} else {
+		enPersonName = player.PersonNameEn
 	}
 
 	return PlayerDTO{
 		FullNameLocal:  player.PersonNameRu,
-		FullNameEn:     player.PersonNameEn,
+		FullNameEn:     enPersonName,
 		BirthDate:      &birthdate,
 		LeaguePlayerID: strconv.Itoa(player.PersonID),
 		Statistic: PlayerStatisticDTO{
