@@ -1,5 +1,11 @@
 package string_utils
 
+import (
+	"errors"
+	"strings"
+	"unicode"
+)
+
 type Language int
 
 const (
@@ -7,24 +13,42 @@ const (
 	Cyrillic
 )
 
-func (l Language) getBoundaries() (min, max int32) {
+func (l Language) getBoundaries() (min, max int32, err error) {
 	switch l {
 	case Latin:
-		return 0, 127
+		return 0, 127, nil
 	case Cyrillic:
-		return 1024, 1279 // Basic Cyrillic Unicode range
+		return 1024, 1279, nil // Basic Cyrillic Unicode range
 	default:
-		return 0, 127
+		return 0, 0, errors.New("invalid language")
 	}
 }
 
-func HasNonLanguageChars(text string, language Language) bool {
-	minBorder, maxBorder := language.getBoundaries()
+func HasNonLanguageChars(text string, language Language) (bool, error) {
+	minBorder, maxBorder, err := language.getBoundaries()
 
-	for _, r := range text {
+	if err != nil {
+		return false, err
+	}
+
+	trimmedText := RemovePunctuationAndSpaces(text)
+
+	for _, r := range trimmedText {
 		if r < minBorder || r > maxBorder {
-			return true
+			return true, nil
 		}
 	}
-	return false
+	return false, nil
+}
+
+func RemovePunctuationAndSpaces(text string) string {
+	var result strings.Builder
+
+	for _, r := range text {
+		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+			result.WriteRune(r)
+		}
+	}
+
+	return result.String()
 }

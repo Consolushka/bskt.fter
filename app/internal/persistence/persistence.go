@@ -165,7 +165,8 @@ func (p *Service) getPlayerBio(playerId string) (string, string, *time.Time) {
 		playerLocalFullName = strings.ReplaceAll(playerLocalFullName, "\n", " ")
 		// If player name contains non-latin characters - translates name to EN
 		playerEnFullName := playerLocalFullName
-		if string_utils.HasNonLanguageChars(playerLocalFullName, string_utils.Latin) {
+		hasNonLatinChars, err := string_utils.HasNonLanguageChars(playerLocalFullName, string_utils.Latin)
+		if hasNonLatinChars || err != nil {
 			playerEnFullName = translator.Translate(playerEnFullName, nil, "en")
 		}
 
