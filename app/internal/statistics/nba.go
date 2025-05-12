@@ -24,7 +24,7 @@ func newNbaMapper() *nbaMapper {
 	}
 }
 
-func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) GameBoxScoreDTO {
+func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error) {
 	league, err := c.leagueRepository.FirstByAliasEn(strings.ToUpper(domain.NBAAlias))
 	if err != nil {
 		log.Fatalln(err)
@@ -36,42 +36,60 @@ func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) GameBoxScoreDTO {
 	for i := 0; i < gameDto.Period-league.PeriodsNumber; i++ {
 		duration += league.OvertimeDuration
 	}
+	homeTeam, err := c.mapTeam(gameDto.HomeTeam)
+	awayTeam, err := c.mapTeam(gameDto.AwayTeam)
+
+	if err != nil {
+		return GameBoxScoreDTO{}, err
+	}
+
 	gameBoxScoreDto := GameBoxScoreDTO{
 		Id:            gameDto.GameId,
 		LeagueAliasEn: league.AliasEn,
 		IsFinal:       gameDto.GameStatus == 3,
-		HomeTeam:      c.mapTeam(gameDto.HomeTeam),
-		AwayTeam:      c.mapTeam(gameDto.AwayTeam),
+		HomeTeam:      homeTeam,
+		AwayTeam:      awayTeam,
 		PlayedMinutes: duration,
 		ScheduledAt:   gameDto.GameTimeUTC,
 	}
 
-	return gameBoxScoreDto
+	return gameBoxScoreDto, nil
 }
 
-func (c *nbaMapper) mapTeam(dto cdn_nba.TeamBoxScoreDto) TeamBoxScoreDTO {
+func (c *nbaMapper) mapTeam(dto cdn_nba.TeamBoxScoreDto) (TeamBoxScoreDTO, error) {
+	dtos := make([]PlayerDTO, len(dto.Players))
+	for i, player := range dto.Players {
+		dto, err := c.mapPlayer(player)
+		if err != nil {
+			return TeamBoxScoreDTO{}, err
+		}
+		dtos[i] = dto
+	}
+
 	return TeamBoxScoreDTO{
 		Alias:    dto.TeamTricode,
 		Name:     dto.TeamName,
 		LeagueId: strconv.Itoa(dto.TeamId),
 		Scored:   dto.Score,
-		Players: array_utils.Map(dto.Players, func(player cdn_nba.PlayerBoxScoreDto) PlayerDTO {
-			return c.mapPlayer(player)
-		}),
-	}
+		Players:  dtos,
+	}, nil
 }
 
-func (c *nbaMapper) mapPlayer(dto cdn_nba.PlayerBoxScoreDto) PlayerDTO {
+func (c *nbaMapper) mapPlayer(dto cdn_nba.PlayerBoxScoreDto) (PlayerDTO, error) {
+	seconds, err := time_utils.FormattedMinutesToSeconds(dto.Statistics.Minutes, playedTimeFormat)
+	if err != nil {
+		return PlayerDTO{}, err
+	}
 	return PlayerDTO{
 		FullNameLocal:  dto.Name,
 		BirthDate:      nil,
 		LeaguePlayerID: strconv.Itoa(dto.PersonId),
 		Statistic: PlayerStatisticDTO{
 			PlsMin:        int(dto.Statistics.Plus - dto.Statistics.Minus),
-			PlayedSeconds: time_utils.FormattedMinutesToSeconds(dto.Statistics.Minutes, playedTimeFormat),
+			PlayedSeconds: seconds,
 			IsBench:       dto.Starter != "1",
 		},
-	}
+	}, nil
 }
 
 const playedTimeFormat = "PT%mM%sS"
@@ -100,9 +118,9 @@ func (n *nbaProvider) GamesByDate(date time.Time) ([]string, error) {
 func (n *nbaProvider) GameBoxScore(gameId string) (*GameBoxScoreDTO, error) {
 	gameDto := n.cdnNbaClient.BoxScore(gameId)
 
-	gameBoxScoreDto := n.mapper.mapGame(gameDto)
+	gameBoxScoreDto, err := n.mapper.mapGame(gameDto)
 
-	return &gameBoxScoreDto, nil
+	return &gameBoxScoreDto, err
 }
 
 func (n *nbaProvider) GamesByTeam(teamId string) ([]string, error) {
