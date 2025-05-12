@@ -122,3 +122,102 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 		})
 	}
 }
+
+// TestMlblMapper_mapTeam tests the mapTeam method of mlblMapper
+// Verify that when valid team data is provided - team data is correctly mapped
+// Verify that when player mapping fails - error is returned
+func TestMlblMapper_mapTeam(t *testing.T) {
+	lbjBirthDate := time.Date(1984, time.December, 30, 0, 0, 0, 0, time.UTC)
+
+	cases := []struct {
+		name     string
+		data     infobasket.TeamBoxScoreDto
+		expected TeamBoxScoreDTO
+		errorMsg string
+	}{
+		{
+			name: "Successful mapping with valid team data",
+			data: infobasket.TeamBoxScoreDto{
+				TeamID: 123,
+				TeamName: infobasket.TeamNameBoxScoreDto{
+					CompTeamAbcNameEn: "LAL",
+					CompTeamNameEn:    "Los Angeles Lakers",
+				},
+				Score: 105,
+				Players: []infobasket.PlayerBoxScoreDto{
+					{
+						PersonID:     1,
+						PersonNameRu: "Леброн Джеймс",
+						PersonNameEn: "LeBron James",
+						PersonBirth:  "30.12.1984",
+						PlusMinus:    15,
+						Seconds:      1800,
+						IsStart:      true,
+					},
+				},
+			},
+			expected: TeamBoxScoreDTO{
+				Alias:    "LAL",
+				Name:     "Los Angeles Lakers",
+				LeagueId: "123",
+				Scored:   105,
+				Players: []PlayerDTO{
+					{
+						FullNameLocal:  "Леброн Джеймс",
+						FullNameEn:     "LeBron James",
+						LeaguePlayerID: "1",
+						BirthDate:      &lbjBirthDate,
+						Statistic: PlayerStatisticDTO{
+							PlsMin:        15,
+							PlayedSeconds: 1800,
+							IsBench:       false,
+						},
+						// Note: BirthDate is not compared directly as it's a pointer to time.Time
+						// We'll handle this in the test assertion
+					},
+				},
+			},
+			errorMsg: "",
+		},
+		{
+			name: "Error when player mapping fails due to invalid birthdate",
+			data: infobasket.TeamBoxScoreDto{
+				TeamID: 123,
+				TeamName: infobasket.TeamNameBoxScoreDto{
+					CompTeamAbcNameEn: "LAL",
+					CompTeamNameEn:    "Los Angeles Lakers",
+				},
+				Score: 105,
+				Players: []infobasket.PlayerBoxScoreDto{
+					{
+						PersonID:     1,
+						PersonNameRu: "Леброн Джеймс",
+						PersonNameEn: "LeBron James",
+						PersonBirth:  "invalid-date", // Invalid date format
+						PlusMinus:    15,
+						Seconds:      1800,
+						IsStart:      true,
+					},
+				},
+			},
+			expected: TeamBoxScoreDTO{},
+			errorMsg: "can't parse player birthdate. given birthdate: invalid-date doesn't match format 02.01.2006",
+		},
+	}
+
+	mapper := newMlblMapper()
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := mapper.mapTeam(tc.data)
+
+			if tc.errorMsg != "" {
+				assert.EqualError(t, err, tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+
+				// Compare all fields except BirthDate which needs special handling
+				assert.Equal(t, tc.expected, result)
+			}
+		})
+	}
+}
