@@ -10,10 +10,14 @@ func Filter[T any](array []T, callback func(T) bool) []T {
 	return filtered
 }
 
-func Map[T any, R any](array []T, callback func(T) R) []R {
+func Map[T any, R any](array []T, callback func(T) (R, error)) ([]R, error) {
 	mapped := make([]R, 0)
 	for _, item := range array {
-		mapped = append(mapped, callback(item))
+		result, err := callback(item)
+		if err != nil {
+			return nil, err
+		}
+		mapped = append(mapped, result)
 	}
-	return mapped
+	return mapped, nil
 }
