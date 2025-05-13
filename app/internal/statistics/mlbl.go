@@ -10,10 +10,14 @@ import (
 	"time"
 )
 
-type mlblMapper struct{}
+type mlblMapper struct {
+	stringUtils string_utils.StringUtilsInterface
+}
 
-func newMlblMapper() *mlblMapper {
-	return &mlblMapper{}
+func newMlblMapper(utilsInterface string_utils.StringUtilsInterface) *mlblMapper {
+	return &mlblMapper{
+		stringUtils: utilsInterface,
+	}
 }
 
 func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) (*GameBoxScoreDTO, error) {
@@ -74,7 +78,7 @@ func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, 
 
 	var enPersonName string
 
-	hasNonLatinChars, err := string_utils.HasNonLanguageChars(player.PersonNameEn, string_utils.Latin)
+	hasNonLatinChars, err := m.stringUtils.HasNonLanguageChars(player.PersonNameEn, string_utils.Latin)
 	if err != nil {
 		return PlayerDTO{}, err
 	}
@@ -155,6 +159,6 @@ func (i *mlblProvider) GamesByTeam(teamId string) ([]string, error) {
 func newMlblProvider() *mlblProvider {
 	return &mlblProvider{
 		client: infobasket.NewInfobasketClient(),
-		mapper: newMlblMapper(),
+		mapper: newMlblMapper(string_utils.NewStringUtils()),
 	}
 }
