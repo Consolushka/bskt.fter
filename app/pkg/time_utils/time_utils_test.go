@@ -72,19 +72,25 @@ func TestFormattedMinutesToSeconds(t *testing.T) {
 			name:         "timeStr shorter than pattern",
 			timeStr:      "1:2",
 			pattern:      "%m:%s extra",
-			errorMessage: "time string does not match the pattern",
+			errorMessage: "time string '1:2' does not match the pattern '%m:%s extra'",
 		},
 		{
 			name:         "invalid time string",
 			timeStr:      "abc",
 			pattern:      "%m:%s",
-			errorMessage: "time string does not match the pattern",
+			errorMessage: "time string 'abc' does not match the pattern '%m:%s'",
 		},
 		{
 			name:     "reversed pattern",
 			timeStr:  "45:2",
 			pattern:  "%s:%m",
 			expected: 2*60 + 45,
+		},
+		{
+			name:     "reversed pattern",
+			timeStr:  "PT22M28.44S",
+			pattern:  "PT%mM%sS",
+			expected: 22*60 + 28,
 		},
 	}
 
