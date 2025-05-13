@@ -2,6 +2,8 @@ package statistics
 
 import (
 	"IMP/app/internal/statistics/infobasket"
+	"IMP/app/pkg/string_utils"
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -12,11 +14,15 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 	secondPlayerDate := time.Date(1970, 11, 11, 0, 0, 0, 0, time.UTC)
 	thirdPlayerDate := time.Date(2000, 12, 13, 0, 0, 0, 0, time.UTC)
 
+	charsFuncWithErr := func(text string, language string_utils.Language) (bool, error) {
+		return true, errors.New("error in non-language chars")
+	}
 	cases := []struct {
-		name     string
-		player   infobasket.PlayerBoxScoreDto
-		result   PlayerDTO
-		errorMsg string
+		name                    string
+		player                  infobasket.PlayerBoxScoreDto
+		result                  PlayerDTO
+		errorMsg                string
+		hasNonLanguageCharsFunc *func(text string, language string_utils.Language) (bool, error)
 	}{
 		{
 			name: "Map default player with positive plus-minus from start",
@@ -104,11 +110,26 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 			result:   PlayerDTO{},
 			errorMsg: "can't parse player birthdate. given birthdate: 11-24-2000 doesn't match format 02.01.2006",
 		},
+		{
+			name: "Map player with error in non-language chars",
+			player: infobasket.PlayerBoxScoreDto{
+				PersonNameRu: "Буданов Антон",
+				PersonNameEn: "Budanov Anton",
+				PersonBirth:  "13.12.2000",
+				PersonID:     321551,
+				PlusMinus:    0,
+				Seconds:      1200,
+				IsStart:      true,
+			},
+			result:                  PlayerDTO{},
+			hasNonLanguageCharsFunc: &charsFuncWithErr,
+			errorMsg:                "error in non-language chars",
+		},
 	}
 
-	mapper := newMlblMapper()
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			mapper := newMlblMapper(string_utils.NewMockStringUtils(tc.hasNonLanguageCharsFunc, nil))
 
 			result, err := mapper.mapPlayer(tc.player)
 
@@ -205,7 +226,7 @@ func TestMlblMapper_mapTeam(t *testing.T) {
 		},
 	}
 
-	mapper := newMlblMapper()
+	mapper := newMlblMapper(string_utils.NewStringUtils())
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := mapper.mapTeam(tc.data)
@@ -466,7 +487,7 @@ func TestMlblMapper_mapGame(t *testing.T) {
 		},
 	}
 
-	mapper := newMlblMapper()
+	mapper := newMlblMapper(string_utils.NewStringUtils())
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := mapper.mapGame(tc.game, tc.regulationPeriodsNum, tc.periodDuration, tc.overtimeDuration, tc.leagueAlias)
