@@ -25,10 +25,13 @@ func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPer
 
 	scheduled, err := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTime)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("can't parse game datetime. given game datetime: " + game.GameDate + " " + game.GameTime + " doesn't match format 02.01.2006 15.04")
 	}
 
 	homeTeamDto, err := m.mapTeam(game.GameTeams[0])
+	if err != nil {
+		return nil, err
+	}
 	awayTeamDto, err := m.mapTeam(game.GameTeams[1])
 	if err != nil {
 		return nil, err

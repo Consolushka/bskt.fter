@@ -221,3 +221,263 @@ func TestMlblMapper_mapTeam(t *testing.T) {
 		})
 	}
 }
+
+// TestMlblMapper_mapGame tests the mapGame method of mlblMapper
+//
+// Verify that when valid game data is provided while mapping game - returns correct GameBoxScoreDTO
+// Verify that when invalid game date format is provided while mapping game - returns error
+// Verify that when game has overtime periods while mapping game - calculates correct duration
+// Verify that when player has invalid birthdate while mapping game - returns error
+func TestMlblMapper_mapGame(t *testing.T) {
+	cases := []struct {
+		name                 string
+		game                 infobasket.GameBoxScoreResponse
+		regulationPeriodsNum int
+		periodDuration       int
+		overtimeDuration     int
+		leagueAlias          string
+		expected             *GameBoxScoreDTO
+		errorMsg             string
+	}{
+		{
+			name: "Valid game data",
+			game: infobasket.GameBoxScoreResponse{
+				GameDate:   "01.02.2023",
+				GameTime:   "18.30",
+				GameStatus: 1,
+				MaxPeriod:  4,
+				GameTeams: []infobasket.TeamBoxScoreDto{
+					{
+						TeamName: infobasket.TeamNameBoxScoreDto{
+							CompTeamAbcNameEn: "HOME",
+							CompTeamNameEn:    "Home Team",
+						},
+						TeamID:  123,
+						Score:   85,
+						Players: []infobasket.PlayerBoxScoreDto{},
+					},
+					{
+						TeamName: infobasket.TeamNameBoxScoreDto{
+							CompTeamAbcNameEn: "AWAY",
+							CompTeamNameEn:    "Away Team",
+						},
+						TeamID:  456,
+						Score:   80,
+						Players: []infobasket.PlayerBoxScoreDto{},
+					},
+				},
+			},
+			regulationPeriodsNum: 4,
+			periodDuration:       10,
+			overtimeDuration:     5,
+			leagueAlias:          "MLBL",
+			expected: &GameBoxScoreDTO{
+				LeagueAliasEn: "MLBL",
+				IsFinal:       true,
+				HomeTeam: TeamBoxScoreDTO{
+					Alias:    "HOME",
+					Name:     "Home Team",
+					LeagueId: "123",
+					Scored:   85,
+					Players:  []PlayerDTO{},
+				},
+				AwayTeam: TeamBoxScoreDTO{
+					Alias:    "AWAY",
+					Name:     "Away Team",
+					LeagueId: "456",
+					Scored:   80,
+					Players:  []PlayerDTO{},
+				},
+				PlayedMinutes: 40, // 4 periods * 10 minutes
+				ScheduledAt:   time.Date(2023, 2, 1, 18, 30, 0, 0, time.UTC),
+			},
+			errorMsg: "",
+		},
+		{
+			name: "Game with overtime periods",
+			game: infobasket.GameBoxScoreResponse{
+				GameDate:   "01.02.2023",
+				GameTime:   "18.30",
+				GameStatus: 1,
+				MaxPeriod:  6, // 4 regular periods + 2 overtimes
+				GameTeams: []infobasket.TeamBoxScoreDto{
+					{
+						TeamName: infobasket.TeamNameBoxScoreDto{
+							CompTeamAbcNameEn: "HOME",
+							CompTeamNameEn:    "Home Team",
+						},
+						TeamID:  123,
+						Score:   95,
+						Players: []infobasket.PlayerBoxScoreDto{},
+					},
+					{
+						TeamName: infobasket.TeamNameBoxScoreDto{
+							CompTeamAbcNameEn: "AWAY",
+							CompTeamNameEn:    "Away Team",
+						},
+						TeamID:  456,
+						Score:   90,
+						Players: []infobasket.PlayerBoxScoreDto{},
+					},
+				},
+			},
+			regulationPeriodsNum: 4,
+			periodDuration:       10,
+			overtimeDuration:     5,
+			leagueAlias:          "MLBL",
+			expected: &GameBoxScoreDTO{
+				LeagueAliasEn: "MLBL",
+				IsFinal:       true,
+				HomeTeam: TeamBoxScoreDTO{
+					Alias:    "HOME",
+					Name:     "Home Team",
+					LeagueId: "123",
+					Scored:   95,
+					Players:  []PlayerDTO{},
+				},
+				AwayTeam: TeamBoxScoreDTO{
+					Alias:    "AWAY",
+					Name:     "Away Team",
+					LeagueId: "456",
+					Scored:   90,
+					Players:  []PlayerDTO{},
+				},
+				PlayedMinutes: 50, // 4 periods * 10 minutes + 2 overtimes * 5 minutes
+				ScheduledAt:   time.Date(2023, 2, 1, 18, 30, 0, 0, time.UTC),
+			},
+			errorMsg: "",
+		},
+		{
+			name: "Invalid game date format",
+			game: infobasket.GameBoxScoreResponse{
+				GameDate:   "2023-02-01", // Invalid format, should be DD.MM.YYYY
+				GameTime:   "18.30",
+				GameStatus: 0,
+				MaxPeriod:  4,
+				GameTeams: []infobasket.TeamBoxScoreDto{
+					{}, {},
+				},
+			},
+			regulationPeriodsNum: 4,
+			periodDuration:       10,
+			overtimeDuration:     5,
+			leagueAlias:          "MLBL",
+			expected:             nil,
+			errorMsg:             "can't parse game datetime. given game datetime: 2023-02-01 18.30 doesn't match format 02.01.2006 15.04",
+		},
+		{
+			name: "Invalid game time format",
+			game: infobasket.GameBoxScoreResponse{
+				GameDate:   "01.02.2023",
+				GameTime:   "18:30", // Invalid format, should use dots instead of colons
+				GameStatus: 0,
+				MaxPeriod:  4,
+				GameTeams: []infobasket.TeamBoxScoreDto{
+					{}, {},
+				},
+			},
+			regulationPeriodsNum: 4,
+			periodDuration:       10,
+			overtimeDuration:     5,
+			leagueAlias:          "MLBL",
+			expected:             nil,
+			errorMsg:             "can't parse game datetime. given game datetime: 01.02.2023 18:30 doesn't match format 02.01.2006 15.04",
+		},
+		{
+			name: "Player from home team with invalid birthdate",
+			game: infobasket.GameBoxScoreResponse{
+				GameDate:   "01.02.2023",
+				GameTime:   "18.30",
+				GameStatus: 1,
+				MaxPeriod:  4,
+				GameTeams: []infobasket.TeamBoxScoreDto{
+					{
+						TeamName: infobasket.TeamNameBoxScoreDto{
+							CompTeamAbcNameEn: "HOME",
+							CompTeamNameEn:    "Home Team",
+						},
+						TeamID: 123,
+						Score:  85,
+						Players: []infobasket.PlayerBoxScoreDto{
+							{
+								PersonID:     1,
+								PersonNameRu: "Иван Иванов",
+								PersonNameEn: "Ivan Ivanov",
+								PersonBirth:  "2000-01-01", // Invalid format, should be DD.MM.YYYY
+								IsStart:      true,
+								PlusMinus:    5,
+								Seconds:      1200,
+							},
+						},
+					},
+					{
+						TeamName: infobasket.TeamNameBoxScoreDto{},
+						TeamID:   456,
+						Score:    80,
+						Players:  []infobasket.PlayerBoxScoreDto{},
+					},
+				},
+			},
+			regulationPeriodsNum: 4,
+			periodDuration:       10,
+			overtimeDuration:     5,
+			leagueAlias:          "MLBL",
+			expected:             nil,
+			errorMsg:             "can't parse player birthdate. given birthdate: 2000-01-01 doesn't match format 02.01.2006",
+		},
+		{
+			name: "Player from away team with invalid birthdate",
+			game: infobasket.GameBoxScoreResponse{
+				GameDate:   "01.02.2023",
+				GameTime:   "18.30",
+				GameStatus: 1,
+				MaxPeriod:  4,
+				GameTeams: []infobasket.TeamBoxScoreDto{
+					{
+						TeamName: infobasket.TeamNameBoxScoreDto{},
+						TeamID:   123,
+						Score:    85,
+						Players:  []infobasket.PlayerBoxScoreDto{},
+					},
+					{
+						TeamName: infobasket.TeamNameBoxScoreDto{},
+						TeamID:   456,
+						Score:    80,
+						Players: []infobasket.PlayerBoxScoreDto{
+							{
+								PersonID:     1,
+								PersonNameRu: "Иван Иванов",
+								PersonNameEn: "Ivan Ivanov",
+								PersonBirth:  "2000-01-01", // Invalid format, should be DD.MM.YYYY
+								IsStart:      true,
+								PlusMinus:    5,
+								Seconds:      1200,
+							},
+						},
+					},
+				},
+			},
+			regulationPeriodsNum: 4,
+			periodDuration:       10,
+			overtimeDuration:     5,
+			leagueAlias:          "MLBL",
+			expected:             nil,
+			errorMsg:             "can't parse player birthdate. given birthdate: 2000-01-01 doesn't match format 02.01.2006",
+		},
+	}
+
+	mapper := newMlblMapper()
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := mapper.mapGame(tc.game, tc.regulationPeriodsNum, tc.periodDuration, tc.overtimeDuration, tc.leagueAlias)
+
+			if tc.errorMsg != "" {
+				assert.EqualError(t, err, tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
