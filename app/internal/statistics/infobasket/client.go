@@ -11,6 +11,12 @@ const (
 	scheduleEndpointPattern  = "/Comp/GetCalendar/?comps=%v&format=json"
 )
 
+type ClientInterface interface {
+	BoxScore(gameId string) GameBoxScoreResponse
+	ScheduledGames(compId int) []GameScheduleDto
+	TeamGames(teamId string) TeamScheduleResponse
+}
+
 type Client struct {
 	baseUrl string
 }

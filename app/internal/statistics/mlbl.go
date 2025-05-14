@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+type mlblMapperInterface interface {
+	mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) (*GameBoxScoreDTO, error)
+	mapTeam(teamBoxScore infobasket.TeamBoxScoreDto) (TeamBoxScoreDTO, error)
+	mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, error)
+}
+
 type mlblMapper struct {
 	stringUtils string_utils.StringUtilsInterface
 }
@@ -105,7 +111,7 @@ func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, 
 
 type mlblProvider struct {
 	client infobasket.ClientInterface
-	mapper *mlblMapper
+	mapper mlblMapperInterface
 }
 
 func (i *mlblProvider) GameBoxScore(gameId string) (*GameBoxScoreDTO, error) {

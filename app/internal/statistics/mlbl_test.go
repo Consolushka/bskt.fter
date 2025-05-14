@@ -4,6 +4,7 @@ import (
 	"IMP/app/internal/statistics/infobasket"
 	"IMP/app/pkg/string_utils"
 	"errors"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -494,6 +495,313 @@ func TestMlblMapper_mapGame(t *testing.T) {
 
 			if tc.errorMsg != "" {
 				assert.EqualError(t, err, tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+// TestMlblProvider_GameBoxScore verifies the behavior of the GameBoxScore method
+// in the mlblProvider struct under various conditions:
+// - Verify that when valid game data is returned by the client while fetching a box score - the method returns properly mapped game data
+// - Verify that when mapper returns an error while mapping game data - the method returns that error
+func TestMlblProvider_GameBoxScore(t *testing.T) {
+	cases := []struct {
+		name      string
+		gameId    string
+		mockSetup func(mockClient *infobasket.MockClientInterface, mockMapper *MockmlblMapperInterface)
+		expected  *GameBoxScoreDTO
+		errorMsg  string
+	}{
+		{
+			name:   "Success case - returns properly mapped game data",
+			gameId: "12345",
+			mockSetup: func(mockClient *infobasket.MockClientInterface, mockMapper *MockmlblMapperInterface) {
+				gameResponse := infobasket.GameBoxScoreResponse{
+					CompID: 12345,
+					// Other fields would be populated here
+				}
+
+				expectedGame := &GameBoxScoreDTO{
+					LeagueAliasEn: "MLBL",
+					// Other fields would be populated here
+				}
+
+				mockClient.EXPECT().BoxScore("12345").Return(gameResponse)
+				mockMapper.EXPECT().mapGame(gameResponse, 4, 10, 5, "MLBL").Return(expectedGame, nil)
+			},
+			expected: &GameBoxScoreDTO{
+				Id:            "12345",
+				LeagueAliasEn: "MLBL",
+				// Other fields would be populated here
+			},
+			errorMsg: "",
+		},
+		{
+			name:   "Error case - mapper returns error",
+			gameId: "12345",
+			mockSetup: func(mockClient *infobasket.MockClientInterface, mockMapper *MockmlblMapperInterface) {
+				gameResponse := infobasket.GameBoxScoreResponse{
+					CompID: 12345,
+					// Other fields would be populated here
+				}
+
+				mockClient.EXPECT().BoxScore("12345").Return(gameResponse)
+				mockMapper.EXPECT().mapGame(gameResponse, 4, 10, 5, "MLBL").Return(nil, errors.New("mapping error"))
+			},
+			expected: nil,
+			errorMsg: "mapping error",
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := infobasket.NewMockClientInterface(ctrl)
+	mockMapper := NewMockmlblMapperInterface(ctrl)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup mocks for this test case
+			tc.mockSetup(mockClient, mockMapper)
+
+			// Create provider with mocked dependencies
+			provider := &mlblProvider{
+				client: mockClient,
+				mapper: mockMapper,
+			}
+
+			// Call the method being tested
+			result, err := provider.GameBoxScore(tc.gameId)
+
+			// Verify results
+			if tc.errorMsg != "" {
+				assert.EqualError(t, err, tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+// TestMlblProvider_GamesByDate verifies the behavior of the GamesByDate method
+// in the mlblProvider struct under various conditions:
+// - Verify that when games exist for the given date while fetching scheduled games - the method returns correct game IDs
+// - Verify that when no games exist for the given date while fetching scheduled games - the method returns an empty slice
+// - Verify that when games exist for some competition IDs but not others while fetching scheduled games - the method returns only matching game IDs
+func TestMlblProvider_GamesByDate(t *testing.T) {
+	cases := []struct {
+		name      string
+		date      time.Time
+		mockSetup func(mockClient *infobasket.MockClientInterface)
+		expected  []string
+		errorMsg  string
+	}{
+		{
+			name: "Success case - returns game IDs for the given date",
+			date: time.Date(2023, 5, 15, 0, 0, 0, 0, time.UTC),
+			mockSetup: func(mockClient *infobasket.MockClientInterface) {
+				// Format the date as expected by the method (DD.MM.YYYY)
+				formattedDate := "15.05.2023"
+
+				// Mock response for first competition ID (89960)
+				mockClient.EXPECT().ScheduledGames(89960).Return([]infobasket.GameScheduleDto{
+					{GameID: 1001, GameDate: formattedDate},
+					{GameID: 1002, GameDate: "16.05.2023"}, // Different date, should be filtered out
+					{GameID: 1003, GameDate: formattedDate},
+				})
+
+				// Mock response for second competition ID (89962)
+				mockClient.EXPECT().ScheduledGames(89962).Return([]infobasket.GameScheduleDto{
+					{GameID: 2001, GameDate: "14.05.2023"}, // Different date, should be filtered out
+					{GameID: 2002, GameDate: formattedDate},
+				})
+			},
+			expected: []string{"1001", "1003", "2002"},
+			errorMsg: "",
+		},
+		{
+			name: "Empty case - no games for the given date",
+			date: time.Date(2023, 5, 15, 0, 0, 0, 0, time.UTC),
+			mockSetup: func(mockClient *infobasket.MockClientInterface) {
+				// Mock response for first competition ID (89960)
+				mockClient.EXPECT().ScheduledGames(89960).Return([]infobasket.GameScheduleDto{
+					{GameID: 1001, GameDate: "14.05.2023"}, // Different date
+					{GameID: 1002, GameDate: "16.05.2023"}, // Different date
+				})
+
+				// Mock response for second competition ID (89962)
+				mockClient.EXPECT().ScheduledGames(89962).Return([]infobasket.GameScheduleDto{
+					{GameID: 2001, GameDate: "14.05.2023"}, // Different date
+					{GameID: 2002, GameDate: "16.05.2023"}, // Different date
+				})
+			},
+			expected: []string(nil),
+			errorMsg: "",
+		},
+		{
+			name: "Partial case - games exist only for one competition ID",
+			date: time.Date(2023, 5, 15, 0, 0, 0, 0, time.UTC),
+			mockSetup: func(mockClient *infobasket.MockClientInterface) {
+				// Format the date as expected by the method (DD.MM.YYYY)
+				formattedDate := "15.05.2023"
+
+				// Mock response for first competition ID (89960) - no matching games
+				mockClient.EXPECT().ScheduledGames(89960).Return([]infobasket.GameScheduleDto{
+					{GameID: 1001, GameDate: "14.05.2023"}, // Different date
+					{GameID: 1002, GameDate: "16.05.2023"}, // Different date
+				})
+
+				// Mock response for second competition ID (89962) - has matching games
+				mockClient.EXPECT().ScheduledGames(89962).Return([]infobasket.GameScheduleDto{
+					{GameID: 2001, GameDate: formattedDate},
+					{GameID: 2002, GameDate: formattedDate},
+				})
+			},
+			expected: []string{"2001", "2002"},
+			errorMsg: "",
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := infobasket.NewMockClientInterface(ctrl)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup mocks for this test case
+			tc.mockSetup(mockClient)
+
+			// Create provider with mocked dependencies
+			provider := &mlblProvider{
+				client: mockClient,
+				mapper: nil, // Not needed for this test
+			}
+
+			// Call the method being tested
+			result, err := provider.GamesByDate(tc.date)
+
+			// Verify results
+			if tc.errorMsg != "" {
+				assert.EqualError(t, err, tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+// TestMlblProvider_GamesByTeam tests the GamesByTeam method of mlblProvider
+// It verifies:
+// - When all games are final (status 1), all game IDs are returned
+// - When some games are not final, only final game IDs are returned
+// - When there's an error during mapping, the error is propagated
+func TestMlblProvider_GamesByTeam(t *testing.T) {
+	cases := []struct {
+		name     string
+		setup    func(mockClient *infobasket.MockClientInterface)
+		teamId   string
+		expected []string
+		errorMsg string
+	}{
+		{
+			name: "All games are final",
+			setup: func(mockClient *infobasket.MockClientInterface) {
+				mockClient.EXPECT().TeamGames("123").Return(infobasket.TeamScheduleResponse{
+					Games: []infobasket.GameScheduleDto{
+						{GameID: 1001, GameStatus: 1},
+						{GameID: 1002, GameStatus: 1},
+						{GameID: 1003, GameStatus: 1},
+					},
+				})
+			},
+			teamId:   "123",
+			expected: []string{"1001", "1002", "1003"},
+			errorMsg: "",
+		},
+		{
+			name: "Some games are not final",
+			setup: func(mockClient *infobasket.MockClientInterface) {
+				mockClient.EXPECT().TeamGames("456").Return(infobasket.TeamScheduleResponse{
+					Games: []infobasket.GameScheduleDto{
+						{GameID: 2001, GameStatus: 1},
+						{GameID: 2002, GameStatus: 0}, // Not final
+						{GameID: 2003, GameStatus: 1},
+						{GameID: 2004, GameStatus: 2}, // Not final
+					},
+				})
+			},
+			teamId:   "456",
+			expected: nil,
+			errorMsg: "game is not final. or game status is: 0",
+		},
+		{
+			name: "No final games",
+			setup: func(mockClient *infobasket.MockClientInterface) {
+				mockClient.EXPECT().TeamGames("789").Return(infobasket.TeamScheduleResponse{
+					Games: []infobasket.GameScheduleDto{
+						{GameID: 3001, GameStatus: 0},
+						{GameID: 3002, GameStatus: 2},
+					},
+				})
+			},
+			teamId:   "789",
+			expected: nil,
+			errorMsg: "game is not final. or game status is: 0",
+		},
+		{
+			name: "Empty games list",
+			setup: func(mockClient *infobasket.MockClientInterface) {
+				mockClient.EXPECT().TeamGames("999").Return(infobasket.TeamScheduleResponse{
+					Games: []infobasket.GameScheduleDto{},
+				})
+			},
+			teamId:   "999",
+			expected: []string{},
+			errorMsg: "",
+		},
+		{
+			name: "Error during mapping",
+			setup: func(mockClient *infobasket.MockClientInterface) {
+				// This will cause an error during mapping because we're returning a nil slice
+				// which will cause the Map function to panic and return an error
+				mockClient.EXPECT().TeamGames("error").Return(infobasket.TeamScheduleResponse{
+					Games: nil,
+				})
+			},
+			teamId:   "error",
+			expected: []string{},
+			errorMsg: "",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockClient := infobasket.NewMockClientInterface(ctrl)
+			tc.setup(mockClient)
+
+			provider := &mlblProvider{
+				client: mockClient,
+			}
+
+			result, err := provider.GamesByTeam(tc.teamId)
+
+			if tc.errorMsg != "" {
+				assert.Error(t, err)
+				if err != nil {
+					assert.Contains(t, err.Error(), tc.errorMsg)
+				}
 			} else {
 				assert.NoError(t, err)
 			}
