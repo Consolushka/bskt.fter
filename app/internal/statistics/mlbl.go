@@ -18,11 +18,13 @@ type mlblMapperInterface interface {
 
 type mlblMapper struct {
 	stringUtils string_utils.StringUtilsInterface
+	translator  translator.Interface
 }
 
-func newMlblMapper(utilsInterface string_utils.StringUtilsInterface) *mlblMapper {
+func newMlblMapper(utilsInterface string_utils.StringUtilsInterface, translator translator.Interface) *mlblMapper {
 	return &mlblMapper{
 		stringUtils: utilsInterface,
+		translator:  translator,
 	}
 }
 
@@ -91,7 +93,7 @@ func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, 
 
 	if hasNonLatinChars {
 		ruCode := "ru"
-		enPersonName = translator.Translate(player.PersonNameEn, &ruCode, "en")
+		enPersonName = m.translator.Translate(player.PersonNameEn, &ruCode, "en")
 	} else {
 		enPersonName = player.PersonNameEn
 	}
@@ -165,6 +167,6 @@ func (i *mlblProvider) GamesByTeam(teamId string) ([]string, error) {
 func newMlblProvider() *mlblProvider {
 	return &mlblProvider{
 		client: infobasket.NewInfobasketClient(),
-		mapper: newMlblMapper(string_utils.NewStringUtils()),
+		mapper: newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator()),
 	}
 }

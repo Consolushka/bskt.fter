@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"IMP/app/internal/statistics/infobasket"
+	"IMP/app/internal/statistics/translator"
 	"IMP/app/pkg/string_utils"
 	"errors"
 	"github.com/golang/mock/gomock"
@@ -15,15 +16,12 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 	secondPlayerDate := time.Date(1970, 11, 11, 0, 0, 0, 0, time.UTC)
 	thirdPlayerDate := time.Date(2000, 12, 13, 0, 0, 0, 0, time.UTC)
 
-	charsFuncWithErr := func(text string, language string_utils.Language) (bool, error) {
-		return true, errors.New("error in non-language chars")
-	}
 	cases := []struct {
-		name                    string
-		player                  infobasket.PlayerBoxScoreDto
-		result                  PlayerDTO
-		errorMsg                string
-		hasNonLanguageCharsFunc *func(text string, language string_utils.Language) (bool, error)
+		name      string
+		player    infobasket.PlayerBoxScoreDto
+		result    PlayerDTO
+		errorMsg  string
+		mockSetup func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface)
 	}{
 		{
 			name: "Map default player with positive plus-minus from start",
@@ -48,6 +46,11 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 				},
 			},
 			errorMsg: "",
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+				utilsInterface.EXPECT().
+					HasNonLanguageChars("Ivanov Ivan Ivanovich", string_utils.Latin).
+					Return(false, nil)
+			},
 		},
 		{
 			name: "Map default player with negative plus-minus from bench",
@@ -72,6 +75,11 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 				},
 			},
 			errorMsg: "",
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+				utilsInterface.EXPECT().
+					HasNonLanguageChars("Krasikov Petr Vasilyevich", string_utils.Latin).
+					Return(false, nil)
+			},
 		},
 		{
 			name: "Map player with cyrillic en name",
@@ -96,6 +104,16 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 				},
 			},
 			errorMsg: "",
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+				utilsInterface.EXPECT().
+					HasNonLanguageChars("Буданов Антон", string_utils.Latin).
+					Return(true, nil)
+
+				ruCode := "ru"
+				translator.EXPECT().
+					Translate("Буданов Антон", &ruCode, "en").
+					Return("Budanov Anton")
+			},
 		},
 		{
 			name: "Map player with invalid dateformat",
@@ -110,6 +128,8 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 			},
 			result:   PlayerDTO{},
 			errorMsg: "can't parse player birthdate. given birthdate: 11-24-2000 doesn't match format 02.01.2006",
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+			},
 		},
 		{
 			name: "Map player with error in non-language chars",
@@ -122,15 +142,26 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 				Seconds:      1200,
 				IsStart:      true,
 			},
-			result:                  PlayerDTO{},
-			hasNonLanguageCharsFunc: &charsFuncWithErr,
-			errorMsg:                "error in non-language chars",
+			result: PlayerDTO{},
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+				utilsInterface.EXPECT().
+					HasNonLanguageChars("Budanov Anton", string_utils.Latin).
+					Return(false, errors.New("error in non-language chars"))
+			},
+			errorMsg: "error in non-language chars",
 		},
 	}
 
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	stringUtils := string_utils.NewMockStringUtilsInterface(ctrl)
+	translatorImp := translator.NewMockInterface(ctrl)
+
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mapper := newMlblMapper(string_utils.NewMockStringUtils(tc.hasNonLanguageCharsFunc, nil))
+			tc.mockSetup(stringUtils, translatorImp)
+			mapper := newMlblMapper(stringUtils, translatorImp)
 
 			result, err := mapper.mapPlayer(tc.player)
 
@@ -227,7 +258,7 @@ func TestMlblMapper_mapTeam(t *testing.T) {
 		},
 	}
 
-	mapper := newMlblMapper(string_utils.NewStringUtils())
+	mapper := newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator())
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := mapper.mapTeam(tc.data)
@@ -488,7 +519,7 @@ func TestMlblMapper_mapGame(t *testing.T) {
 		},
 	}
 
-	mapper := newMlblMapper(string_utils.NewStringUtils())
+	mapper := newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator())
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := mapper.mapGame(tc.game, tc.regulationPeriodsNum, tc.periodDuration, tc.overtimeDuration, tc.leagueAlias)

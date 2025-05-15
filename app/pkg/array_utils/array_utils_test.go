@@ -4,7 +4,7 @@ import (
 	"IMP/app/pkg/array_utils"
 	"errors"
 	"fmt"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
 )
@@ -48,9 +48,7 @@ func TestFilterInts(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result := array_utils.Filter(tc.input, tc.filter)
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Filter() = %v, want %v", result, tc.expected)
-			}
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }
@@ -81,9 +79,7 @@ func TestFilterStrings(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result := array_utils.Filter(tc.input, tc.filter)
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Filter() = %v, want %v", result, tc.expected)
-			}
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }
@@ -135,9 +131,7 @@ func TestFilterStructs(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			result := array_utils.Filter(tc.input, tc.filter)
-			if !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Filter() = %v, want %v", result, tc.expected)
-			}
+			assert.Equal(t, tc.expected, result)
 		})
 	}
 }
@@ -194,21 +188,14 @@ func TestMapInts(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := array_utils.Map(tc.input, tc.mapper)
 
-			// Check error condition
-			if (err != nil) != tc.wantErr {
-				t.Errorf("Map() error = %v, wantErr %v", err, tc.wantErr)
-				return
-			}
-
-			// If expecting an error, check error message
-			if tc.wantErr && err != nil && err.Error() != tc.errMsg {
-				t.Errorf("Map() error = %v, want error message %v", err, tc.errMsg)
-				return
-			}
-
-			// Check result if no error expected
-			if !tc.wantErr && !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Map() = %v, want %v", result, tc.expected)
+			if tc.wantErr {
+				assert.Error(t, err)
+				if err != nil {
+					assert.Equal(t, tc.errMsg, err.Error())
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expected, result)
 			}
 		})
 	}
@@ -223,13 +210,8 @@ func TestMapIntToString(t *testing.T) {
 		return strconv.Itoa(n), nil
 	})
 
-	if err != nil {
-		t.Errorf("Map() unexpected error: %v", err)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Map() = %v, want %v", result, expected)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
 }
 
 // TestMapStringToInt tests the Map function with string to int conversion.
@@ -241,13 +223,8 @@ func TestMapStringToInt(t *testing.T) {
 		return strconv.Atoi(s)
 	})
 
-	if err != nil {
-		t.Errorf("Map() unexpected error: %v", err)
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Map() = %v, want %v", result, expected)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, expected, result)
 }
 
 // TestMapStringToIntError tests the Map function with string to int conversion that produces an error.
@@ -258,13 +235,8 @@ func TestMapStringToIntError(t *testing.T) {
 		return strconv.Atoi(s)
 	})
 
-	if err == nil {
-		t.Errorf("Map() expected error but got nil")
-	}
-
-	if result != nil {
-		t.Errorf("Map() expected nil result on error, got %v", result)
-	}
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
 
 // TestMapStructs tests the Map function with struct slices.
@@ -361,21 +333,14 @@ func TestMapStructs(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := array_utils.Map(tc.input, tc.mapper)
 
-			// Check error condition
-			if (err != nil) != tc.wantErr {
-				t.Errorf("Map() error = %v, wantErr %v", err, tc.wantErr)
-				return
-			}
-
-			// If expecting an error, check error message
-			if tc.wantErr && err != nil && err.Error() != tc.errMsg {
-				t.Errorf("Map() error = %v, want error message %v", err, tc.errMsg)
-				return
-			}
-
-			// Check result if no error expected
-			if !tc.wantErr && !reflect.DeepEqual(result, tc.expected) {
-				t.Errorf("Map() = %v, want %v", result, tc.expected)
+			if tc.wantErr {
+				assert.Error(t, err)
+				if err != nil {
+					assert.Equal(t, tc.errMsg, err.Error())
+				}
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expected, result)
 			}
 		})
 	}

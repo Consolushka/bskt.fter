@@ -24,6 +24,7 @@ type Service struct {
 	league *domain.League
 
 	stringUtils string_utils.StringUtilsInterface
+	translator  translator.Interface
 }
 
 func NewService() *Service {
@@ -34,6 +35,7 @@ func NewService() *Service {
 		playersRepository: domain.NewPlayersRepository(),
 		nbaComClient:      nba_com.NewClient(),
 		stringUtils:       string_utils.NewStringUtils(),
+		translator:        translator.NewTranslator(),
 	}
 }
 
@@ -170,7 +172,7 @@ func (p *Service) getPlayerBio(playerId string) (string, string, *time.Time) {
 		playerEnFullName := playerLocalFullName
 		hasNonLatinChars, err := p.stringUtils.HasNonLanguageChars(playerLocalFullName, string_utils.Latin)
 		if hasNonLatinChars || err != nil {
-			playerEnFullName = translator.Translate(playerEnFullName, nil, "en")
+			playerEnFullName = p.translator.Translate(playerEnFullName, nil, "en")
 		}
 
 		return playerLocalFullName, playerEnFullName, &birthDate

@@ -1,6 +1,7 @@
 package string_utils
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -43,21 +44,14 @@ func TestGetBoundaries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			minBoundaries, maxBoundaries, err := tc.language.getBoundaries()
 
-			if tc.expectError && err == nil {
-				t.Error("Expected an error but got nil")
+			if tc.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 
-			if !tc.expectError && err != nil {
-				t.Errorf("Expected no error but got: %v", err)
-			}
-
-			if minBoundaries != tc.expectedMin {
-				t.Errorf("Expected minBoundaries boundary %d, got %d", tc.expectedMin, minBoundaries)
-			}
-
-			if maxBoundaries != tc.expectedMax {
-				t.Errorf("Expected maxBoundaries boundary %d, got %d", tc.expectedMax, maxBoundaries)
-			}
+			assert.Equal(t, tc.expectedMin, minBoundaries)
+			assert.Equal(t, tc.expectedMax, maxBoundaries)
 		})
 	}
 }
@@ -134,16 +128,11 @@ func TestHasNonLanguageChars(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := NewStringUtils().HasNonLanguageChars(tc.text, tc.language)
 
-			if tc.expectError && err == nil {
-				t.Errorf("Expected an error but got nil")
-			}
-
-			if !tc.expectError && err != nil {
-				t.Errorf("Expected no error but got: %v", err)
-			}
-
-			if !tc.expectError && result != tc.expectedResult {
-				t.Errorf("Expected result %v, got %v", tc.expectedResult, result)
+			if tc.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.expectedResult, result)
 			}
 		})
 	}
@@ -192,10 +181,7 @@ func TestRemovePunctuationAndSpaces(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			result := NewStringUtils().RemovePunctuationAndSpaces(tc.input)
-
-			if result != tc.expectedOutput {
-				t.Errorf("Expected output %q, got %q", tc.expectedOutput, result)
-			}
+			assert.Equal(t, tc.expectedOutput, result)
 		})
 	}
 }
