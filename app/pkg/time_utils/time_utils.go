@@ -19,16 +19,15 @@ func FormattedMinutesToSeconds(timeStr string, pattern string) (int, error) {
 	}
 
 	// Create regex patterns to extract minutes and seconds
-	patternRegex := strings.ReplaceAll(pattern, "%m", "(\\d+)")
-	patternRegex = strings.ReplaceAll(patternRegex, "%s", "(\\d+)")
-	patternRegex = "^" + regexp.QuoteMeta(patternRegex) + "$"
-	patternRegex = strings.ReplaceAll(patternRegex, "\\(\\\\d\\+\\)", "(\\d+)")
+	patternRegex := strings.ReplaceAll(pattern, "%m", `(\d+)`)
+	patternRegex = strings.ReplaceAll(patternRegex, "%s", `(\d+(\.\d+)?)`)
+	patternRegex = `^` + patternRegex + "$"
 
 	re := regexp.MustCompile(patternRegex)
 	matches := re.FindStringSubmatch(timeStr)
 
-	if len(matches) != 3 {
-		return 0, errors.New("time string does not match the pattern")
+	if len(matches) != 4 {
+		return 0, errors.New("time string '" + timeStr + "' does not match the pattern '" + pattern + "'")
 	}
 
 	// Determine which group is minutes and which is seconds
@@ -37,12 +36,12 @@ func FormattedMinutesToSeconds(timeStr string, pattern string) (int, error) {
 		minutesStr = matches[1]
 		secondsStr = matches[2]
 	} else {
-		minutesStr = matches[2]
+		minutesStr = matches[3]
 		secondsStr = matches[1]
 	}
 
 	minutes, _ := strconv.Atoi(minutesStr)
-	seconds, _ := strconv.Atoi(secondsStr)
+	seconds, _ := strconv.ParseFloat(secondsStr, 32)
 
-	return minutes*60 + seconds, nil
+	return minutes*60 + int(seconds), nil
 }
