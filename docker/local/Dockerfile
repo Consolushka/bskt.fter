@@ -13,6 +13,7 @@ COPY main.go /IMP/
 COPY .env /IMP/
 
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN go install github.com/golang/mock/mockgen@v1.6.0
 
 RUN go mod download
 RUN go get -d -v ./...

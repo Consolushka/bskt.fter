@@ -18,7 +18,7 @@ IMP provides deep analysis of player performance considering actual playing time
     <li><a href="https://tambov.ilovebasket.ru/competitions/89960">Tambov MLBL</a></li>
 </ul>
 
-### CLI
+## CLI
 
 <ul>
     <li>
@@ -55,6 +55,16 @@ IMP provides deep analysis of player performance considering actual playing time
         <b>save-game-by-team</b>
         <p>
             Save already played games for provided league and team id
+        </p>
+    </li>
+</ul>
+
+## Help
+<ul>
+    <li>
+        <b>generate mock</b>
+        <p>
+            mockgen -source={path/to/file}/{file_name}.go -destination={path/to/file}/mocks/mock_{file_name}.go -package={same package as file}
         </p>
     </li>
 </ul>
