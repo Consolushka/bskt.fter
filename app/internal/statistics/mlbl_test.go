@@ -163,10 +163,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mockSetup(stringUtils, translatorImp)
-			mapper := &mlblMapper{
-				stringUtils: stringUtils,
-				translator:  translatorImp,
-			}
+			mapper := newMlblMapper(stringUtils, translatorImp)
 
 			result, err := mapper.mapPlayer(tc.player)
 
