@@ -6,6 +6,17 @@ import (
 	"unicode"
 )
 
+type StringUtilsInterface interface {
+	HasNonLanguageChars(text string, language Language) (bool, error)
+	RemovePunctuationAndSpaces(text string) string
+}
+
+func NewStringUtils() StringUtilsInterface {
+	return &stringUtils{}
+}
+
+type stringUtils struct{}
+
 type Language int
 
 const (
@@ -24,14 +35,14 @@ func (l Language) getBoundaries() (min, max int32, err error) {
 	}
 }
 
-func HasNonLanguageChars(text string, language Language) (bool, error) {
+func (s stringUtils) HasNonLanguageChars(text string, language Language) (bool, error) {
 	minBorder, maxBorder, err := language.getBoundaries()
 
 	if err != nil {
 		return false, err
 	}
 
-	trimmedText := RemovePunctuationAndSpaces(text)
+	trimmedText := s.RemovePunctuationAndSpaces(text)
 
 	for _, r := range trimmedText {
 		if r < minBorder || r > maxBorder {
@@ -41,7 +52,7 @@ func HasNonLanguageChars(text string, language Language) (bool, error) {
 	return false, nil
 }
 
-func RemovePunctuationAndSpaces(text string) string {
+func (s stringUtils) RemovePunctuationAndSpaces(text string) string {
 	var result strings.Builder
 
 	for _, r := range text {

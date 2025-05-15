@@ -2,16 +2,28 @@ package statistics
 
 import (
 	"IMP/app/internal/statistics/infobasket"
+	"IMP/app/internal/statistics/translator"
 	"IMP/app/pkg/array_utils"
+	"IMP/app/pkg/string_utils"
 	"errors"
 	"strconv"
 	"time"
 )
 
-type mlblMapper struct{}
+type mlblMapperInterface interface {
+	mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) (*GameBoxScoreDTO, error)
+	mapTeam(teamBoxScore infobasket.TeamBoxScoreDto) (TeamBoxScoreDTO, error)
+	mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, error)
+}
 
-func newMlblMapper() *mlblMapper {
-	return &mlblMapper{}
+type mlblMapper struct {
+	stringUtils string_utils.StringUtilsInterface
+}
+
+func newMlblMapper(utilsInterface string_utils.StringUtilsInterface) *mlblMapper {
+	return &mlblMapper{
+		stringUtils: utilsInterface,
+	}
 }
 
 func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) (*GameBoxScoreDTO, error) {
@@ -23,10 +35,13 @@ func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPer
 
 	scheduled, err := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTime)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("can't parse game datetime. given game datetime: " + game.GameDate + " " + game.GameTime + " doesn't match format 02.01.2006 15.04")
 	}
 
 	homeTeamDto, err := m.mapTeam(game.GameTeams[0])
+	if err != nil {
+		return nil, err
+	}
 	awayTeamDto, err := m.mapTeam(game.GameTeams[1])
 	if err != nil {
 		return nil, err
@@ -64,12 +79,26 @@ func (m *mlblMapper) mapTeam(teamBoxScore infobasket.TeamBoxScoreDto) (TeamBoxSc
 func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, error) {
 	birthdate, err := time.Parse("02.01.2006", player.PersonBirth)
 	if err != nil {
+		return PlayerDTO{}, errors.New("can't parse player birthdate. given birthdate: " + player.PersonBirth + " doesn't match format 02.01.2006")
+	}
+
+	var enPersonName string
+
+	hasNonLatinChars, err := m.stringUtils.HasNonLanguageChars(player.PersonNameEn, string_utils.Latin)
+	if err != nil {
 		return PlayerDTO{}, err
+	}
+
+	if hasNonLatinChars {
+		ruCode := "ru"
+		enPersonName = translator.Translate(player.PersonNameEn, &ruCode, "en")
+	} else {
+		enPersonName = player.PersonNameEn
 	}
 
 	return PlayerDTO{
 		FullNameLocal:  player.PersonNameRu,
-		FullNameEn:     player.PersonNameEn,
+		FullNameEn:     enPersonName,
 		BirthDate:      &birthdate,
 		LeaguePlayerID: strconv.Itoa(player.PersonID),
 		Statistic: PlayerStatisticDTO{
@@ -82,7 +111,7 @@ func (m *mlblMapper) mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, 
 
 type mlblProvider struct {
 	client infobasket.ClientInterface
-	mapper *mlblMapper
+	mapper mlblMapperInterface
 }
 
 func (i *mlblProvider) GameBoxScore(gameId string) (*GameBoxScoreDTO, error) {
@@ -136,6 +165,6 @@ func (i *mlblProvider) GamesByTeam(teamId string) ([]string, error) {
 func newMlblProvider() *mlblProvider {
 	return &mlblProvider{
 		client: infobasket.NewInfobasketClient(),
-		mapper: newMlblMapper(),
+		mapper: newMlblMapper(string_utils.NewStringUtils()),
 	}
 }

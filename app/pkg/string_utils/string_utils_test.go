@@ -132,7 +132,7 @@ func TestHasNonLanguageChars(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := HasNonLanguageChars(tc.text, tc.language)
+			result, err := NewStringUtils().HasNonLanguageChars(tc.text, tc.language)
 
 			if tc.expectError && err == nil {
 				t.Errorf("Expected an error but got nil")
@@ -191,7 +191,7 @@ func TestRemovePunctuationAndSpaces(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := RemovePunctuationAndSpaces(tc.input)
+			result := NewStringUtils().RemovePunctuationAndSpaces(tc.input)
 
 			if result != tc.expectedOutput {
 				t.Errorf("Expected output %q, got %q", tc.expectedOutput, result)
