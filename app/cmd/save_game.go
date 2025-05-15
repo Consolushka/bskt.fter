@@ -24,15 +24,17 @@ func init() {
 }
 
 func SaveGame(leagueName string, gameId string) {
+	logger := log.NewLogger()
+
 	leagueRepository := domain.NewLeaguesRepository()
 	league, err := leagueRepository.FirstByAliasEn(leagueName)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 	}
 
 	exists, err := domain.NewGamesRepository().Exists(domain.Game{OfficialId: gameId})
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 	}
 	if exists {
 		fmt.Println("Game with official_id " + gameId + " already exists")
@@ -42,16 +44,16 @@ func SaveGame(leagueName string, gameId string) {
 	leagueProvider := statistics2.NewLeagueProvider(league.AliasEn)
 	model, err := leagueProvider.GameBoxScore(gameId)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 	}
 	if !model.IsFinal {
-		log.Fatalln("Game with Id" + gameId + " is not final")
+		logger.Fatalln("Game with Id" + gameId + " is not final")
 	}
 
 	service := persistence.NewService()
 	err = service.SaveGameBoxScore(model)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 	}
 
 	fmt.Println("Game with id " + gameId + " was saved into db")

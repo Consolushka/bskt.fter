@@ -3,7 +3,6 @@ package main
 import (
 	"IMP/app/cmd"
 	"IMP/app/database"
-	"IMP/app/log"
 	"github.com/joho/godotenv"
 	"time"
 )
@@ -13,8 +12,6 @@ import (
 func main() {
 	loc, _ := time.LoadLocation("Europe/Moscow")
 	time.Local = loc
-
-	log.Init()
 
 	err := godotenv.Load()
 	if err != nil {

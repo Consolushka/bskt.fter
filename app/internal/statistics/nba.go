@@ -18,19 +18,22 @@ type nbaMapper struct {
 	leagueRepository domain.LeaguesRepositoryInterface
 
 	timeUtils time_utils.TimeUtilsInterface
+
+	logger log.Logger
 }
 
 func newNbaMapper() *nbaMapper {
 	return &nbaMapper{
 		leagueRepository: domain.NewLeaguesRepository(),
 		timeUtils:        time_utils.NewTimeUtils(),
+		logger:           log.NewLogger(),
 	}
 }
 
 func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error) {
 	league, err := c.leagueRepository.FirstByAliasEn(strings.ToUpper(domain.NBAAlias))
 	if err != nil {
-		log.Fatalln(err)
+		c.logger.Fatalln(err)
 		panic(err)
 	}
 	// calculate full game duration
@@ -40,6 +43,10 @@ func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error
 		duration += league.OvertimeDuration
 	}
 	homeTeam, err := c.mapTeam(gameDto.HomeTeam)
+
+	if err != nil {
+		return GameBoxScoreDTO{}, err
+	}
 	awayTeam, err := c.mapTeam(gameDto.AwayTeam)
 
 	if err != nil {
@@ -147,14 +154,14 @@ func (n *nbaProvider) cachedSeasonSchedule() cdn_nba.SeasonScheduleDto {
 		}
 	}
 
-	log.Info("There is no cached file or it is outdated, making a request...")
+	n.mapper.logger.Info("There is no cached file or it is outdated, making a request...")
 
 	// Making request to get the schedule
 	schedule := n.cdnNbaClient.ScheduleSeason()
 
 	data, err := json.Marshal(schedule)
 	if err == nil {
-		log.Info("Saving schedule to cache...")
+		n.mapper.logger.Info("Saving schedule to cache...")
 		// Even if there is an error, we still return the schedule from response
 		_ = os.WriteFile(cacheFilePath, data, 0644)
 	}

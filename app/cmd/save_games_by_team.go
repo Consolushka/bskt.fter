@@ -25,7 +25,7 @@ func SaveGameByTeam(leagueName string, teamId string) {
 	leagueRepository := domain.NewLeaguesRepository()
 	league, err := leagueRepository.FirstByAliasEn(leagueName)
 	if err != nil {
-		log.Fatalln(err)
+		log.NewLogger().Fatalln(err)
 		panic(err)
 	}
 	leagueProvider := statistics.NewLeagueProvider(league.AliasEn)
