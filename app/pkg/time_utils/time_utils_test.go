@@ -1,6 +1,7 @@
 package time_utils
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -91,21 +92,13 @@ func TestFormattedMinutesToSeconds(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := FormattedMinutesToSeconds(tt.timeStr, tt.pattern)
+
 			if tt.errorMessage != "" {
-				if err == nil || err.Error() != tt.errorMessage {
-					t.Errorf("FormattedMinutesToSeconds(%q, %q) error = %v, expected %v",
-						tt.timeStr, tt.pattern, err, tt.errorMessage)
-				}
-				return
-			}
-			if err != nil {
-				t.Errorf("FormattedMinutesToSeconds(%q, %q) error = %v, expected nil",
-					tt.timeStr, tt.pattern, err)
-				return
-			}
-			if result != tt.expected {
-				t.Errorf("FormattedMinutesToSeconds(%q, %q) = %d, expected %d",
-					tt.timeStr, tt.pattern, result, tt.expected)
+				assert.Error(t, err)
+				assert.EqualError(t, err, tt.errorMessage)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, result)
 			}
 		})
 	}
