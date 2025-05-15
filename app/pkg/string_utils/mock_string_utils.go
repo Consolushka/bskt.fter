@@ -5,7 +5,6 @@
 package string_utils
 
 import (
-	string_utils "IMP/app/pkg/string_utils"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -35,7 +34,7 @@ func (m *MockStringUtilsInterface) EXPECT() *MockStringUtilsInterfaceMockRecorde
 }
 
 // HasNonLanguageChars mocks base method.
-func (m *MockStringUtilsInterface) HasNonLanguageChars(text string, language string_utils.Language) (bool, error) {
+func (m *MockStringUtilsInterface) HasNonLanguageChars(text string, language Language) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasNonLanguageChars", text, language)
 	ret0, _ := ret[0].(bool)
