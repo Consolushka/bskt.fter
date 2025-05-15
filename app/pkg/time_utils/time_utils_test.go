@@ -97,7 +97,7 @@ func TestFormattedMinutesToSeconds(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := FormattedMinutesToSeconds(tt.timeStr, tt.pattern)
+			result, err := NewTimeUtils().FormattedMinutesToSeconds(tt.timeStr, tt.pattern)
 
 			if tt.errorMessage != "" {
 				assert.Error(t, err)

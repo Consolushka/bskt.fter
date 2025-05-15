@@ -15,12 +15,15 @@ import (
 )
 
 type nbaMapper struct {
-	leagueRepository *domain.LeaguesRepository
+	leagueRepository domain.LeaguesRepositoryInterface
+
+	timeUtils time_utils.TimeUtilsInterface
 }
 
 func newNbaMapper() *nbaMapper {
 	return &nbaMapper{
 		leagueRepository: domain.NewLeaguesRepository(),
+		timeUtils:        time_utils.NewTimeUtils(),
 	}
 }
 
@@ -74,7 +77,7 @@ func (c *nbaMapper) mapTeam(dto cdn_nba.TeamBoxScoreDto) (TeamBoxScoreDTO, error
 }
 
 func (c *nbaMapper) mapPlayer(dto cdn_nba.PlayerBoxScoreDto) (PlayerDTO, error) {
-	seconds, err := time_utils.FormattedMinutesToSeconds(dto.Statistics.Minutes, playedTimeFormat)
+	seconds, err := c.timeUtils.FormattedMinutesToSeconds(dto.Statistics.Minutes, playedTimeFormat)
 	if err != nil {
 		return PlayerDTO{}, err
 	}
