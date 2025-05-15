@@ -9,6 +9,7 @@ import (
 )
 
 // todo: add tests
+// todo: maybe create facades for some structs (translator)
 func main() {
 	loc, _ := time.LoadLocation("Europe/Moscow")
 	time.Local = loc
