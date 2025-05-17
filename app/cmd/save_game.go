@@ -3,7 +3,7 @@ package cmd
 import (
 	"IMP/app/internal/domain"
 	"IMP/app/internal/persistence"
-	statistics2 "IMP/app/internal/statistics"
+	"IMP/app/internal/statistics"
 	"IMP/app/log"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -29,6 +29,7 @@ func SaveGame(leagueName string, gameId string) {
 	leagueRepository := domain.NewLeaguesRepository()
 	league, err := leagueRepository.FirstByAliasEn(leagueName)
 	if err != nil {
+		fmt.Println(err)
 		logger.Fatalln(err)
 	}
 
@@ -41,18 +42,21 @@ func SaveGame(leagueName string, gameId string) {
 		return
 	}
 
-	leagueProvider := statistics2.NewLeagueProvider(league.AliasEn)
+	leagueProvider := statistics.NewLeagueProvider(league)
 	model, err := leagueProvider.GameBoxScore(gameId)
 	if err != nil {
 		logger.Fatalln(err)
 	}
 	if !model.IsFinal {
-		logger.Fatalln("Game with Id" + gameId + " is not final")
+		message := "Game with Id" + gameId + " is not final"
+		fmt.Println(message)
+		logger.Fatalln(message)
 	}
 
 	service := persistence.NewService()
 	err = service.SaveGameBoxScore(model)
 	if err != nil {
+		fmt.Println(err)
 		logger.Fatalln(err)
 	}
 
