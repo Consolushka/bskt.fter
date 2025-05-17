@@ -1,6 +1,7 @@
 package statistics
 
 import (
+	"IMP/app/internal/domain"
 	"IMP/app/internal/statistics/infobasket"
 	"IMP/app/internal/statistics/translator"
 	"IMP/app/pkg/array_utils"
@@ -11,28 +12,30 @@ import (
 )
 
 type mlblMapperInterface interface {
-	mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) (*GameBoxScoreDTO, error)
+	mapGame(game infobasket.GameBoxScoreResponse) (*GameBoxScoreDTO, error)
 	mapTeam(teamBoxScore infobasket.TeamBoxScoreDto) (TeamBoxScoreDTO, error)
 	mapPlayer(player infobasket.PlayerBoxScoreDto) (PlayerDTO, error)
 }
 
 type mlblMapper struct {
+	league      *domain.League
 	stringUtils string_utils.StringUtilsInterface
 	translator  translator.Interface
 }
 
-func newMlblMapper(utilsInterface string_utils.StringUtilsInterface, translator translator.Interface) *mlblMapper {
+func newMlblMapper(utilsInterface string_utils.StringUtilsInterface, translator translator.Interface, league *domain.League) *mlblMapper {
 	return &mlblMapper{
+		league:      league,
 		stringUtils: utilsInterface,
 		translator:  translator,
 	}
 }
 
-func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPeriodsNumber int, periodDuration int, overtimeDuration int, leagueAlias string) (*GameBoxScoreDTO, error) {
+func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse) (*GameBoxScoreDTO, error) {
 	duration := 0
-	duration = regulationPeriodsNumber * periodDuration
-	for i := 0; i < game.MaxPeriod-regulationPeriodsNumber; i++ {
-		duration += overtimeDuration
+	duration = m.league.PeriodsNumber * m.league.PeriodDuration
+	for i := 0; i < game.MaxPeriod-m.league.PeriodsNumber; i++ {
+		duration += m.league.OvertimeDuration
 	}
 
 	scheduled, err := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTime)
@@ -50,7 +53,7 @@ func (m *mlblMapper) mapGame(game infobasket.GameBoxScoreResponse, regulationPer
 	}
 
 	gameBoxScoreDto := GameBoxScoreDTO{
-		LeagueAliasEn: leagueAlias,
+		LeagueAliasEn: m.league.AliasEn,
 		IsFinal:       game.GameStatus == 1,
 		HomeTeam:      homeTeamDto,
 		AwayTeam:      awayTeamDto,
@@ -119,7 +122,7 @@ type mlblProvider struct {
 func (i *mlblProvider) GameBoxScore(gameId string) (*GameBoxScoreDTO, error) {
 	gameDto := i.client.BoxScore(gameId)
 
-	game, err := i.mapper.mapGame(gameDto, 4, 10, 5, "MLBL")
+	game, err := i.mapper.mapGame(gameDto)
 	if err != nil {
 		return nil, err
 	}
@@ -164,9 +167,9 @@ func (i *mlblProvider) GamesByTeam(teamId string) ([]string, error) {
 	}), nil
 }
 
-func newMlblProvider() *mlblProvider {
+func newMlblProvider(league *domain.League) *mlblProvider {
 	return &mlblProvider{
 		client: infobasket.NewInfobasketClient(),
-		mapper: newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator()),
+		mapper: newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator(), league),
 	}
 }

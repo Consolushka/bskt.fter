@@ -10,37 +10,30 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 )
 
 type nbaMapper struct {
-	leagueRepository domain.LeaguesRepositoryInterface
-
+	league    *domain.League
 	timeUtils time_utils.TimeUtilsInterface
 
 	logger log.Logger
 }
 
-func newNbaMapper() *nbaMapper {
+func newNbaMapper(league *domain.League) *nbaMapper {
 	return &nbaMapper{
-		leagueRepository: domain.NewLeaguesRepository(),
-		timeUtils:        time_utils.NewTimeUtils(),
-		logger:           log.NewLogger(),
+		league:    league,
+		timeUtils: time_utils.NewTimeUtils(),
+		logger:    log.NewLogger(),
 	}
 }
 
 func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error) {
-	league, err := c.leagueRepository.FirstByAliasEn(strings.ToUpper(domain.NBAAlias))
-	if err != nil {
-		c.logger.Fatalln(err)
-		panic(err)
-	}
 	// calculate full game duration
 	duration := 0
-	duration = league.PeriodsNumber * league.PeriodDuration
-	for i := 0; i < gameDto.Period-league.PeriodsNumber; i++ {
-		duration += league.OvertimeDuration
+	duration = c.league.PeriodsNumber * c.league.PeriodDuration
+	for i := 0; i < gameDto.Period-c.league.PeriodsNumber; i++ {
+		duration += c.league.OvertimeDuration
 	}
 	homeTeam, err := c.mapTeam(gameDto.HomeTeam)
 
@@ -55,7 +48,7 @@ func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error
 
 	gameBoxScoreDto := GameBoxScoreDTO{
 		Id:            gameDto.GameId,
-		LeagueAliasEn: league.AliasEn,
+		LeagueAliasEn: c.league.AliasEn,
 		IsFinal:       gameDto.GameStatus == 3,
 		HomeTeam:      homeTeam,
 		AwayTeam:      awayTeam,
@@ -169,9 +162,11 @@ func (n *nbaProvider) cachedSeasonSchedule() cdn_nba.SeasonScheduleDto {
 	return schedule
 }
 
-func newNbaProvider() *nbaProvider {
+func newNbaProvider(league *domain.League) *nbaProvider {
 	return &nbaProvider{
 		cdnNbaClient: cdn_nba.NewCdnNbaClient(),
-		mapper:       newNbaMapper(),
+		mapper:       newNbaMapper(league),
 	}
 }
+
+// todo: как будто можно абстрагировать мапперы, или что-то такое

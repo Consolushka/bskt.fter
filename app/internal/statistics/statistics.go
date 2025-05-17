@@ -15,12 +15,12 @@ type StatsProvider interface {
 	GamesByTeam(teamId string) ([]string, error)
 }
 
-func NewLeagueProvider(leagueAliasEn string) StatsProvider {
-	switch leagueAliasEn {
+func NewLeagueProvider(league *domain.League) StatsProvider {
+	switch league.AliasEn {
 	case strings.ToUpper(domain.NBAAlias):
-		return newNbaProvider()
+		return newNbaProvider(league)
 	case strings.ToUpper(domain.MLBLAlias):
-		return newMlblProvider()
+		return newMlblProvider(league)
 	default:
 		return nil
 	}
