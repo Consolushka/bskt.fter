@@ -8,6 +8,11 @@ import (
 const boxScoreEndpointPattern = "/liveData/boxscore/boxscore_%v.json"
 const fullSeasonEndpoint = "/staticData/scheduleLeagueV2_14.json"
 
+type ClientInterface interface {
+	BoxScore(gameId string) BoxScoreDto
+	ScheduleSeason() SeasonScheduleDto
+}
+
 type Client struct {
 	baseUrl string
 }
