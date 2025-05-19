@@ -38,16 +38,18 @@ func init() {
 }
 
 func SaveGameByDate(leagueName string, date time.Time) {
+	logger := log.NewLogger()
+
 	leagueRepository := domain.NewLeaguesRepository()
 	league, err := leagueRepository.FirstByAliasEn(leagueName)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatalln(err)
 		panic(err)
 	}
 	leagueProvider := statistics.NewLeagueProvider(league.AliasEn)
 
 	gameIds, err := leagueProvider.GamesByDate(date)
-	log.Info("On date " + date.Format("02-01-2006") + " there are " + strconv.Itoa(len(gameIds)) + " games in " + strings.ToUpper(leagueName))
+	logger.Info("On date " + date.Format("02-01-2006") + " there are " + strconv.Itoa(len(gameIds)) + " games in " + strings.ToUpper(leagueName))
 	if err != nil {
 		panic(err)
 	}

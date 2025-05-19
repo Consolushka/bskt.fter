@@ -25,7 +25,7 @@ func OpenDbConnection() *gorm.DB {
 
 func GetDB() *gorm.DB {
 	if db == nil {
-		log.Error("Database connection is not initialized")
+		log.NewLogger().Error("Database connection is not initialized")
 	}
 	return db
 }

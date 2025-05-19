@@ -7,9 +7,19 @@ import (
 	"strings"
 )
 
+type TimeUtilsInterface interface {
+	FormattedMinutesToSeconds(timeStr string, pattern string) (int, error)
+}
+
+type timeUtils struct{}
+
+func NewTimeUtils() TimeUtilsInterface {
+	return &timeUtils{}
+}
+
 // FormattedMinutesToSeconds converts a time string in the given pattern to seconds.
 // The pattern should contain %m for minutes and %s for seconds.
-func FormattedMinutesToSeconds(timeStr string, pattern string) (int, error) {
+func (u *timeUtils) FormattedMinutesToSeconds(timeStr string, pattern string) (int, error) {
 	// Check if pattern contains required placeholders
 	minutesIdx := strings.Index(pattern, "%m")
 	secondsIdx := strings.Index(pattern, "%s")

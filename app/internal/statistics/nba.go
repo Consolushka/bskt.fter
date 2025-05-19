@@ -10,33 +10,42 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 )
 
-type nbaMapper struct {
-	leagueRepository *domain.LeaguesRepository
+type nbaMapperInterface interface {
+	mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error)
+	mapPlayer(playerDto cdn_nba.PlayerBoxScoreDto) (PlayerDTO, error)
+	mapTeam(teamDto cdn_nba.TeamBoxScoreDto) (TeamBoxScoreDTO, error)
 }
 
-func newNbaMapper() *nbaMapper {
+type nbaMapper struct {
+	league    *domain.League
+	timeUtils time_utils.TimeUtilsInterface
+
+	logger log.Logger
+}
+
+func newNbaMapper(league *domain.League) *nbaMapper {
 	return &nbaMapper{
-		leagueRepository: domain.NewLeaguesRepository(),
+		league:    league,
+		timeUtils: time_utils.NewTimeUtils(),
+		logger:    log.NewLogger(),
 	}
 }
 
 func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error) {
-	league, err := c.leagueRepository.FirstByAliasEn(strings.ToUpper(domain.NBAAlias))
-	if err != nil {
-		log.Fatalln(err)
-		panic(err)
-	}
 	// calculate full game duration
 	duration := 0
-	duration = league.PeriodsNumber * league.PeriodDuration
-	for i := 0; i < gameDto.Period-league.PeriodsNumber; i++ {
-		duration += league.OvertimeDuration
+	duration = c.league.PeriodsNumber * c.league.PeriodDuration
+	for i := 0; i < gameDto.Period-c.league.PeriodsNumber; i++ {
+		duration += c.league.OvertimeDuration
 	}
 	homeTeam, err := c.mapTeam(gameDto.HomeTeam)
+
+	if err != nil {
+		return GameBoxScoreDTO{}, err
+	}
 	awayTeam, err := c.mapTeam(gameDto.AwayTeam)
 
 	if err != nil {
@@ -45,7 +54,7 @@ func (c *nbaMapper) mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error
 
 	gameBoxScoreDto := GameBoxScoreDTO{
 		Id:            gameDto.GameId,
-		LeagueAliasEn: league.AliasEn,
+		LeagueAliasEn: c.league.AliasEn,
 		IsFinal:       gameDto.GameStatus == 3,
 		HomeTeam:      homeTeam,
 		AwayTeam:      awayTeam,
@@ -74,7 +83,7 @@ func (c *nbaMapper) mapTeam(dto cdn_nba.TeamBoxScoreDto) (TeamBoxScoreDTO, error
 }
 
 func (c *nbaMapper) mapPlayer(dto cdn_nba.PlayerBoxScoreDto) (PlayerDTO, error) {
-	seconds, err := time_utils.FormattedMinutesToSeconds(dto.Statistics.Minutes, playedTimeFormat)
+	seconds, err := c.timeUtils.FormattedMinutesToSeconds(dto.Statistics.Minutes, playedTimeFormat)
 	if err != nil {
 		return PlayerDTO{}, err
 	}
@@ -93,8 +102,8 @@ func (c *nbaMapper) mapPlayer(dto cdn_nba.PlayerBoxScoreDto) (PlayerDTO, error) 
 const playedTimeFormat = "PT%mM%sS"
 
 type nbaProvider struct {
-	cdnNbaClient *cdn_nba.Client
-	mapper       *nbaMapper
+	cdnNbaClient cdn_nba.ClientInterface
+	mapper       nbaMapperInterface
 }
 
 func (n *nbaProvider) GamesByDate(date time.Time) ([]string, error) {
@@ -144,14 +153,14 @@ func (n *nbaProvider) cachedSeasonSchedule() cdn_nba.SeasonScheduleDto {
 		}
 	}
 
-	log.Info("There is no cached file or it is outdated, making a request...")
+	//n.mapper.logger.Info("There is no cached file or it is outdated, making a request...")
 
 	// Making request to get the schedule
 	schedule := n.cdnNbaClient.ScheduleSeason()
 
 	data, err := json.Marshal(schedule)
 	if err == nil {
-		log.Info("Saving schedule to cache...")
+		//n.mapper.logger.Info("Saving schedule to cache...")
 		// Even if there is an error, we still return the schedule from response
 		_ = os.WriteFile(cacheFilePath, data, 0644)
 	}
@@ -159,9 +168,11 @@ func (n *nbaProvider) cachedSeasonSchedule() cdn_nba.SeasonScheduleDto {
 	return schedule
 }
 
-func newNbaProvider() *nbaProvider {
+func newNbaProvider(league *domain.League) *nbaProvider {
 	return &nbaProvider{
 		cdnNbaClient: cdn_nba.NewCdnNbaClient(),
-		mapper:       newNbaMapper(),
+		mapper:       newNbaMapper(league),
 	}
 }
+
+// todo: как будто можно абстрагировать мапперы, или что-то такое

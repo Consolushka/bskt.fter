@@ -1,6 +1,7 @@
 package statistics
 
 import (
+	"IMP/app/internal/domain"
 	"IMP/app/internal/statistics/infobasket"
 	"IMP/app/internal/statistics/translator"
 	"IMP/app/pkg/string_utils"
@@ -161,7 +162,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mockSetup(stringUtils, translatorImp)
-			mapper := newMlblMapper(stringUtils, translatorImp)
+			mapper := newMlblMapper(stringUtils, translatorImp, &domain.League{})
 
 			result, err := mapper.mapPlayer(tc.player)
 
@@ -258,7 +259,7 @@ func TestMlblMapper_mapTeam(t *testing.T) {
 		},
 	}
 
-	mapper := newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator())
+	mapper := newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator(), &domain.League{})
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := mapper.mapTeam(tc.data)
@@ -283,14 +284,11 @@ func TestMlblMapper_mapTeam(t *testing.T) {
 // Verify that when player has invalid birthdate while mapping game - returns error
 func TestMlblMapper_mapGame(t *testing.T) {
 	cases := []struct {
-		name                 string
-		game                 infobasket.GameBoxScoreResponse
-		regulationPeriodsNum int
-		periodDuration       int
-		overtimeDuration     int
-		leagueAlias          string
-		expected             *GameBoxScoreDTO
-		errorMsg             string
+		name     string
+		game     infobasket.GameBoxScoreResponse
+		league   domain.League
+		expected *GameBoxScoreDTO
+		errorMsg string
 	}{
 		{
 			name: "Valid game data",
@@ -320,10 +318,12 @@ func TestMlblMapper_mapGame(t *testing.T) {
 					},
 				},
 			},
-			regulationPeriodsNum: 4,
-			periodDuration:       10,
-			overtimeDuration:     5,
-			leagueAlias:          "MLBL",
+			league: domain.League{
+				PeriodsNumber:    4,
+				PeriodDuration:   10,
+				OvertimeDuration: 5,
+				AliasEn:          "MLBL",
+			},
 			expected: &GameBoxScoreDTO{
 				LeagueAliasEn: "MLBL",
 				IsFinal:       true,
@@ -374,10 +374,12 @@ func TestMlblMapper_mapGame(t *testing.T) {
 					},
 				},
 			},
-			regulationPeriodsNum: 4,
-			periodDuration:       10,
-			overtimeDuration:     5,
-			leagueAlias:          "MLBL",
+			league: domain.League{
+				PeriodsNumber:    4,
+				PeriodDuration:   10,
+				OvertimeDuration: 5,
+				AliasEn:          "MLBL",
+			},
 			expected: &GameBoxScoreDTO{
 				LeagueAliasEn: "MLBL",
 				IsFinal:       true,
@@ -411,12 +413,9 @@ func TestMlblMapper_mapGame(t *testing.T) {
 					{}, {},
 				},
 			},
-			regulationPeriodsNum: 4,
-			periodDuration:       10,
-			overtimeDuration:     5,
-			leagueAlias:          "MLBL",
-			expected:             nil,
-			errorMsg:             "can't parse game datetime. given game datetime: 2023-02-01 18.30 doesn't match format 02.01.2006 15.04",
+			league:   domain.League{},
+			expected: nil,
+			errorMsg: "can't parse game datetime. given game datetime: 2023-02-01 18.30 doesn't match format 02.01.2006 15.04",
 		},
 		{
 			name: "Invalid game time format",
@@ -429,12 +428,9 @@ func TestMlblMapper_mapGame(t *testing.T) {
 					{}, {},
 				},
 			},
-			regulationPeriodsNum: 4,
-			periodDuration:       10,
-			overtimeDuration:     5,
-			leagueAlias:          "MLBL",
-			expected:             nil,
-			errorMsg:             "can't parse game datetime. given game datetime: 01.02.2023 18:30 doesn't match format 02.01.2006 15.04",
+			league:   domain.League{},
+			expected: nil,
+			errorMsg: "can't parse game datetime. given game datetime: 01.02.2023 18:30 doesn't match format 02.01.2006 15.04",
 		},
 		{
 			name: "Player from home team with invalid birthdate",
@@ -471,12 +467,9 @@ func TestMlblMapper_mapGame(t *testing.T) {
 					},
 				},
 			},
-			regulationPeriodsNum: 4,
-			periodDuration:       10,
-			overtimeDuration:     5,
-			leagueAlias:          "MLBL",
-			expected:             nil,
-			errorMsg:             "can't parse player birthdate. given birthdate: 2000-01-01 doesn't match format 02.01.2006",
+			league:   domain.League{},
+			expected: nil,
+			errorMsg: "can't parse player birthdate. given birthdate: 2000-01-01 doesn't match format 02.01.2006",
 		},
 		{
 			name: "Player from away team with invalid birthdate",
@@ -510,19 +503,21 @@ func TestMlblMapper_mapGame(t *testing.T) {
 					},
 				},
 			},
-			regulationPeriodsNum: 4,
-			periodDuration:       10,
-			overtimeDuration:     5,
-			leagueAlias:          "MLBL",
-			expected:             nil,
-			errorMsg:             "can't parse player birthdate. given birthdate: 2000-01-01 doesn't match format 02.01.2006",
+			league:   domain.League{},
+			expected: nil,
+			errorMsg: "can't parse player birthdate. given birthdate: 2000-01-01 doesn't match format 02.01.2006",
 		},
 	}
 
-	mapper := newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator())
+	mapper := &mlblMapper{
+		stringUtils: string_utils.NewStringUtils(),
+		translator:  translator.NewTranslator(),
+	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := mapper.mapGame(tc.game, tc.regulationPeriodsNum, tc.periodDuration, tc.overtimeDuration, tc.leagueAlias)
+			mapper.league = &tc.league
+
+			result, err := mapper.mapGame(tc.game)
 
 			if tc.errorMsg != "" {
 				assert.EqualError(t, err, tc.errorMsg)
@@ -562,7 +557,7 @@ func TestMlblProvider_GameBoxScore(t *testing.T) {
 				}
 
 				mockClient.EXPECT().BoxScore("12345").Return(gameResponse)
-				mockMapper.EXPECT().mapGame(gameResponse, 4, 10, 5, "MLBL").Return(expectedGame, nil)
+				mockMapper.EXPECT().mapGame(gameResponse).Return(expectedGame, nil)
 			},
 			expected: &GameBoxScoreDTO{
 				Id:            "12345",
@@ -581,7 +576,7 @@ func TestMlblProvider_GameBoxScore(t *testing.T) {
 				}
 
 				mockClient.EXPECT().BoxScore("12345").Return(gameResponse)
-				mockMapper.EXPECT().mapGame(gameResponse, 4, 10, 5, "MLBL").Return(nil, errors.New("mapping error"))
+				mockMapper.EXPECT().mapGame(gameResponse).Return(nil, errors.New("mapping error"))
 			},
 			expected: nil,
 			errorMsg: "mapping error",

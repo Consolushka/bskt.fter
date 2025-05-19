@@ -18,6 +18,7 @@ var cronCmd = &cobra.Command{
 	Short: "Start cron scheduler for background tasks",
 	Long:  `This command starts the cron scheduler that runs periodic tasks like downloading yesterday's games.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		log := log.NewLogger()
 		log.Info("Started cron scheduler")
 
 		timeZone := "Europe/Moscow"
@@ -65,7 +66,7 @@ func (s saveYesterdayGamesJob) Run() {
 
 	leagues, err := s.leaguesRepository.List()
 	if err != nil {
-		log.Fatalln(err)
+		log.NewLogger().Fatalln(err)
 	}
 
 	for _, league := range leagues {

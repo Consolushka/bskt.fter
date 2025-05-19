@@ -63,6 +63,11 @@ func (r *GamesRepository) Exists(game Game) (bool, error) {
 	return exists, nil
 }
 
+type LeaguesRepositoryInterface interface {
+	List() ([]League, error)
+	FirstByAliasEn(aliasEn string) (*League, error)
+}
+
 type LeaguesRepository struct {
 	db *gorm.DB
 }
