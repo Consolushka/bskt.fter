@@ -13,6 +13,12 @@ import (
 	"time"
 )
 
+type nbaMapperInterface interface {
+	mapGame(gameDto cdn_nba.BoxScoreDto) (GameBoxScoreDTO, error)
+	mapPlayer(playerDto cdn_nba.PlayerBoxScoreDto) (PlayerDTO, error)
+	mapTeam(teamDto cdn_nba.TeamBoxScoreDto) (TeamBoxScoreDTO, error)
+}
+
 type nbaMapper struct {
 	league    *domain.League
 	timeUtils time_utils.TimeUtilsInterface
@@ -96,8 +102,8 @@ func (c *nbaMapper) mapPlayer(dto cdn_nba.PlayerBoxScoreDto) (PlayerDTO, error) 
 const playedTimeFormat = "PT%mM%sS"
 
 type nbaProvider struct {
-	cdnNbaClient *cdn_nba.Client
-	mapper       *nbaMapper
+	cdnNbaClient cdn_nba.ClientInterface
+	mapper       nbaMapperInterface
 }
 
 func (n *nbaProvider) GamesByDate(date time.Time) ([]string, error) {
@@ -147,14 +153,14 @@ func (n *nbaProvider) cachedSeasonSchedule() cdn_nba.SeasonScheduleDto {
 		}
 	}
 
-	n.mapper.logger.Info("There is no cached file or it is outdated, making a request...")
+	//n.mapper.logger.Info("There is no cached file or it is outdated, making a request...")
 
 	// Making request to get the schedule
 	schedule := n.cdnNbaClient.ScheduleSeason()
 
 	data, err := json.Marshal(schedule)
 	if err == nil {
-		n.mapper.logger.Info("Saving schedule to cache...")
+		//n.mapper.logger.Info("Saving schedule to cache...")
 		// Even if there is an error, we still return the schedule from response
 		_ = os.WriteFile(cacheFilePath, data, 0644)
 	}

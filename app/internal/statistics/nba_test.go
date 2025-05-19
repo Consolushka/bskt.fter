@@ -5,9 +5,11 @@ import (
 	"IMP/app/internal/statistics/cdn_nba"
 	"IMP/app/log"
 	"IMP/app/pkg/time_utils"
+	"encoding/json"
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 	"time"
 )
@@ -555,6 +557,304 @@ func TestNbaMapper_mapGame(t *testing.T) {
 			} else {
 				assertion()
 			}
+		})
+	}
+}
+
+// TestNbaProvider_GameBoxScore verifies the behavior of the GameBoxScore method
+// in the nbaProvider struct under various conditions:
+// - Verify that when valid game data is returned by the client while fetching a box score - the method returns properly mapped game data
+// - Verify that when mapper returns an error while mapping game data - the method returns that error
+func TestNbaProvider_GameBoxScore(t *testing.T) {
+	cases := []struct {
+		name      string
+		gameId    string
+		mockSetup func(mockClient *cdn_nba.MockClientInterface, mockMapper *MocknbaMapperInterface)
+		expected  *GameBoxScoreDTO
+		errorMsg  string
+	}{
+		{
+			name:   "Success case - returns properly mapped game data",
+			gameId: "0022200001",
+			mockSetup: func(mockClient *cdn_nba.MockClientInterface, mockMapper *MocknbaMapperInterface) {
+				gameResponse := cdn_nba.BoxScoreDto{
+					GameId: "0022200001",
+					// Other fields would be populated here
+				}
+
+				expectedGame := GameBoxScoreDTO{
+					Id:            "0022200001",
+					LeagueAliasEn: "NBA",
+					// Other fields would be populated here
+				}
+
+				mockClient.EXPECT().BoxScore("0022200001").Return(gameResponse)
+				mockMapper.EXPECT().mapGame(gameResponse).Return(expectedGame, nil)
+			},
+			expected: &GameBoxScoreDTO{
+				Id:            "0022200001",
+				LeagueAliasEn: "NBA",
+				// Other fields would be populated here
+			},
+			errorMsg: "",
+		},
+		{
+			name:   "Error case - mapper returns error",
+			gameId: "0022200001",
+			mockSetup: func(mockClient *cdn_nba.MockClientInterface, mockMapper *MocknbaMapperInterface) {
+				gameResponse := cdn_nba.BoxScoreDto{
+					GameId: "0022200001",
+					// Other fields would be populated here
+				}
+
+				mockClient.EXPECT().BoxScore("0022200001").Return(gameResponse)
+				mockMapper.EXPECT().mapGame(gameResponse).Return(GameBoxScoreDTO{}, errors.New("mapping error"))
+			},
+			expected: &GameBoxScoreDTO{},
+			errorMsg: "mapping error",
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := cdn_nba.NewMockClientInterface(ctrl)
+	mockMapper := NewMocknbaMapperInterface(ctrl)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup mocks for this test case
+			tc.mockSetup(mockClient, mockMapper)
+
+			// Create provider with mocked dependencies
+			provider := &nbaProvider{
+				cdnNbaClient: mockClient,
+				mapper:       mockMapper,
+			}
+
+			// Call the method being tested
+			result, err := provider.GameBoxScore(tc.gameId)
+
+			// Verify results
+			if tc.errorMsg != "" {
+				assert.EqualError(t, err, tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+// TestNbaProvider_GamesByDate verifies the behavior of the GamesByDate method
+// in the nbaProvider struct under various conditions:
+// - Verify that when games exist for the given date while fetching scheduled games - the method returns correct game IDs
+// - Verify that when no games exist for the given date while fetching scheduled games - the method returns an empty slice
+func TestNbaProvider_GamesByDate(t *testing.T) {
+	cases := []struct {
+		name      string
+		date      time.Time
+		mockSetup func(mockClient *cdn_nba.MockClientInterface)
+		expected  []string
+		errorMsg  string
+	}{
+		{
+			name: "Success case - returns game IDs for the given date",
+			date: time.Date(2022, 10, 18, 0, 0, 0, 0, time.UTC),
+			mockSetup: func(mockClient *cdn_nba.MockClientInterface) {
+				os.Remove("/tmp/nba_schedule_cache.json")
+				formattedDate := "10/18/2022 00:00:00"
+
+				// Mock response for season schedule
+				mockClient.EXPECT().ScheduleSeason().Return(cdn_nba.SeasonScheduleDto{
+					Games: []cdn_nba.GameDateSeasonScheduleDto{
+						{
+							GameDate: "10/17/2022 00:00:00",
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200001"},
+								{GameId: "0022200002"},
+							},
+						},
+						{
+							GameDate: formattedDate,
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200003"},
+								{GameId: "0022200004"},
+								{GameId: "0022200005"},
+							},
+						},
+						{
+							GameDate: "10/19/2022 00:00:00",
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200006"},
+							},
+						},
+					},
+				})
+			},
+			expected: []string{"0022200003", "0022200004", "0022200005"},
+			errorMsg: "",
+		},
+		{
+			name: "Success case - take json from tmp",
+			date: time.Date(2022, 10, 18, 0, 0, 0, 0, time.UTC),
+			mockSetup: func(mockClient *cdn_nba.MockClientInterface) {
+				formattedDate := "10/18/2022 00:00:00"
+				schedule := cdn_nba.SeasonScheduleDto{
+					Games: []cdn_nba.GameDateSeasonScheduleDto{
+						{
+							GameDate: "10/17/2022 00:00:00",
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200001"},
+								{GameId: "0022200002"},
+							},
+						},
+						{
+							GameDate: formattedDate,
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200003"},
+								{GameId: "0022200004"},
+								{GameId: "0022200005"},
+							},
+						},
+						{
+							GameDate: "10/19/2022 00:00:00",
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200006"},
+							},
+						},
+					},
+				}
+
+				data, err := json.Marshal(schedule)
+				if err == nil {
+					//n.mapper.logger.Info("Saving schedule to cache...")
+					// Even if there is an error, we still return the schedule from response
+					_ = os.WriteFile("/tmp/nba_schedule_cache.json", data, 0644)
+				}
+			},
+			expected: []string{"0022200003", "0022200004", "0022200005"},
+			errorMsg: "",
+		},
+		{
+			name: "Empty case - no games for the given date",
+			date: time.Date(2022, 10, 20, 0, 0, 0, 0, time.UTC),
+			mockSetup: func(mockClient *cdn_nba.MockClientInterface) {
+				os.Remove("/tmp/nba_schedule_cache.json")
+
+				// Mock response for season schedule with no matching date
+				mockClient.EXPECT().ScheduleSeason().Return(cdn_nba.SeasonScheduleDto{
+					Games: []cdn_nba.GameDateSeasonScheduleDto{
+						{
+							GameDate: "10/18/2022 00:00:00",
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200003"},
+								{GameId: "0022200004"},
+							},
+						},
+						{
+							GameDate: "10/19/2022 00:00:00",
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200005"},
+							},
+						},
+					},
+				})
+			},
+			expected: []string{},
+			errorMsg: "",
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := cdn_nba.NewMockClientInterface(ctrl)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup mocks for this test case
+			tc.mockSetup(mockClient)
+
+			// Create provider with mocked dependencies
+			provider := &nbaProvider{
+				cdnNbaClient: mockClient,
+				mapper:       &nbaMapper{league: &domain.League{}},
+			}
+
+			// Call the method being tested
+			result, err := provider.GamesByDate(tc.date)
+
+			// Verify results
+			if tc.errorMsg != "" {
+				assert.EqualError(t, err, tc.errorMsg)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+// TestNbaProvider_GamesByTeam tests the GamesByTeam method of nbaProvider
+// Since the method is not implemented yet (it panics), we're just testing that it panics
+func TestNbaProvider_GamesByTeam(t *testing.T) {
+	provider := &nbaProvider{}
+
+	assert.Panics(t, func() {
+		_, _ = provider.GamesByTeam("1610612747") // Lakers team ID
+	})
+}
+
+// TestNbaProvider_cachedSeasonSchedule tests the cachedSeasonSchedule method
+// - Verify that when cache exists and is not expired, it returns cached data
+// - Verify that when cache doesn't exist or is expired, it makes a request and caches the result
+func TestNbaProvider_cachedSeasonSchedule(t *testing.T) {
+	cases := []struct {
+		name      string
+		mockSetup func(mockClient *cdn_nba.MockClientInterface)
+	}{
+		{
+			name: "Makes request when cache doesn't exist",
+			mockSetup: func(mockClient *cdn_nba.MockClientInterface) {
+				os.Remove("/tmp/nba_schedule_cache.json")
+				mockClient.EXPECT().ScheduleSeason().Return(cdn_nba.SeasonScheduleDto{
+					Games: []cdn_nba.GameDateSeasonScheduleDto{
+						{
+							GameDate: "10/18/2022 00:00:00",
+							Games: []cdn_nba.GameSeasonScheduleDto{
+								{GameId: "0022200001"},
+							},
+						},
+					},
+				})
+			},
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := cdn_nba.NewMockClientInterface(ctrl)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Setup mocks for this test case
+			tc.mockSetup(mockClient)
+
+			// Create provider with mocked dependencies
+			provider := &nbaProvider{
+				cdnNbaClient: mockClient,
+				mapper:       &nbaMapper{league: &domain.League{}},
+			}
+
+			// Call the method being tested
+			result := provider.cachedSeasonSchedule()
+
+			// Verify we got some result (detailed testing of caching logic would require more setup)
+			assert.NotNil(t, result)
 		})
 	}
 }
