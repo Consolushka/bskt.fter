@@ -4,7 +4,7 @@ import (
 	"IMP/app/internal/domain"
 	"IMP/app/internal/persistence"
 	"IMP/app/internal/statistics"
-	"IMP/app/log"
+	"IMP/app/pkg/log"
 	"fmt"
 	"github.com/spf13/cobra"
 )

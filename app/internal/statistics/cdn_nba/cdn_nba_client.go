@@ -1,7 +1,7 @@
 package cdn_nba
 
 import (
-	"IMP/app/internal/statistics/http"
+	"IMP/app/pkg/http"
 	"fmt"
 )
 

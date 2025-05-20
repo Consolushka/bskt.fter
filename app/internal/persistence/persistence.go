@@ -3,10 +3,10 @@ package persistence
 import (
 	"IMP/app/internal/domain"
 	"IMP/app/internal/imp"
+	"IMP/app/internal/persistence/nba_com"
 	"IMP/app/internal/statistics"
-	"IMP/app/internal/statistics/nba_com"
-	"IMP/app/internal/statistics/translator"
 	"IMP/app/pkg/string_utils"
+	"IMP/app/pkg/translator"
 	"github.com/PuerkitoBio/goquery"
 	"log"
 	"strings"

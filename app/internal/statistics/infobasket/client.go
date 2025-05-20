@@ -1,7 +1,7 @@
 package infobasket
 
 import (
-	"IMP/app/internal/statistics/http"
+	"IMP/app/pkg/http"
 	"fmt"
 )
 

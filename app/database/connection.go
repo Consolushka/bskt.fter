@@ -1,7 +1,7 @@
 package database
 
 import (
-	"IMP/app/log"
+	"IMP/app/pkg/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

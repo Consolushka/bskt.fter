@@ -1,7 +1,7 @@
 package nba_com
 
 import (
-	"IMP/app/internal/statistics/crawler"
+	"IMP/app/internal/persistence/crawler"
 	"github.com/PuerkitoBio/goquery"
 )
 

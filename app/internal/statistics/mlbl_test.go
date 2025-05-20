@@ -3,8 +3,8 @@ package statistics
 import (
 	"IMP/app/internal/domain"
 	"IMP/app/internal/statistics/infobasket"
-	"IMP/app/internal/statistics/translator"
 	"IMP/app/pkg/string_utils"
+	translator2 "IMP/app/pkg/translator"
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +29,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 		player    infobasket.PlayerBoxScoreDto
 		result    PlayerDTO
 		errorMsg  string
-		mockSetup func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface)
+		mockSetup func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator2.MockInterface)
 	}{
 		{
 			name: "Map default player with positive plus-minus from start",
@@ -54,7 +54,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 				},
 			},
 			errorMsg: "",
-			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator2.MockInterface) {
 				utilsInterface.EXPECT().
 					HasNonLanguageChars("Ivanov Ivan Ivanovich", string_utils.Latin).
 					Return(false, nil)
@@ -83,7 +83,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 				},
 			},
 			errorMsg: "",
-			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator2.MockInterface) {
 				utilsInterface.EXPECT().
 					HasNonLanguageChars("Krasikov Petr Vasilyevich", string_utils.Latin).
 					Return(false, nil)
@@ -112,7 +112,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 				},
 			},
 			errorMsg: "",
-			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator2.MockInterface) {
 				utilsInterface.EXPECT().
 					HasNonLanguageChars("Буданов Антон", string_utils.Latin).
 					Return(true, nil)
@@ -136,7 +136,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 			},
 			result:   PlayerDTO{},
 			errorMsg: "can't parse player birthdate. given birthdate: 11-24-2000 doesn't match format 02.01.2006",
-			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator2.MockInterface) {
 			},
 		},
 		{
@@ -151,7 +151,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 				IsStart:      true,
 			},
 			result: PlayerDTO{},
-			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator.MockInterface) {
+			mockSetup: func(utilsInterface *string_utils.MockStringUtilsInterface, translator *translator2.MockInterface) {
 				utilsInterface.EXPECT().
 					HasNonLanguageChars("Budanov Anton", string_utils.Latin).
 					Return(false, errors.New("error in non-language chars"))
@@ -164,7 +164,7 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 	defer ctrl.Finish()
 
 	stringUtils := string_utils.NewMockStringUtilsInterface(ctrl)
-	translatorImp := translator.NewMockInterface(ctrl)
+	translatorImp := translator2.NewMockInterface(ctrl)
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -267,7 +267,7 @@ func TestMlblMapper_mapTeam(t *testing.T) {
 		},
 	}
 
-	mapper := newMlblMapper(string_utils.NewStringUtils(), translator.NewTranslator(), &domain.League{})
+	mapper := newMlblMapper(string_utils.NewStringUtils(), translator2.NewTranslator(), &domain.League{})
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := mapper.mapTeam(tc.data)
@@ -519,7 +519,7 @@ func TestMlblMapper_mapGame(t *testing.T) {
 
 	mapper := &mlblMapper{
 		stringUtils: string_utils.NewStringUtils(),
-		translator:  translator.NewTranslator(),
+		translator:  translator2.NewTranslator(),
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

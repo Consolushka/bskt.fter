@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"IMP/app/internal/domain"
-	"IMP/app/log"
+	"IMP/app/pkg/log"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"time"

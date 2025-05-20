@@ -3,9 +3,9 @@ package statistics
 import (
 	"IMP/app/internal/domain"
 	"IMP/app/internal/statistics/infobasket"
-	"IMP/app/internal/statistics/translator"
 	"IMP/app/pkg/array_utils"
 	"IMP/app/pkg/string_utils"
+	"IMP/app/pkg/translator"
 	"errors"
 	"strconv"
 	"time"
