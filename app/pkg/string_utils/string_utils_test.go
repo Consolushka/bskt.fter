@@ -5,10 +5,11 @@ import (
 	"testing"
 )
 
-// TestGetBoundaries tests the getBoundaries method for different language types.
-// Verify that when Language is set to Latin, the method returns the correct Unicode range (0-127) and no error.
-// Verify that when Language is set to Cyrillic, the method returns the correct Unicode range (1024-1279) and no error.
-// Verify that when Language is set to an invalid value, the method returns an error.
+// TestGetBoundaries verifies the behavior of the getBoundaries method
+// for different language types:
+// - Verify that when Language is set to Latin, the method returns the correct Unicode range (0-127) and no error
+// - Verify that when Language is set to Cyrillic, the method returns the correct Unicode range (1024-1279) and no error
+// - Verify that when Language is set to an invalid value, the method returns an error
 func TestGetBoundaries(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -56,10 +57,11 @@ func TestGetBoundaries(t *testing.T) {
 	}
 }
 
-// TestHasNonLanguageChars tests the HasNonLanguageChars function with different languages and inputs.
-// Verify that the function correctly identifies strings with and without non-Latin characters.
-// Verify that the function correctly identifies strings with and without non-Cyrillic characters.
-// Verify that when an invalid language is provided, the function returns an error.
+// TestHasNonLanguageChars verifies the behavior of the HasNonLanguageChars function
+// with different languages and inputs:
+// - Verify that the function correctly identifies strings with and without non-Latin characters
+// - Verify that the function correctly identifies strings with and without non-Cyrillic characters
+// - Verify that when an invalid language is provided, the function returns an error
 func TestHasNonLanguageChars(t *testing.T) {
 	testCases := []struct {
 		name           string
@@ -138,8 +140,14 @@ func TestHasNonLanguageChars(t *testing.T) {
 	}
 }
 
-// TestRemovePunctuationAndSpaces tests the RemovePunctuationAndSpaces function with different inputs.
-// Verify that the function correctly removes spaces and punctuation marks from strings.
+// TestRemovePunctuationAndSpaces verifies the behavior of the RemovePunctuationAndSpaces function
+// with different inputs:
+// - Verify that the function correctly removes spaces and punctuation marks from Latin text
+// - Verify that the function correctly removes spaces and punctuation marks from Cyrillic text
+// - Verify that the function correctly removes spaces and punctuation marks from mixed text
+// - Verify that the function correctly handles strings containing only punctuation and spaces
+// - Verify that the function correctly handles empty strings
+// - Verify that the function correctly handles text with numbers and special characters
 func TestRemovePunctuationAndSpaces(t *testing.T) {
 	testCases := []struct {
 		name           string
