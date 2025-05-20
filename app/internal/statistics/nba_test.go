@@ -14,6 +14,11 @@ import (
 	"time"
 )
 
+// TestNbaMapper_mapPlayer verifies the behavior of the mapPlayer method
+// in the nbaMapper struct under various conditions:
+// - Verify that when mapping a player from starting lineup with positive plus-minus - returns correct PlayerDTO
+// - Verify that when mapping a player from bench with negative plus-minus - returns correct PlayerDTO
+// - Verify that when error occurs during time format parsing - returns error
 func TestNbaMapper_mapPlayer(t *testing.T) {
 	cases := []struct {
 		name      string
@@ -125,6 +130,10 @@ func TestNbaMapper_mapPlayer(t *testing.T) {
 	}
 }
 
+// TestNbaMapper_mapTeam verifies the behavior of the mapTeam method
+// in the nbaMapper struct under various conditions:
+// - Verify that when mapping a team with valid player data - returns correct TeamBoxScoreDTO
+// - Verify that when error occurs during player mapping - returns error
 func TestNbaMapper_mapTeam(t *testing.T) {
 	cases := []struct {
 		name      string
@@ -255,11 +264,11 @@ func TestNbaMapper_mapTeam(t *testing.T) {
 }
 
 // TestNbaMapper_mapGame tests the mapGame method of nbaMapper
-//
-// Verify that when valid game data is provided while mapping game - returns correct GameBoxScoreDTO
-// Verify that when error occurs during league repository query - returns error
-// Verify that when game has overtime periods while mapping game - calculates correct duration
-// Verify that when player mapping fails while mapping game - returns error
+// under various conditions:
+// - Verify that when valid game data is provided while mapping game - returns correct GameBoxScoreDTO
+// - Verify that when error occurs during league repository query - returns error
+// - Verify that when game has overtime periods while mapping game - calculates correct duration
+// - Verify that when player mapping fails while mapping game - returns error
 func TestNbaMapper_mapGame(t *testing.T) {
 	gameTime := time.Now().UTC()
 
