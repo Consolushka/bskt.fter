@@ -5,14 +5,18 @@ import (
 	"testing"
 )
 
-// TestFormattedMinutesToSeconds tests correct formatting time in string formats to seconds
-// Verify that pattern %m:%s w/o leading 0 is correctly converted to seconds
-// Verify that pattern %m:%s with leading 0 is correctly converted to seconds
-// Verify that pattern %m:%s with zero seconds is correctly converted to seconds
-// Verify that patterns with text ('%m %s', '%m minutes, %s seconds') are correctly converted to seconds
-// Verify that strings without seconds or minutes returns error with message "pattern must contain both %m and %s"
-// Verify that invalid string format returns error with message "time string does not match the pattern"
-// Verify that pattern with reversed minutes and seconds are correctly converted to seconds
+// TestFormattedMinutesToSeconds verifies the behavior of the FormattedMinutesToSeconds method
+// under various input conditions:
+// - Verify that pattern %m:%s without leading zeros is correctly converted to seconds
+// - Verify that pattern %m:%s with leading zeros is correctly converted to seconds
+// - Verify that pattern %m:%s with zero seconds is correctly converted to seconds
+// - Verify that pattern %m:%s with zero minutes is correctly converted to seconds
+// - Verify that patterns with additional text ('%mm %ss') are correctly converted to seconds
+// - Verify that patterns with descriptive text ('Time: %mm %ss remaining') are correctly converted to seconds
+// - Verify that strings without minutes or seconds returns error with message "pattern must contain both %m and %s"
+// - Verify that invalid string format returns error with message "time string does not match the pattern"
+// - Verify that patterns with reversed minutes and seconds are correctly converted to seconds
+// - Verify that complex patterns like ISO-8601 duration format are correctly parsed
 func TestFormattedMinutesToSeconds(t *testing.T) {
 	tests := []struct {
 		name         string

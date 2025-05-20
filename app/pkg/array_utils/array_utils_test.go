@@ -9,9 +9,12 @@ import (
 	"testing"
 )
 
-// TestFilterInts tests the Filter function with integer slices.
-// Verify that when filtering a slice of integers for even numbers, only even numbers are returned.
-// Verify that when filtering an empty slice, an empty slice is returned.
+// TestFilterInts verifies the behavior of the Filter function with integer slices
+// under various conditions:
+// - Verify that when filtering a slice of integers for even numbers, only even numbers are returned
+// - Verify that when filtering a slice of integers for numbers greater than a threshold, only matching numbers are returned
+// - Verify that when filtering with criteria that match no elements, an empty slice is returned
+// - Verify that when filtering an empty slice, an empty slice is returned
 func TestFilterInts(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -53,8 +56,10 @@ func TestFilterInts(t *testing.T) {
 	}
 }
 
-// TestFilterStrings tests the Filter function with string slices.
-// Verify that when filtering a slice of strings based on length, only strings meeting the length criteria are returned.
+// TestFilterStrings verifies the behavior of the Filter function with string slices
+// under various conditions:
+// - Verify that when filtering a slice of strings based on length, only strings meeting the length criteria are returned
+// - Verify that when filtering a slice of strings based on starting character, only strings with matching first character are returned
 func TestFilterStrings(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -84,8 +89,10 @@ func TestFilterStrings(t *testing.T) {
 	}
 }
 
-// TestFilterStructs tests the Filter function with struct slices.
-// Verify that when filtering a slice of structs based on a field value, only structs meeting the criteria are returned.
+// TestFilterStructs verifies the behavior of the Filter function with struct slices
+// under various conditions:
+// - Verify that when filtering a slice of structs based on a numeric field value, only structs meeting the criteria are returned
+// - Verify that when filtering a slice of structs based on a string field value, only structs meeting the criteria are returned
 func TestFilterStructs(t *testing.T) {
 	type person struct {
 		Name string
@@ -136,9 +143,12 @@ func TestFilterStructs(t *testing.T) {
 	}
 }
 
-// TestMapInts tests the Map function with integer slices.
-// Verify that when mapping a slice of integers with a transformation function, each element is correctly transformed.
-// Verify that when mapping an empty slice, an empty slice is returned.
+// TestMapInts verifies the behavior of the Map function with integer slices
+// under various conditions:
+// - Verify that when mapping a slice of integers with a doubling transformation, each element is correctly doubled
+// - Verify that when mapping a slice of integers with an addition transformation, each element is correctly increased
+// - Verify that when mapping an empty slice, an empty slice is returned
+// - Verify that when mapping encounters an error during transformation, the error is properly returned
 func TestMapInts(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -201,7 +211,9 @@ func TestMapInts(t *testing.T) {
 	}
 }
 
-// TestMapIntToString tests the Map function with int to string conversion.
+// TestMapIntToString verifies the behavior of the Map function with type conversion
+// from integers to strings:
+// - Verify that when mapping a slice of integers to strings, each integer is correctly converted to its string representation
 func TestMapIntToString(t *testing.T) {
 	input := []int{1, 2, 3}
 	expected := []string{"1", "2", "3"}
@@ -214,7 +226,9 @@ func TestMapIntToString(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-// TestMapStringToInt tests the Map function with string to int conversion.
+// TestMapStringToInt verifies the behavior of the Map function with type conversion
+// from strings to integers:
+// - Verify that when mapping a slice of strings to integers, each string is correctly parsed to its integer value
 func TestMapStringToInt(t *testing.T) {
 	input := []string{"1", "2", "3"}
 	expected := []int{1, 2, 3}
@@ -227,7 +241,9 @@ func TestMapStringToInt(t *testing.T) {
 	assert.Equal(t, expected, result)
 }
 
-// TestMapStringToIntError tests the Map function with string to int conversion that produces an error.
+// TestMapStringToIntError verifies the error handling of the Map function
+// when string to integer conversion fails:
+// - Verify that when mapping a slice of strings to integers encounters an invalid number, the appropriate error is returned
 func TestMapStringToIntError(t *testing.T) {
 	input := []string{"1", "2", "not-a-number", "3"}
 
@@ -239,9 +255,11 @@ func TestMapStringToIntError(t *testing.T) {
 	assert.Nil(t, result)
 }
 
-// TestMapStructs tests the Map function with struct slices.
-// Verify that when mapping a slice of structs to another type, the transformation is correctly applied to each element.
-// Verify that when a validation fails during mapping, the appropriate error is returned.
+// TestMapStructs verifies the behavior of the Map function with struct slices
+// under various conditions:
+// - Verify that when mapping a slice of structs to another type, the transformation is correctly applied to each element
+// - Verify that when mapping with validation that passes for all elements, all transformations succeed
+// - Verify that when validation fails during mapping, the appropriate error is returned
 func TestMapStructs(t *testing.T) {
 	type person struct {
 		Name string
