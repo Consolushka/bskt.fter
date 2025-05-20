@@ -39,3 +39,9 @@ restart-server: ## Enter Golang container sh
 install: ## first time installation
 	make setup
 	make build
+
+test-with-coverage: ## run tests with coverage
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) go test -v -coverprofile=coverage.out.tmp ./...
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) cat coverage.out.tmp | grep -v "mock_" > coverage.out
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) go tool cover -func coverage.out
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) rm coverage.out.tmp

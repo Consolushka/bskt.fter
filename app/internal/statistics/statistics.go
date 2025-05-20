@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"IMP/app/internal/domain"
+	"errors"
 	"strings"
 	"time"
 )
@@ -15,13 +16,13 @@ type StatsProvider interface {
 	GamesByTeam(teamId string) ([]string, error)
 }
 
-func NewLeagueProvider(league *domain.League) StatsProvider {
-	switch league.AliasEn {
+func NewLeagueProvider(league *domain.League) (StatsProvider, error) {
+	switch strings.ToUpper(league.AliasEn) {
 	case strings.ToUpper(domain.NBAAlias):
-		return newNbaProvider(league)
+		return newNbaProvider(league), nil
 	case strings.ToUpper(domain.MLBLAlias):
-		return newMlblProvider(league)
+		return newMlblProvider(league), nil
 	default:
-		return nil
+		return nil, errors.New("There is no provider for league: " + strings.ToUpper(domain.MLBLAlias))
 	}
 }

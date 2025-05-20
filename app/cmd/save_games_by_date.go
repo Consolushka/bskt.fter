@@ -46,7 +46,11 @@ func SaveGameByDate(leagueName string, date time.Time) {
 		logger.Fatalln(err)
 		panic(err)
 	}
-	leagueProvider := statistics.NewLeagueProvider(league.AliasEn)
+	leagueProvider, err := statistics.NewLeagueProvider(league)
+	if err != nil {
+		fmt.Println(err)
+		logger.Fatalln(err)
+	}
 
 	gameIds, err := leagueProvider.GamesByDate(date)
 	logger.Info("On date " + date.Format("02-01-2006") + " there are " + strconv.Itoa(len(gameIds)) + " games in " + strings.ToUpper(leagueName))

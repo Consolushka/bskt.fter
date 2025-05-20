@@ -42,7 +42,11 @@ func SaveGame(leagueName string, gameId string) {
 		return
 	}
 
-	leagueProvider := statistics.NewLeagueProvider(league)
+	leagueProvider, err := statistics.NewLeagueProvider(league)
+	if err != nil {
+		fmt.Println(err)
+		logger.Fatalln(err)
+	}
 	model, err := leagueProvider.GameBoxScore(gameId)
 	if err != nil {
 		logger.Fatalln(err)

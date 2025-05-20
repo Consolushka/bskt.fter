@@ -67,4 +67,14 @@ IMP provides deep analysis of player performance considering actual playing time
             mockgen -source={path/to/file}/{file_name}.go -destination={path/to/file}/mocks/mock_{file_name}.go -package={same package as file}
         </p>
     </li>
+    <li>
+        <b>test with coverage</b>
+        <p>
+            There is make command in Makefile called 'test-with-coverage'
+            <br>
+            After running this command you can see coverage report in ./coverage.out.
+            <br>
+            In IDEA you can open 'Coverage' tab and see coverage and import this file.
+        </p>
+    </li>
 </ul>

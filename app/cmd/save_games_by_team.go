@@ -4,6 +4,7 @@ import (
 	"IMP/app/internal/domain"
 	"IMP/app/internal/statistics"
 	"IMP/app/log"
+	"fmt"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +29,11 @@ func SaveGameByTeam(leagueName string, teamId string) {
 		log.NewLogger().Fatalln(err)
 		panic(err)
 	}
-	leagueProvider := statistics.NewLeagueProvider(league.AliasEn)
+	leagueProvider, err := statistics.NewLeagueProvider(league)
+	if err != nil {
+		fmt.Println(err)
+		log.NewLogger().Fatalln(err)
+	}
 
 	gameIds, err := leagueProvider.GamesByTeam(teamId)
 	if err != nil {

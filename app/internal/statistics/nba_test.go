@@ -475,7 +475,7 @@ func TestNbaMapper_mapGame(t *testing.T) {
 			},
 		},
 		{
-			name: "Error during player mapping",
+			name: "Error during mapping player from Home Team",
 			game: cdn_nba.BoxScoreDto{
 				GameId:      "0022200004",
 				GameStatus:  3,
@@ -519,6 +519,69 @@ func TestNbaMapper_mapGame(t *testing.T) {
 
 				timeUtils.EXPECT().
 					FormattedMinutesToSeconds("INVALID_FORMAT", playedTimeFormat).
+					Return(0, errors.New("time format error"))
+			},
+		},
+		{
+			name: "Error during mapping player from Away Team",
+			game: cdn_nba.BoxScoreDto{
+				GameId:      "0022200004",
+				GameStatus:  3,
+				Period:      4,
+				GameTimeUTC: gameTime,
+				HomeTeam: cdn_nba.TeamBoxScoreDto{
+					TeamId:      1610612747,
+					TeamName:    "Los Angeles Lakers",
+					TeamTricode: "LAL",
+					Score:       120,
+					Players: []cdn_nba.PlayerBoxScoreDto{
+						{
+							Name:     "LeBron James",
+							PersonId: 2544,
+							Starter:  "1",
+							Statistics: cdn_nba.PlayerEfficiencyBoxScoreDto{
+								Minutes: "PT35M20S", // This will cause an error
+								Plus:    25,
+								Minus:   10,
+							},
+						},
+					},
+				},
+				AwayTeam: cdn_nba.TeamBoxScoreDto{
+					TeamId:      1610612744,
+					TeamName:    "Golden State Warriors",
+					TeamTricode: "GSW",
+					Score:       110,
+					Players: []cdn_nba.PlayerBoxScoreDto{
+						{
+							Name:     "Stephen Curry",
+							PersonId: 201939,
+							Starter:  "1",
+							Statistics: cdn_nba.PlayerEfficiencyBoxScoreDto{
+								Minutes: "33 minutes 12 second",
+								Plus:    15,
+								Minus:   20,
+							},
+						},
+					},
+				},
+			},
+			expected: GameBoxScoreDTO{},
+			league: domain.League{
+				PeriodsNumber:    4,
+				PeriodDuration:   12,
+				OvertimeDuration: 6,
+				AliasEn:          "NBA",
+			},
+			errorMsg: "time format error",
+			mockSetup: func(timeUtils *time_utils.MockTimeUtilsInterface, logMock *log.MockLogger) {
+
+				timeUtils.EXPECT().
+					FormattedMinutesToSeconds("PT35M20S", playedTimeFormat).
+					Return(2120, nil)
+
+				timeUtils.EXPECT().
+					FormattedMinutesToSeconds("33 minutes 12 second", playedTimeFormat).
 					Return(0, errors.New("time format error"))
 			},
 		},
