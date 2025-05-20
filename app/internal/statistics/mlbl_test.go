@@ -12,6 +12,13 @@ import (
 	"time"
 )
 
+// TestMlblMapper_mapPlayer verifies the behavior of the mapPlayer method
+// in the mlblMapper struct under various conditions:
+// - Verify that when mapping a player with positive plus-minus from starting lineup - returns correct PlayerDTO
+// - Verify that when mapping a player with negative plus-minus from bench - returns correct PlayerDTO
+// - Verify that when player has cyrillic name in English field - translates name correctly
+// - Verify that when player has invalid birthdate format - returns appropriate error
+// - Verify that when error occurs during language character validation - returns error
 func TestMlblMapper_mapPlayer(t *testing.T) {
 	firstPlayerDate := time.Date(1990, 11, 25, 0, 0, 0, 0, time.UTC)
 	secondPlayerDate := time.Date(1970, 11, 11, 0, 0, 0, 0, time.UTC)
@@ -178,8 +185,9 @@ func TestMlblMapper_mapPlayer(t *testing.T) {
 }
 
 // TestMlblMapper_mapTeam tests the mapTeam method of mlblMapper
-// Verify that when valid team data is provided - team data is correctly mapped
-// Verify that when player mapping fails - error is returned
+// under various conditions:
+// - Verify that when valid team data is provided - team data is correctly mapped
+// - Verify that when player mapping fails - error is returned
 func TestMlblMapper_mapTeam(t *testing.T) {
 	lbjBirthDate := time.Date(1984, time.December, 30, 0, 0, 0, 0, time.UTC)
 
@@ -277,11 +285,11 @@ func TestMlblMapper_mapTeam(t *testing.T) {
 }
 
 // TestMlblMapper_mapGame tests the mapGame method of mlblMapper
-//
-// Verify that when valid game data is provided while mapping game - returns correct GameBoxScoreDTO
-// Verify that when invalid game date format is provided while mapping game - returns error
-// Verify that when game has overtime periods while mapping game - calculates correct duration
-// Verify that when player has invalid birthdate while mapping game - returns error
+// under various conditions:
+// - Verify that when valid game data is provided while mapping game - returns correct GameBoxScoreDTO
+// - Verify that when invalid game date format is provided while mapping game - returns error
+// - Verify that when game has overtime periods while mapping game - calculates correct duration
+// - Verify that when player has invalid birthdate while mapping game - returns error
 func TestMlblMapper_mapGame(t *testing.T) {
 	cases := []struct {
 		name     string
