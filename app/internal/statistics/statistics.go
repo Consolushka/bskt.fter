@@ -17,7 +17,7 @@ type StatsProvider interface {
 }
 
 func NewLeagueProvider(league *domain.League) (StatsProvider, error) {
-	switch league.AliasEn {
+	switch strings.ToUpper(league.AliasEn) {
 	case strings.ToUpper(domain.NBAAlias):
 		return newNbaProvider(league), nil
 	case strings.ToUpper(domain.MLBLAlias):
