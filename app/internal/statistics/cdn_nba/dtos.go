@@ -41,19 +41,21 @@ type TeamBoxScoreDto struct {
 }
 
 type PlayerBoxScoreDto struct {
-	Status     string                      `json:"status"`
-	Order      int                         `json:"order"`
-	PersonId   int                         `json:"personId"`
-	JerseyNum  string                      `json:"jerseyNum"`
-	Position   string                      `json:"position"`
-	Starter    string                      `json:"starter"`
-	Oncourt    string                      `json:"oncourt"`
-	Played     string                      `json:"played"`
-	Statistics PlayerEfficiencyBoxScoreDto `json:"statistics"`
-	Name       string                      `json:"name"`
-	NameI      string                      `json:"nameI"`
-	FirstName  string                      `json:"firstName"`
-	FamilyName string                      `json:"familyName"`
+	Status                string                      `json:"status"`
+	NotPlayingReason      string                      `json:"notPlayingReason"`
+	NotPlayingDescription string                      `json:"notPlayingDescription"`
+	Order                 int                         `json:"order"`
+	PersonId              int                         `json:"personId"`
+	JerseyNum             string                      `json:"jerseyNum"`
+	Position              string                      `json:"position"`
+	Starter               string                      `json:"starter"`
+	Oncourt               string                      `json:"oncourt"`
+	Played                string                      `json:"played"`
+	Statistics            PlayerEfficiencyBoxScoreDto `json:"statistics"`
+	Name                  string                      `json:"name"`
+	NameI                 string                      `json:"nameI"`
+	FirstName             string                      `json:"firstName"`
+	FamilyName            string                      `json:"familyName"`
 }
 
 type PlayerEfficiencyBoxScoreDto struct {
