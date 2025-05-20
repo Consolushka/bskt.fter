@@ -3,7 +3,7 @@ package statistics
 import (
 	"IMP/app/internal/domain"
 	"IMP/app/internal/statistics/cdn_nba"
-	"IMP/app/log"
+	"IMP/app/pkg/log"
 	"IMP/app/pkg/time_utils"
 	"encoding/json"
 	"errors"
