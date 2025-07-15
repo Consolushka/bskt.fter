@@ -1,7 +1,10 @@
 package ports
 
-import "IMP/app/internal/core/games"
+import (
+	"IMP/app/internal/core/games"
+	"time"
+)
 
-type StatsProviderPort interface {
-	GetGamesStatsByDate() ([]games.GameStatEntity, error)
+type StatsProvider interface {
+	GetGamesStatsByDate(date time.Time) ([]games.GameStatEntity, error)
 }
