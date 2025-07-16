@@ -17,4 +17,6 @@ type GameTeamStatModel struct {
 	Score     int
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
+	Team TeamModel
 }

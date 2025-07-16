@@ -1,7 +1,7 @@
 package imp
 
 import (
-	"IMP/app/internal/domain"
+	"IMP/app/internal/core/leagues"
 )
 
 type PERs string
@@ -46,7 +46,7 @@ func EvaluateClean(playedSeconds int, plsMin int, finalDifference int, fullGameT
 }
 
 // EvaluatePer calculates the IMP per given PER
-func EvaluatePer(playedSeconds int, plsMin *int, finalDifferential *int, fullGameTime *int, impPer PERs, league *domain.League, cleanImpPointer *float64) float64 {
+func EvaluatePer(playedSeconds int, plsMin *int, finalDifferential *int, fullGameTime *int, impPer PERs, league *leagues.LeagueModel, cleanImpPointer *float64) float64 {
 	var cleanImp float64
 
 	if cleanImpPointer == nil {

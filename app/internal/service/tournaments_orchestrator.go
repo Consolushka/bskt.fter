@@ -31,6 +31,7 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 	tournamentsGroup.Add(len(activeTournaments))
 
 	for _, tournament := range activeTournaments {
+		//todo: когда добавлю запись в бд, то сюда добавить каналы
 		go func() {
 			statsProvider, err := NewStatsProvider(tournament.League.Alias)
 			if err != nil {

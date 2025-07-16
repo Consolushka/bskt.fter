@@ -1,8 +1,7 @@
 package imp
 
 import (
-	"IMP/app/internal/domain"
-	"strings"
+	"IMP/app/internal/core/leagues"
 )
 
 type TimeBasedImpCoefficient int
@@ -19,9 +18,9 @@ const (
 	Per48 TimeBasedImpCoefficient = 48
 )
 
-func TimeBasesByLeagueAndPers(league *domain.League, impPer PERs) TimeBasedImpCoefficient {
-	switch league.AliasEn {
-	case strings.ToUpper(domain.NBAAlias):
+func TimeBasesByLeagueAndPers(league *leagues.LeagueModel, impPer PERs) TimeBasedImpCoefficient {
+	switch league.Name {
+	case "NBA":
 		switch impPer {
 		case Bench:
 			return Per24
@@ -30,7 +29,7 @@ func TimeBasesByLeagueAndPers(league *domain.League, impPer PERs) TimeBasedImpCo
 		case FullGame:
 			return Per48
 		}
-	case strings.ToUpper(domain.MLBLAlias):
+	case "MLBL":
 		switch impPer {
 		case Bench:
 			return Per20
