@@ -36,6 +36,8 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 			statsProvider, err := NewStatsProvider(tournament.League.Alias)
 			if err != nil {
 				fmt.Println("There was an error. Error: ", err)
+				tournamentsGroup.Done()
+				return
 			}
 
 			_, err = statsProvider.GetGamesStatsByDate(time.Now())

@@ -85,6 +85,26 @@ func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 			},
 		},
 		{
+			name:     "successfully processes tournaments with even with unexpected league",
+			data:     struct{}{},
+			expected: nil,
+			errorMsg: "",
+			setupMock: func(mockRepo *tournaments_repo.MockTournamentsRepo) {
+				mockRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{
+					{
+						League: leagues.LeagueModel{
+							Alias: "NBA",
+						},
+					},
+					{
+						League: leagues.LeagueModel{
+							Alias: "UNEXPECTED",
+						},
+					},
+				}, nil)
+			},
+		},
+		{
 			name:     "successfully processes empty tournaments list",
 			data:     struct{}{},
 			expected: nil,
