@@ -12,33 +12,20 @@ const (
 )
 
 type ClientInterface interface {
-	BoxScore(gameId string) GameBoxScoreResponse
-	ScheduledGames(compId int) []GameScheduleDto
-	TeamGames(teamId string) TeamScheduleResponse
+	BoxScore(gameId string) (GameBoxScoreResponse, error)
+	ScheduledGames(compId int) ([]GameScheduleDto, error)
 }
 
 type Client struct {
 	baseUrl string
 }
 
-func (c *Client) BoxScore(gameId string) GameBoxScoreResponse {
-	result := http.Get[GameBoxScoreResponse](c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
-
-	return result
+func (c *Client) BoxScore(gameId string) (GameBoxScoreResponse, error) {
+	return http.Get[GameBoxScoreResponse](c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
 }
 
-func (c *Client) TeamGames(teamId string) TeamScheduleResponse {
-	result := http.Get[[]GameScheduleDto](c.baseUrl+fmt.Sprintf(teamGamesEndpointPattern, teamId), nil)
-
-	return TeamScheduleResponse{
-		Games: result,
-	}
-}
-
-func (c *Client) ScheduledGames(compId int) []GameScheduleDto {
-	result := http.Get[[]GameScheduleDto](c.baseUrl+fmt.Sprintf(scheduleEndpointPattern, compId), nil)
-
-	return result
+func (c *Client) ScheduledGames(compId int) ([]GameScheduleDto, error) {
+	return http.Get[[]GameScheduleDto](c.baseUrl+fmt.Sprintf(scheduleEndpointPattern, compId), nil)
 }
 
 func NewInfobasketClient() ClientInterface {

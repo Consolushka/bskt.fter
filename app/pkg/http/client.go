@@ -6,10 +6,13 @@ import (
 	"net/http"
 )
 
-func Get[T any](url string, headers *map[string]string) T {
+func Get[T any](url string, headers *map[string]string) (T, error) {
 	var result T
 
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return result, err
+	}
 
 	if headers != nil {
 		for key, value := range *headers {
@@ -17,7 +20,10 @@ func Get[T any](url string, headers *map[string]string) T {
 		}
 	}
 
-	res, _ := http.DefaultClient.Do(req)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return result, err
+	}
 
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -27,10 +33,7 @@ func Get[T any](url string, headers *map[string]string) T {
 	}(res.Body)
 	body, _ := io.ReadAll(res.Body)
 
-	err := json.Unmarshal(body, &result)
-	if err != nil {
-		panic(err)
-	}
+	err = json.Unmarshal(body, &result)
 
-	return result
+	return result, err
 }

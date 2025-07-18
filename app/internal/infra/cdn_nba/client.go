@@ -9,8 +9,8 @@ const boxScoreEndpointPattern = "/liveData/boxscore/boxscore_%v.json"
 const fullSeasonEndpoint = "/staticData/scheduleLeagueV2_14.json"
 
 type ClientInterface interface {
-	BoxScore(gameId string) BoxScoreDto
-	ScheduleSeason() SeasonScheduleDto
+	BoxScore(gameId string) (GameBoxScoreResponse, error)
+	ScheduleSeason() (ScheduleResponse, error)
 }
 
 type Client struct {
@@ -23,14 +23,10 @@ func NewCdnNbaClient() *Client {
 	}
 }
 
-func (c Client) BoxScore(gameId string) BoxScoreDto {
-	result := http.Get[GameBoxScoreResponse](c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
-
-	return result.Game
+func (c Client) BoxScore(gameId string) (GameBoxScoreResponse, error) {
+	return http.Get[GameBoxScoreResponse](c.baseUrl+fmt.Sprintf(boxScoreEndpointPattern, gameId), nil)
 }
 
-func (c Client) ScheduleSeason() SeasonScheduleDto {
-	result := http.Get[ScheduleResponse](c.baseUrl+fullSeasonEndpoint, nil)
-
-	return result.Schedule
+func (c Client) ScheduleSeason() (ScheduleResponse, error) {
+	return http.Get[ScheduleResponse](c.baseUrl+fullSeasonEndpoint, nil)
 }
