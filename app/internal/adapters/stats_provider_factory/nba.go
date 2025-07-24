@@ -2,12 +2,17 @@ package stats_provider_factory
 
 import (
 	"IMP/app/internal/adapters/stats_provider"
+	"IMP/app/internal/infra/api_nba"
 	"IMP/app/internal/ports"
+	"os"
 )
 
-type NbaStatsProviderFactory struct {
-}
+type NbaStatsProviderFactory struct{}
 
 func (m NbaStatsProviderFactory) Create() (ports.StatsProvider, error) {
-	return stats_provider.CdnNbaStatsProviderAdapter{}, nil
+	apiNbaToken := os.Getenv("API_SPORT_API_KEY")
+
+	return stats_provider.NewApiNbaStatsProviderAdapter(
+		api_nba.NewClient("https://v2.nba.api-sports.io", apiNbaToken),
+	), nil
 }
