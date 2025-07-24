@@ -22,7 +22,7 @@ func TestNewStatsProvider(t *testing.T) {
 		{
 			name:     "successfully creates NBA stats provider",
 			data:     "NBA",
-			expected: stats_provider.CdnNbaStatsProviderAdapter{},
+			expected: stats_provider.ApiNbaStatsProviderAdapter{},
 			errorMsg: "",
 		},
 		{

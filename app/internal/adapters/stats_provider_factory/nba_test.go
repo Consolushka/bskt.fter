@@ -20,7 +20,7 @@ func TestNbaStatsProviderFactory_Create(t *testing.T) {
 		{
 			name:     "successfully creates CdnNbaStatsProviderAdapter",
 			data:     struct{}{},
-			expected: stats_provider.CdnNbaStatsProviderAdapter{},
+			expected: stats_provider.ApiNbaStatsProviderAdapter{},
 			errorMsg: "",
 		},
 	}
