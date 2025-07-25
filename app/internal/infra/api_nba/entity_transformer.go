@@ -4,6 +4,7 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -89,17 +90,17 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 	splittedGameTime := strings.Split(player.Min, ":")
 	minutesPlayed, err := strconv.Atoi(splittedGameTime[0])
 	if err != nil {
-		return err
+		return errors.New(err.Error())
 	}
 	secondsAfterMinutes, err := strconv.Atoi(splittedGameTime[1])
 	if err != nil {
-		return err
+		return errors.New(err.Error())
 	}
 
 	secondsPlayed := minutesPlayed*60 + secondsAfterMinutes
 	plsMin, err := strconv.Atoi(player.PlusMinus)
 	if err != nil {
-		return err
+		return errors.New(err.Error())
 	}
 
 	*playerBusinessEntity = players.PlayerStatisticEntity{
@@ -130,7 +131,7 @@ func (e *EntityTransformer) enrichPlayerBio(playerId int, playerEntity *players.
 	time.Sleep(6 * time.Second)
 	playerEntity.PlayerModel.BirthDate, err = time.Parse("2006-01-02", playerBio.Response[0].Birth.Date)
 	if err != nil {
-		return err
+		return errors.New(err.Error())
 	}
 
 	return nil
