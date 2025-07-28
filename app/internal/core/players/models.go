@@ -3,7 +3,7 @@ package players
 import "time"
 
 type PlayerModel struct {
-	Id        int
+	Id        uint
 	FullName  string
 	BirthDate time.Time
 	CreatedAt time.Time
