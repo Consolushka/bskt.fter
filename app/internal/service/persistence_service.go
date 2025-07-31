@@ -73,6 +73,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 		if err != nil {
 			// todo: log
 			fmt.Println("There was an error. Error: ", err)
+			continue
 		}
 
 		err = s.savePlayerStatModel(&playerStats)
