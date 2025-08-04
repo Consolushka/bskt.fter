@@ -20,8 +20,9 @@ func (g Gorm) FirstOrCreatePlayer(player players.PlayerModel) (players.PlayerMod
 
 func (g Gorm) FirstOrCreatePlayerStat(playerStat players.GameTeamPlayerStatModel) (players.GameTeamPlayerStatModel, error) {
 	tx := g.db.FirstOrCreate(&playerStat, players.GameTeamPlayerStatModel{
-		GameTeamId: playerStat.GameTeamId,
-		PlayerId:   playerStat.PlayerId,
+		GameId:   playerStat.GameId,
+		TeamId:   playerStat.TeamId,
+		PlayerId: playerStat.PlayerId,
 	})
 
 	return playerStat, tx.Error
