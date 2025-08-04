@@ -3,26 +3,18 @@ package teams
 import "time"
 
 type TeamModel struct {
-	Id        uint
-	Name      string
-	HomeTown  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
 	Id        uint      `gorm:"column:id"`
 	Name      string    `gorm:"column:name"`
 	HomeTown  string    `gorm:"column:home_town"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
 }
+
+func (TeamModel) TableName() string {
+	return "teams"
 }
 
 type GameTeamStatModel struct {
-	Id        uint
-	GameId    uint
-	TeamId    uint
-	Score     int
-	CreatedAt time.Time
-	UpdatedAt time.Time
 	Id        uint      `gorm:"column:id"`
 	GameId    uint      `gorm:"column:game_id"`
 	TeamId    uint      `gorm:"column:team_id"`
@@ -30,4 +22,7 @@ type GameTeamStatModel struct {
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
 }
+
+func (GameTeamStatModel) TableName() string {
+	return "game_team_stats"
 }
