@@ -34,7 +34,7 @@ func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, er
 		AwayTeamStat: teams.TeamStatEntity{
 			TeamModel: teams.TeamModel{
 				Name:     game.Teams.Visitors.Nickname,
-				HomeTown: strings.Replace(game.Teams.Visitors.Name, game.Teams.Visitors.Nickname, "", 1),
+				HomeTown: strings.TrimRight(strings.Replace(game.Teams.Visitors.Name, game.Teams.Visitors.Nickname, "", 1), " "),
 			},
 			GameTeamStatModel: teams.GameTeamStatModel{
 				Score: game.Scores.Visitors.Points,
