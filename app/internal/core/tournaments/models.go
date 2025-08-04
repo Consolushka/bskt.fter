@@ -7,12 +7,12 @@ import (
 )
 
 type TournamentModel struct {
-	Id        uint           `db:"id"`
-	LeagueId  uint           `db:"league_id"`
-	Name      string         `db:"name"`
-	CreatedAt time.Time      `db:"created_at"`
-	UpdatedAt time.Time      `db:"updated_at"`
-	DeletedAt gorm.DeletedAt `db:"deleted_at"`
+	Id        uint           `gorm:"column:id"`
+	LeagueId  uint           `gorm:"column:league_id"`
+	Name      string         `gorm:"column:name"`
+	CreatedAt time.Time      `gorm:"column:created_at"`
+	UpdatedAt time.Time      `gorm:"column:updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`
 
 	League leagues.LeagueModel `gorm:"foreignKey:LeagueId"`
 }

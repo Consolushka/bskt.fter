@@ -3,11 +3,11 @@ package leagues
 import "time"
 
 type LeagueModel struct {
-	Id        uint      `db:"id"`
-	Name      string    `db:"name"`
-	Alias     string    `db:"alias"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	Id        uint      `gorm:"column:id"`
+	Name      string    `gorm:"column:name"`
+	Alias     string    `gorm:"column:alias"`
+	CreatedAt time.Time `gorm:"column:created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at"`
 }
 
 func (LeagueModel) TableName() string {
