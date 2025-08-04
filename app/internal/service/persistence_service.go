@@ -107,8 +107,9 @@ func (s PersistenceService) saveTeamStatModel(entity *teams.TeamStatEntity) erro
 		return err
 	}
 
-	for _, playerStat := range entity.PlayerStats {
-		playerStat.GameTeamPlayerStatModel.GameTeamId = entity.GameTeamStatModel.Id
+	for index, _ := range entity.PlayerStats {
+		entity.PlayerStats[index].GameTeamPlayerStatModel.GameId = entity.GameTeamStatModel.GameId
+		entity.PlayerStats[index].GameTeamPlayerStatModel.TeamId = entity.GameTeamStatModel.TeamId
 	}
 
 	return nil
