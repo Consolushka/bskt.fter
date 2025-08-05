@@ -2,6 +2,9 @@ package main
 
 import (
 	"IMP/app/database"
+	"IMP/app/internal/adapters/games_repo"
+	"IMP/app/internal/adapters/players_repo"
+	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/service"
 	"github.com/joho/godotenv"
@@ -19,7 +22,13 @@ func main() {
 
 	database.OpenDbConnection()
 
-	tournamentsOrchestrator := service.NewTournamentsOrchestrator(tournaments_repo.NewGormRepo(database.GetDB()))
+	db := database.GetDB()
+	tournamentsOrchestrator := service.NewTournamentsOrchestrator(
+		games_repo.NewGormRepo(db),
+		teams_repo.NewGormRepo(db),
+		players_repo.NewGormRepo(db),
+		tournaments_repo.NewGormRepo(db),
+	)
 
 	err = tournamentsOrchestrator.ProcessAllTournamentsToday()
 

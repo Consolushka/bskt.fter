@@ -8,12 +8,18 @@ import (
 )
 
 type TournamentsOrchestrator struct {
-	repo ports.TournamentsRepo
+	gamesRepo       ports.GamesRepo
+	teamsRepo       ports.TeamsRepo
+	playersRepo     ports.PlayersRepo
+	tournamentsRepo ports.TournamentsRepo
 }
 
-func NewTournamentsOrchestrator(repo ports.TournamentsRepo) *TournamentsOrchestrator {
+func NewTournamentsOrchestrator(gamesRepo ports.GamesRepo, teamsRepo ports.TeamsRepo, playersRepo ports.PlayersRepo, tournamentsRepo ports.TournamentsRepo) *TournamentsOrchestrator {
 	return &TournamentsOrchestrator{
-		repo: repo,
+		gamesRepo:       gamesRepo,
+		teamsRepo:       teamsRepo,
+		playersRepo:     playersRepo,
+		tournamentsRepo: tournamentsRepo,
 	}
 
 }
@@ -21,7 +27,7 @@ func NewTournamentsOrchestrator(repo ports.TournamentsRepo) *TournamentsOrchestr
 // ProcessAllTournamentsToday
 // Fetches all active tournaments from repository and processes today games
 func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
-	activeTournaments, err := t.repo.ListActiveTournaments()
+	activeTournaments, err := t.tournamentsRepo.ListActiveTournaments()
 
 	if err != nil {
 		return err
@@ -29,6 +35,8 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 
 	var tournamentsGroup sync.WaitGroup
 	tournamentsGroup.Add(len(activeTournaments))
+
+	persistenceService := NewPersistenceService(t.gamesRepo, t.teamsRepo, t.playersRepo)
 
 	for _, tournament := range activeTournaments {
 		//todo: когда добавлю запись в бд, то сюда добавить каналы
@@ -40,9 +48,17 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 				return
 			}
 
-			_, err = statsProvider.GetGamesStatsByDate(time.Now())
+			gameEntities, err := statsProvider.GetGamesStatsByDate(time.Now())
 			if err != nil {
 				fmt.Println("There was an error. Error: ", err)
+			}
+
+			for _, gameEntity := range gameEntities {
+				err = persistenceService.SaveGame(gameEntity)
+				if err != nil {
+					fmt.Println("Error while saving game to db: ", err)
+					continue
+				}
 			}
 
 			tournamentsGroup.Done()
