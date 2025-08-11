@@ -8,6 +8,10 @@ import (
 	"fmt"
 )
 
+type PersistenceServiceInterface interface {
+	SaveGame(game games.GameStatEntity) error
+}
+
 type PersistenceService struct {
 	gamesRepo   ports.GamesRepo
 	teamsRepo   ports.TeamsRepo

@@ -7,8 +7,9 @@ import (
 	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/service"
-	"github.com/joho/godotenv"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -24,9 +25,7 @@ func main() {
 
 	db := database.GetDB()
 	tournamentsOrchestrator := service.NewTournamentsOrchestrator(
-		games_repo.NewGormRepo(db),
-		teams_repo.NewGormRepo(db),
-		players_repo.NewGormRepo(db),
+		*service.NewPersistenceService(games_repo.NewGormRepo(db), teams_repo.NewGormRepo(db), players_repo.NewGormRepo(db)),
 		tournaments_repo.NewGormRepo(db),
 	)
 
