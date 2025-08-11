@@ -1,29 +1,27 @@
 package service
 
 import (
+	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"fmt"
 	"sync"
-	"time"
 )
 
 type TournamentsOrchestrator struct {
-	gamesRepo       ports.GamesRepo
-	teamsRepo       ports.TeamsRepo
-	playersRepo     ports.PlayersRepo
-	tournamentsRepo ports.TournamentsRepo
+	persistenceService PersistenceServiceInterface
+	tournamentsRepo    ports.TournamentsRepo
 }
 
-func NewTournamentsOrchestrator(gamesRepo ports.GamesRepo, teamsRepo ports.TeamsRepo, playersRepo ports.PlayersRepo, tournamentsRepo ports.TournamentsRepo) *TournamentsOrchestrator {
+func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, tournamentsRepo ports.TournamentsRepo) *TournamentsOrchestrator {
 	return &TournamentsOrchestrator{
-		gamesRepo:       gamesRepo,
-		teamsRepo:       teamsRepo,
-		playersRepo:     playersRepo,
-		tournamentsRepo: tournamentsRepo,
+		persistenceService: persistenceService,
+		tournamentsRepo:    tournamentsRepo,
 	}
 
 }
 
+// ProcessAllTournamentsToday
+// Fetches all active tournaments from repository and processes today games
 // ProcessAllTournamentsToday
 // Fetches all active tournaments from repository and processes today games
 func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
@@ -36,33 +34,23 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 	var tournamentsGroup sync.WaitGroup
 	tournamentsGroup.Add(len(activeTournaments))
 
-	persistenceService := NewPersistenceService(t.gamesRepo, t.teamsRepo, t.playersRepo)
-
 	for _, tournament := range activeTournaments {
-		//todo: когда добавлю запись в бд, то сюда добавить каналы
-		go func() {
+		go func(tournament tournaments.TournamentModel) {
+			defer tournamentsGroup.Done()
+
 			statsProvider, err := NewStatsProvider(tournament.League.Alias)
 			if err != nil {
-				fmt.Println("There was an error. Error: ", err)
-				tournamentsGroup.Done()
+				fmt.Println("There was an error creating stats provider. Error: ", err)
 				return
 			}
 
-			gameEntities, err := statsProvider.GetGamesStatsByDate(time.Now())
+			processor := NewTournamentsProcessor(statsProvider, t.persistenceService)
+			err = processor.Process(tournament)
 			if err != nil {
-				fmt.Println("There was an error. Error: ", err)
+				fmt.Println("There was an error processing tournament games. Error: ", err)
+				return
 			}
-
-			for _, gameEntity := range gameEntities {
-				err = persistenceService.SaveGame(gameEntity)
-				if err != nil {
-					fmt.Println("Error while saving game to db: ", err)
-					continue
-				}
-			}
-
-			tournamentsGroup.Done()
-		}()
+		}(tournament)
 	}
 
 	tournamentsGroup.Wait()
