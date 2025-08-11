@@ -1,29 +1,28 @@
 package service
 
 import (
-	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"fmt"
 	"time"
 )
 
-type TournamentsProcessorInterface interface {
-	Process(model tournaments.TournamentModel) error
+type TournamentProcessorInterface interface {
+	Process() error
 }
 
-type TournamentsProcessor struct {
+type TournamentProcessor struct {
 	statsProvider      ports.StatsProvider
 	persistenceService PersistenceServiceInterface
 }
 
-func NewTournamentsProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface) *TournamentsProcessor {
-	return &TournamentsProcessor{
+func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface) *TournamentProcessor {
+	return &TournamentProcessor{
 		statsProvider:      statsProvider,
 		persistenceService: serviceInterface,
 	}
 }
 
-func (t TournamentsProcessor) Process(model tournaments.TournamentModel) error {
+func (t TournamentProcessor) Process() error {
 	gameEntities, err := t.statsProvider.GetGamesStatsByDate(time.Now())
 	if err != nil {
 		return err

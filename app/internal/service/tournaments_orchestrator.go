@@ -44,8 +44,8 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 				return
 			}
 
-			processor := NewTournamentsProcessor(statsProvider, t.persistenceService)
-			err = processor.Process(tournament)
+			processor := NewTournamentProcessor(statsProvider, t.persistenceService)
+			err = processor.Process()
 			if err != nil {
 				fmt.Println("There was an error processing tournament games. Error: ", err)
 				return

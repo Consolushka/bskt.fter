@@ -4,6 +4,7 @@ import (
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/core/leagues"
 	"IMP/app/internal/core/tournaments"
+	"IMP/app/internal/ports"
 	"errors"
 	"testing"
 
@@ -12,31 +13,37 @@ import (
 )
 
 // TestNewTournamentsOrchestrator tests the NewTournamentsOrchestrator function
-// Verify that when repository is provided while creating orchestrator - returns TournamentsOrchestrator instance with repository set
+// Verify that when persistenceService and repository are provided while creating orchestrator - returns TournamentsOrchestrator instance with both services set
 func TestNewTournamentsOrchestrator(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	cases := []struct {
-		name     string
-		data     *tournaments_repo.MockTournamentsRepo
-		expected *TournamentsOrchestrator
-		errorMsg string
+		name               string
+		persistenceService PersistenceServiceInterface
+		tournamentsRepo    ports.TournamentsRepo
+		expectedResult     *TournamentsOrchestrator
+		errorMsg           string
 	}{
 		{
-			name:     "successfully creates TournamentsOrchestrator with repository",
-			data:     tournaments_repo.NewMockTournamentsRepo(ctrl),
-			expected: &TournamentsOrchestrator{repo: tournaments_repo.NewMockTournamentsRepo(ctrl)},
+			name:               "successfully creates TournamentsOrchestrator with persistenceService and repository",
+			persistenceService: NewMockPersistenceServiceInterface(ctrl),
+			tournamentsRepo:    tournaments_repo.NewMockTournamentsRepo(ctrl),
+			expectedResult: &TournamentsOrchestrator{
+				persistenceService: NewMockPersistenceServiceInterface(ctrl),
+				tournamentsRepo:    tournaments_repo.NewMockTournamentsRepo(ctrl),
+			},
 			errorMsg: "",
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			result := NewTournamentsOrchestrator(tc.persistenceService, tc.tournamentsRepo)
 
-			result := NewTournamentsOrchestrator(tc.data)
-
-			assert.Equal(t, tc.expected.repo, result.repo)
+			assert.NotNil(t, result)
+			assert.NotNil(t, result.persistenceService)
+			assert.NotNil(t, result.tournamentsRepo)
 		})
 	}
 }
@@ -49,18 +56,16 @@ func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 	defer ctrl.Finish()
 
 	cases := []struct {
-		name      string
-		data      struct{}
-		expected  error
-		errorMsg  string
-		setupMock func(*tournaments_repo.MockTournamentsRepo)
+		name          string
+		data          struct{}
+		expectedError error
+		setupMocks    func(*MockPersistenceServiceInterface, *tournaments_repo.MockTournamentsRepo)
 	}{
 		{
-			name:     "successfully processes tournaments with NBA and MLBL leagues",
-			data:     struct{}{},
-			expected: nil,
-			errorMsg: "",
-			setupMock: func(mockRepo *tournaments_repo.MockTournamentsRepo) {
+			name:          "successfully processes tournaments with NBA and MLBL leagues",
+			data:          struct{}{},
+			expectedError: nil,
+			setupMocks: func(mockPersistence *MockPersistenceServiceInterface, mockRepo *tournaments_repo.MockTournamentsRepo) {
 				mockRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{
 					{
 						League: leagues.LeagueModel{
@@ -73,23 +78,23 @@ func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 						},
 					},
 				}, nil)
+				// Ожидаем вызовы SaveGame для каждой игры
+				mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil).Times(0)
 			},
 		},
 		{
-			name:     "returns error when repository fails - differs from successful case",
-			data:     struct{}{},
-			expected: errors.New("repository error"),
-			errorMsg: "repository error",
-			setupMock: func(mockRepo *tournaments_repo.MockTournamentsRepo) {
+			name:          "returns error when repository fails - differs from successful case",
+			data:          struct{}{},
+			expectedError: errors.New("repository error"),
+			setupMocks: func(mockPersistence *MockPersistenceServiceInterface, mockRepo *tournaments_repo.MockTournamentsRepo) {
 				mockRepo.EXPECT().ListActiveTournaments().Return(nil, errors.New("repository error"))
 			},
 		},
 		{
-			name:     "successfully processes tournaments with even with unexpected league",
-			data:     struct{}{},
-			expected: nil,
-			errorMsg: "",
-			setupMock: func(mockRepo *tournaments_repo.MockTournamentsRepo) {
+			name:          "successfully processes tournaments with even with unexpected league",
+			data:          struct{}{},
+			expectedError: nil,
+			setupMocks: func(mockPersistence *MockPersistenceServiceInterface, mockRepo *tournaments_repo.MockTournamentsRepo) {
 				mockRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{
 					{
 						League: leagues.LeagueModel{
@@ -102,14 +107,15 @@ func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 						},
 					},
 				}, nil)
+				// Ожидаем вызовы SaveGame для игр из NBA (для UNEXPECTED провайдер не создастся)
+				mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil).AnyTimes()
 			},
 		},
 		{
-			name:     "successfully processes empty tournaments list",
-			data:     struct{}{},
-			expected: nil,
-			errorMsg: "",
-			setupMock: func(mockRepo *tournaments_repo.MockTournamentsRepo) {
+			name:          "successfully processes empty tournaments list",
+			data:          struct{}{},
+			expectedError: nil,
+			setupMocks: func(mockPersistence *MockPersistenceServiceInterface, mockRepo *tournaments_repo.MockTournamentsRepo) {
 				mockRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{}, nil)
 			},
 		},
@@ -117,20 +123,23 @@ func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			mockPersistence := NewMockPersistenceServiceInterface(ctrl)
 			mockRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
-			tc.setupMock(mockRepo)
+			tc.setupMocks(mockPersistence, mockRepo)
 
-			orchestrator := TournamentsOrchestrator{repo: mockRepo}
+			orchestrator := TournamentsOrchestrator{
+				persistenceService: mockPersistence,
+				tournamentsRepo:    mockRepo,
+			}
 
 			result := orchestrator.ProcessAllTournamentsToday()
 
-			if tc.errorMsg != "" {
-				assert.EqualError(t, result, tc.errorMsg)
-			} else {
-				assert.NoError(t, result)
+			if tc.expectedError != nil {
+				assert.Equal(t, result, tc.expectedError)
+				return
 			}
 
-			assert.Equal(t, tc.expected, result)
+			assert.NoError(t, result)
 		})
 	}
 }

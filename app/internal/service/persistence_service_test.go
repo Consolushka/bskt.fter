@@ -14,58 +14,78 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestNewPersistenceService tests the NewPersistenceService function
-// Verify that when repositories are provided while creating service - returns PersistenceService instance with repositories set
+// TestNewPersistenceService verifies the behavior of the NewPersistenceService constructor
+// in the PersistenceService under various conditions:
+// - Verify that repositories are correctly assigned when creating service instance
+// - Verify that the service instance is properly initialized with all dependencies
 func TestNewPersistenceService(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	cases := []struct {
-		name        string
-		gamesRepo   *games_repo.MockGamesRepo
-		teamsRepo   *teams_repo.MockTeamsRepo
-		playersRepo *players_repo.MockPlayersRepo
-		expected    *PersistenceService
-		errorMsg    string
+		name       string
+		setupRepos func() (*games_repo.MockGamesRepo, *teams_repo.MockTeamsRepo, *players_repo.MockPlayersRepo)
 	}{
 		{
-			name:        "successfully creates PersistenceService with repositories",
-			gamesRepo:   games_repo.NewMockGamesRepo(ctrl),
-			teamsRepo:   teams_repo.NewMockTeamsRepo(ctrl),
-			playersRepo: players_repo.NewMockPlayersRepo(ctrl),
-			expected:    &PersistenceService{},
-			errorMsg:    "",
+			name: "Successfully creates PersistenceService with all repositories",
+			setupRepos: func() (*games_repo.MockGamesRepo, *teams_repo.MockTeamsRepo, *players_repo.MockPlayersRepo) {
+				return games_repo.NewMockGamesRepo(ctrl),
+					teams_repo.NewMockTeamsRepo(ctrl),
+					players_repo.NewMockPlayersRepo(ctrl)
+			},
+		},
+		{
+			name: "Creates PersistenceService with nil repositories",
+			setupRepos: func() (*games_repo.MockGamesRepo, *teams_repo.MockTeamsRepo, *players_repo.MockPlayersRepo) {
+				return nil, nil, nil
+			},
+		},
+		{
+			name: "Creates PersistenceService with mixed repository states",
+			setupRepos: func() (*games_repo.MockGamesRepo, *teams_repo.MockTeamsRepo, *players_repo.MockPlayersRepo) {
+				return games_repo.NewMockGamesRepo(ctrl),
+					nil,
+					players_repo.NewMockPlayersRepo(ctrl)
+			},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			result := NewPersistenceService(tc.gamesRepo, tc.teamsRepo, tc.playersRepo)
+			gamesRepo, teamsRepo, playersRepo := tc.setupRepos()
 
-			assert.Equal(t, tc.gamesRepo, result.gamesRepo)
-			assert.Equal(t, tc.teamsRepo, result.teamsRepo)
-			assert.Equal(t, tc.playersRepo, result.playersRepo)
+			result := NewPersistenceService(gamesRepo, teamsRepo, playersRepo)
+
+			// Verify service instance is not nil
+			assert.NotNil(t, result)
+
+			// Verify repositories are correctly assigned
+			assert.Equal(t, gamesRepo, result.gamesRepo)
+			assert.Equal(t, teamsRepo, result.teamsRepo)
+			assert.Equal(t, playersRepo, result.playersRepo)
 		})
 	}
 }
 
-// TestPersistenceService_SaveGame tests the SaveGame method
-// Verify successful saving of game with all related entities
-// Verify error handling when repositories fail
+// TestPersistenceService_SaveGame verifies the behavior of the SaveGame method
+// in the PersistenceService under various conditions:
+// - Verify successful saving of game with all related entities
+// - Verify error handling when repositories fail
+// - Verify that player operation errors don't stop processing
+// - Verify that all repository calls are made in correct order
 func TestPersistenceService_SaveGame(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	cases := []struct {
-		name      string
-		data      games.GameStatEntity
-		expected  error
-		errorMsg  string
-		setupMock func(*games_repo.MockGamesRepo, *teams_repo.MockTeamsRepo, *players_repo.MockPlayersRepo)
+		name        string
+		inputGame   games.GameStatEntity
+		setupMock   func(*games_repo.MockGamesRepo, *teams_repo.MockTeamsRepo, *players_repo.MockPlayersRepo)
+		expectError error
 	}{
 		{
-			name: "successfully saves game with all entities",
-			data: games.GameStatEntity{
+			name: "Successfully saves game with all entities",
+			inputGame: games.GameStatEntity{
 				GameModel: games.GameModel{Id: 1},
 				HomeTeamStat: teams.TeamStatEntity{
 					TeamModel:         teams.TeamModel{Id: 1},
@@ -88,8 +108,6 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 					},
 				},
 			},
-			expected: nil,
-			errorMsg: "",
 			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
 				// Game repository calls
 				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 1}, nil)
@@ -102,10 +120,82 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 				mockPlayersRepo.EXPECT().FirstOrCreatePlayer(gomock.Any()).Return(players.PlayerModel{Id: 1}, nil).Times(2)
 				mockPlayersRepo.EXPECT().FirstOrCreatePlayerStat(gomock.Any()).Return(players.GameTeamPlayerStatModel{Id: 1}, nil).Times(2)
 			},
+			expectError: nil,
 		},
 		{
-			name: "returns error when game repository fails",
-			data: games.GameStatEntity{
+			name: "Successfully saves game with multiple players per team",
+			inputGame: games.GameStatEntity{
+				GameModel: games.GameModel{Id: 2},
+				HomeTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 10},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 10},
+					PlayerStats: []players.PlayerStatisticEntity{
+						{
+							PlayerModel:             players.PlayerModel{Id: 101},
+							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 101},
+						},
+						{
+							PlayerModel:             players.PlayerModel{Id: 102},
+							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 102},
+						},
+					},
+				},
+				AwayTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 20},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 20},
+					PlayerStats: []players.PlayerStatisticEntity{
+						{
+							PlayerModel:             players.PlayerModel{Id: 201},
+							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 201},
+						},
+						{
+							PlayerModel:             players.PlayerModel{Id: 202},
+							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 202},
+						},
+						{
+							PlayerModel:             players.PlayerModel{Id: 203},
+							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 203},
+						},
+					},
+				},
+			},
+			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
+				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 2}, nil)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{Id: 10}, nil).Times(2)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{Id: 10}, nil).Times(2)
+
+				// 5 players total (2 home + 3 away)
+				mockPlayersRepo.EXPECT().FirstOrCreatePlayer(gomock.Any()).Return(players.PlayerModel{Id: 1}, nil).Times(5)
+				mockPlayersRepo.EXPECT().FirstOrCreatePlayerStat(gomock.Any()).Return(players.GameTeamPlayerStatModel{Id: 1}, nil).Times(5)
+			},
+			expectError: nil,
+		},
+		{
+			name: "Successfully saves game with no players",
+			inputGame: games.GameStatEntity{
+				GameModel: games.GameModel{Id: 3},
+				HomeTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 30},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 30},
+					PlayerStats:       []players.PlayerStatisticEntity{},
+				},
+				AwayTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 40},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 40},
+					PlayerStats:       []players.PlayerStatisticEntity{},
+				},
+			},
+			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
+				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 3}, nil)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{Id: 30}, nil).Times(2)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{Id: 30}, nil).Times(2)
+				// No player repository calls expectedError
+			},
+			expectError: nil,
+		},
+		{
+			name: "Returns error when game repository fails",
+			inputGame: games.GameStatEntity{
 				GameModel: games.GameModel{Id: 1},
 				HomeTeamStat: teams.TeamStatEntity{
 					TeamModel:         teams.TeamModel{Id: 1},
@@ -116,15 +206,14 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 					GameTeamStatModel: teams.GameTeamStatModel{Id: 2},
 				},
 			},
-			expected: errors.New("game repository error"),
-			errorMsg: "game repository error",
 			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
 				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{}, errors.New("game repository error"))
 			},
+			expectError: errors.New("game repository error"),
 		},
 		{
-			name: "returns error when home team repository fails",
-			data: games.GameStatEntity{
+			name: "Returns error when home team repository fails",
+			inputGame: games.GameStatEntity{
 				GameModel: games.GameModel{Id: 1},
 				HomeTeamStat: teams.TeamStatEntity{
 					TeamModel:         teams.TeamModel{Id: 1},
@@ -135,16 +224,15 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 					GameTeamStatModel: teams.GameTeamStatModel{Id: 2},
 				},
 			},
-			expected: errors.New("team repository error"),
-			errorMsg: "team repository error",
 			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
 				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 1}, nil)
-				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{}, errors.New("team repository error"))
+				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{}, errors.New("home team repository error"))
 			},
+			expectError: errors.New("home team repository error"),
 		},
 		{
-			name: "returns error when away team repository fails",
-			data: games.GameStatEntity{
+			name: "Returns error when away team repository fails",
+			inputGame: games.GameStatEntity{
 				GameModel: games.GameModel{Id: 1},
 				HomeTeamStat: teams.TeamStatEntity{
 					TeamModel:         teams.TeamModel{Id: 1},
@@ -155,17 +243,57 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 					GameTeamStatModel: teams.GameTeamStatModel{Id: 2},
 				},
 			},
-			expected: errors.New("away team repository error"),
-			errorMsg: "away team repository error",
 			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
 				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 1}, nil)
 				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{Id: 1}, nil)
 				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{}, errors.New("away team repository error"))
 			},
+			expectError: errors.New("away team repository error"),
 		},
 		{
-			name: "continues processing when player operations fail",
-			data: games.GameStatEntity{
+			name: "Returns error when home team stats repository fails",
+			inputGame: games.GameStatEntity{
+				GameModel: games.GameModel{Id: 1},
+				HomeTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 1},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 1},
+				},
+				AwayTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 2},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 2},
+				},
+			},
+			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
+				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 1}, nil)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{Id: 1}, nil).Times(2)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{}, errors.New("home team stats error"))
+			},
+			expectError: errors.New("home team stats error"),
+		},
+		{
+			name: "Returns error when away team stats repository fails",
+			inputGame: games.GameStatEntity{
+				GameModel: games.GameModel{Id: 1},
+				HomeTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 1},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 1},
+				},
+				AwayTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 2},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 2},
+				},
+			},
+			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
+				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 1}, nil)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{Id: 1}, nil).Times(2)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{Id: 1}, nil)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{}, errors.New("away team stats error"))
+			},
+			expectError: errors.New("away team stats error"),
+		},
+		{
+			name: "Continues processing when player operations fail",
+			inputGame: games.GameStatEntity{
 				GameModel: games.GameModel{Id: 1},
 				HomeTeamStat: teams.TeamStatEntity{
 					TeamModel:         teams.TeamModel{Id: 1},
@@ -188,8 +316,6 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 					},
 				},
 			},
-			expected: nil,
-			errorMsg: "",
 			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
 				// Game and teams succeed
 				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 1}, nil)
@@ -199,6 +325,44 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 				// Players fail but service continues
 				mockPlayersRepo.EXPECT().FirstOrCreatePlayer(gomock.Any()).Return(players.PlayerModel{}, errors.New("player error")).Times(2)
 			},
+			expectError: nil,
+		},
+		{
+			name: "Continues processing when player stats operations fail",
+			inputGame: games.GameStatEntity{
+				GameModel: games.GameModel{Id: 1},
+				HomeTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 1},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 1},
+					PlayerStats: []players.PlayerStatisticEntity{
+						{
+							PlayerModel:             players.PlayerModel{Id: 1},
+							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 1},
+						},
+					},
+				},
+				AwayTeamStat: teams.TeamStatEntity{
+					TeamModel:         teams.TeamModel{Id: 2},
+					GameTeamStatModel: teams.GameTeamStatModel{Id: 2},
+					PlayerStats: []players.PlayerStatisticEntity{
+						{
+							PlayerModel:             players.PlayerModel{Id: 2},
+							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 2},
+						},
+					},
+				},
+			},
+			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
+				// Game and teams succeed
+				mockGamesRepo.EXPECT().FindOrCreateGame(gomock.Any()).Return(games.GameModel{Id: 1}, nil)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{Id: 1}, nil).Times(2)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{Id: 1}, nil).Times(2)
+
+				// Players succeed but stats fail
+				mockPlayersRepo.EXPECT().FirstOrCreatePlayer(gomock.Any()).Return(players.PlayerModel{Id: 1}, nil).Times(2)
+				mockPlayersRepo.EXPECT().FirstOrCreatePlayerStat(gomock.Any()).Return(players.GameTeamPlayerStatModel{}, errors.New("player stats error")).Times(2)
+			},
+			expectError: nil,
 		},
 	}
 
@@ -207,6 +371,7 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 			mockGamesRepo := games_repo.NewMockGamesRepo(ctrl)
 			mockTeamsRepo := teams_repo.NewMockTeamsRepo(ctrl)
 			mockPlayersRepo := players_repo.NewMockPlayersRepo(ctrl)
+
 			tc.setupMock(mockGamesRepo, mockTeamsRepo, mockPlayersRepo)
 
 			service := PersistenceService{
@@ -215,15 +380,9 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 				playersRepo: mockPlayersRepo,
 			}
 
-			result := service.SaveGame(tc.data)
+			err := service.SaveGame(tc.inputGame)
 
-			if tc.errorMsg != "" {
-				assert.EqualError(t, result, tc.errorMsg)
-			} else {
-				assert.NoError(t, result)
-			}
-
-			assert.Equal(t, tc.expected, result)
+			assert.Equal(t, tc.expectError, err)
 		})
 	}
 }
@@ -236,11 +395,11 @@ func TestPersistenceService_saveTeamModel(t *testing.T) {
 	defer ctrl.Finish()
 
 	cases := []struct {
-		name      string
-		data      *teams.TeamStatEntity
-		expected  error
-		errorMsg  string
-		setupMock func(*teams_repo.MockTeamsRepo)
+		name            string
+		data            *teams.TeamStatEntity
+		expectedError   error
+		expectedModelId int
+		setupMock       func(*teams_repo.MockTeamsRepo)
 	}{
 		{
 			name: "successfully saves team model and assigns ID",
@@ -248,8 +407,8 @@ func TestPersistenceService_saveTeamModel(t *testing.T) {
 				TeamModel:         teams.TeamModel{Id: 0},
 				GameTeamStatModel: teams.GameTeamStatModel{},
 			},
-			expected: nil,
-			errorMsg: "",
+			expectedError:   nil,
+			expectedModelId: 1,
 			setupMock: func(mockTeamsRepo *teams_repo.MockTeamsRepo) {
 				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{Id: 1}, nil)
 			},
@@ -260,8 +419,8 @@ func TestPersistenceService_saveTeamModel(t *testing.T) {
 				TeamModel:         teams.TeamModel{Id: 0},
 				GameTeamStatModel: teams.GameTeamStatModel{},
 			},
-			expected: errors.New("team repository error"),
-			errorMsg: "team repository error",
+			expectedModelId: 0,
+			expectedError:   errors.New("team repository error"),
 			setupMock: func(mockTeamsRepo *teams_repo.MockTeamsRepo) {
 				mockTeamsRepo.EXPECT().FirstOrCreateTeam(gomock.Any()).Return(teams.TeamModel{}, errors.New("team repository error"))
 			},
@@ -279,15 +438,14 @@ func TestPersistenceService_saveTeamModel(t *testing.T) {
 
 			result := service.saveTeamModel(tc.data)
 
-			if tc.errorMsg != "" {
-				assert.EqualError(t, result, tc.errorMsg)
-			} else {
-				assert.NoError(t, result)
-				// Verify that TeamId was assigned correctly
-				assert.Equal(t, uint(1), tc.data.GameTeamStatModel.TeamId)
+			if tc.expectedError != nil {
+				assert.Equal(t, result, tc.expectedError)
+				return
 			}
 
-			assert.Equal(t, tc.expected, result)
+			assert.NoError(t, result)
+			assert.Equal(t, uint(tc.expectedModelId), tc.data.GameTeamStatModel.TeamId)
+			assert.Equal(t, tc.expectedError, result)
 		})
 	}
 }
@@ -303,12 +461,12 @@ func TestPersistenceService_saveTeamStatModel(t *testing.T) {
 		name      string
 		data      *teams.TeamStatEntity
 		expected  error
-		errorMsg  string
 		setupMock func(*teams_repo.MockTeamsRepo)
 	}{
 		{
 			name: "successfully saves team stats and assigns player GameTeamId",
 			data: &teams.TeamStatEntity{
+				TeamModel:         teams.TeamModel{},
 				GameTeamStatModel: teams.GameTeamStatModel{Id: 0},
 				PlayerStats: []players.PlayerStatisticEntity{
 					{GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{}},
@@ -316,9 +474,12 @@ func TestPersistenceService_saveTeamStatModel(t *testing.T) {
 				},
 			},
 			expected: nil,
-			errorMsg: "",
 			setupMock: func(mockTeamsRepo *teams_repo.MockTeamsRepo) {
-				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{Id: 1}, nil)
+				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{
+					Id:     1,
+					GameId: 2,
+					TeamId: 3,
+				}, nil)
 			},
 		},
 		{
@@ -327,7 +488,6 @@ func TestPersistenceService_saveTeamStatModel(t *testing.T) {
 				GameTeamStatModel: teams.GameTeamStatModel{Id: 0},
 			},
 			expected: errors.New("team stats repository error"),
-			errorMsg: "team stats repository error",
 			setupMock: func(mockTeamsRepo *teams_repo.MockTeamsRepo) {
 				mockTeamsRepo.EXPECT().FirstOrCreateTeamStats(gomock.Any()).Return(teams.GameTeamStatModel{}, errors.New("team stats repository error"))
 			},
@@ -345,17 +505,17 @@ func TestPersistenceService_saveTeamStatModel(t *testing.T) {
 
 			result := service.saveTeamStatModel(tc.data)
 
-			if tc.errorMsg != "" {
-				assert.EqualError(t, result, tc.errorMsg)
-			} else {
-				assert.NoError(t, result)
-				// Verify that GameTeamId was assigned to all player stats
-				for _, playerStat := range tc.data.PlayerStats {
-					assert.Equal(t, uint(0), playerStat.GameTeamPlayerStatModel.GameTeamId)
-				}
+			if tc.expected != nil {
+				assert.Equal(t, result, tc.expected)
+				return
 			}
 
-			assert.Equal(t, tc.expected, result)
+			assert.NoError(t, result)
+			// Verify that GameTeamId was assigned to all player stats
+			for _, playerStat := range tc.data.PlayerStats {
+				assert.Equal(t, uint(2), playerStat.GameTeamPlayerStatModel.GameId)
+				assert.Equal(t, uint(3), playerStat.GameTeamPlayerStatModel.TeamId)
+			}
 		})
 	}
 }
@@ -368,11 +528,10 @@ func TestPersistenceService_savePlayerModel(t *testing.T) {
 	defer ctrl.Finish()
 
 	cases := []struct {
-		name      string
-		data      *players.PlayerStatisticEntity
-		expected  error
-		errorMsg  string
-		setupMock func(*players_repo.MockPlayersRepo)
+		name          string
+		data          *players.PlayerStatisticEntity
+		expectedError error
+		setupMock     func(*players_repo.MockPlayersRepo)
 	}{
 		{
 			name: "successfully saves player model and assigns ID",
@@ -380,8 +539,7 @@ func TestPersistenceService_savePlayerModel(t *testing.T) {
 				PlayerModel:             players.PlayerModel{Id: 0},
 				GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{},
 			},
-			expected: nil,
-			errorMsg: "",
+			expectedError: nil,
 			setupMock: func(mockPlayersRepo *players_repo.MockPlayersRepo) {
 				mockPlayersRepo.EXPECT().FirstOrCreatePlayer(gomock.Any()).Return(players.PlayerModel{Id: 1}, nil)
 			},
@@ -392,8 +550,7 @@ func TestPersistenceService_savePlayerModel(t *testing.T) {
 				PlayerModel:             players.PlayerModel{Id: 0},
 				GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{},
 			},
-			expected: errors.New("player repository error"),
-			errorMsg: "player repository error",
+			expectedError: errors.New("player repository error"),
 			setupMock: func(mockPlayersRepo *players_repo.MockPlayersRepo) {
 				mockPlayersRepo.EXPECT().FirstOrCreatePlayer(gomock.Any()).Return(players.PlayerModel{}, errors.New("player repository error"))
 			},
@@ -411,15 +568,13 @@ func TestPersistenceService_savePlayerModel(t *testing.T) {
 
 			result := service.savePlayerModel(tc.data)
 
-			if tc.errorMsg != "" {
-				assert.EqualError(t, result, tc.errorMsg)
-			} else {
-				assert.NoError(t, result)
-				// Verify that PlayerId was assigned correctly
-				assert.Equal(t, uint(1), tc.data.GameTeamPlayerStatModel.PlayerId)
+			if tc.expectedError != nil {
+				assert.Equal(t, result, tc.expectedError)
+				return
 			}
 
-			assert.Equal(t, tc.expected, result)
+			assert.NoError(t, result)
+			assert.Equal(t, uint(1), tc.data.GameTeamPlayerStatModel.PlayerId)
 		})
 	}
 }
@@ -432,19 +587,17 @@ func TestPersistenceService_savePlayerStatModel(t *testing.T) {
 	defer ctrl.Finish()
 
 	cases := []struct {
-		name      string
-		data      *players.PlayerStatisticEntity
-		expected  error
-		errorMsg  string
-		setupMock func(*players_repo.MockPlayersRepo)
+		name          string
+		data          *players.PlayerStatisticEntity
+		expectedError error
+		setupMock     func(*players_repo.MockPlayersRepo)
 	}{
 		{
 			name: "successfully saves player stats",
 			data: &players.PlayerStatisticEntity{
 				GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 0},
 			},
-			expected: nil,
-			errorMsg: "",
+			expectedError: nil,
 			setupMock: func(mockPlayersRepo *players_repo.MockPlayersRepo) {
 				mockPlayersRepo.EXPECT().FirstOrCreatePlayerStat(gomock.Any()).Return(players.GameTeamPlayerStatModel{Id: 1}, nil)
 			},
@@ -454,8 +607,7 @@ func TestPersistenceService_savePlayerStatModel(t *testing.T) {
 			data: &players.PlayerStatisticEntity{
 				GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{Id: 0},
 			},
-			expected: errors.New("player stats repository error"),
-			errorMsg: "player stats repository error",
+			expectedError: errors.New("player stats repository error"),
 			setupMock: func(mockPlayersRepo *players_repo.MockPlayersRepo) {
 				mockPlayersRepo.EXPECT().FirstOrCreatePlayerStat(gomock.Any()).Return(players.GameTeamPlayerStatModel{}, errors.New("player stats repository error"))
 			},
@@ -473,13 +625,12 @@ func TestPersistenceService_savePlayerStatModel(t *testing.T) {
 
 			result := service.savePlayerStatModel(tc.data)
 
-			if tc.errorMsg != "" {
-				assert.EqualError(t, result, tc.errorMsg)
-			} else {
-				assert.NoError(t, result)
+			if tc.expectedError != nil {
+				assert.Equal(t, result, tc.expectedError)
+				return
 			}
 
-			assert.Equal(t, tc.expected, result)
+			assert.NoError(t, result)
 		})
 	}
 }
