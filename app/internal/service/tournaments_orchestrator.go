@@ -22,8 +22,6 @@ func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, 
 
 // ProcessAllTournamentsToday
 // Fetches all active tournaments from repository and processes today games
-// ProcessAllTournamentsToday
-// Fetches all active tournaments from repository and processes today games
 func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 	activeTournaments, err := t.tournamentsRepo.ListActiveTournaments()
 
@@ -44,7 +42,7 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 				return
 			}
 
-			processor := NewTournamentProcessor(statsProvider, t.persistenceService)
+			processor := NewTournamentProcessor(statsProvider, t.persistenceService, tournament.Id)
 			err = processor.Process()
 			if err != nil {
 				fmt.Println("There was an error processing tournament games. Error: ", err)
@@ -54,8 +52,6 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 	}
 
 	tournamentsGroup.Wait()
-
-	fmt.Println("everything is done")
 
 	return nil
 }
