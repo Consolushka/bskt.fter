@@ -9,6 +9,10 @@ import (
 
 type NbaStatsProviderFactory struct{}
 
+func (m NbaStatsProviderFactory) ProviderName() string {
+	return "API_SPORTS"
+}
+
 func (m NbaStatsProviderFactory) Create() (ports.StatsProvider, error) {
 	apiNbaToken := os.Getenv("API_SPORT_API_KEY")
 

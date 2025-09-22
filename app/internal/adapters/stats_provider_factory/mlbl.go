@@ -8,6 +8,10 @@ import (
 type MlblStatsProviderFactory struct {
 }
 
+func (m MlblStatsProviderFactory) ProviderName() string {
+	return "INFOBASKET"
+}
+
 func (m MlblStatsProviderFactory) Create() (ports.StatsProvider, error) {
 	return stats_provider.InfobasketStatsProviderAdapter{}, nil
 }

@@ -2,11 +2,20 @@ package tournaments_repo
 
 import (
 	"IMP/app/internal/core/tournaments"
+
 	"gorm.io/gorm"
 )
 
 type GormRepo struct {
 	db *gorm.DB
+}
+
+func (u GormRepo) FindTournamentExternalId(tournamentId uint, providerName string) (tournaments.TournamentExternalIdModel, error) {
+	var model tournaments.TournamentExternalIdModel
+
+	err := u.db.Preload("Tournament").Find(&model, tournaments.TournamentExternalIdModel{TournamentId: tournamentId, ProviderName: providerName}).Error
+
+	return model, err
 }
 
 func NewGormRepo(db *gorm.DB) GormRepo {
