@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/service"
+	"IMP/app/pkg/logger"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -20,6 +21,8 @@ func main() {
 	if err != nil {
 		panic("Couldn't load env file")
 	}
+
+	logger.Init(logger.BuildLoggers())
 
 	database.OpenDbConnection()
 

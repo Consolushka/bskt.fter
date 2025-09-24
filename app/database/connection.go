@@ -1,7 +1,8 @@
 package database
 
 import (
-	"IMP/app/pkg/log"
+	"IMP/app/pkg/logger"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -25,7 +26,7 @@ func OpenDbConnection() *gorm.DB {
 
 func GetDB() *gorm.DB {
 	if db == nil {
-		log.NewLogger().Error("Database connection is not initialized")
+		logger.Logger.Error("db is not initiated yet", nil)
 	}
 	return db
 }
