@@ -3,7 +3,7 @@ package stats_provider
 import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/infra/infobasket"
-	"fmt"
+	"IMP/app/pkg/logger"
 	"strconv"
 	"time"
 )
@@ -26,14 +26,20 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]g
 		if game.GameDate == date.Format("02.01.2006") {
 			gameBoxScore, err := i.client.BoxScore(strconv.Itoa(game.GameID))
 			if err != nil {
-				// todo: log
-				fmt.Println("There was an error while fetching game box score", ". GameID: ", strconv.Itoa(game.GameID), ". Error: ", err)
+				logger.Error("There was an error while fetching game box score", map[string]interface{}{
+					"gameId": game.GameID,
+					"error":  err,
+				})
+				continue
 			}
 
 			transform, err := i.transformer.Transform(gameBoxScore)
 			if err != nil {
-				// todo: log
-				fmt.Println("There was an error while transforming game box score", ". GameID: ", strconv.Itoa(game.GameID), ". Error: ", err)
+				logger.Error("There was an error while transforming game box score", map[string]interface{}{
+					"gameId":       game.GameID,
+					"gameBoxScore": gameBoxScore,
+					"error":        err,
+				})
 			}
 
 			gamesEntities = append(gamesEntities, transform)

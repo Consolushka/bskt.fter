@@ -26,7 +26,7 @@ func OpenDbConnection() *gorm.DB {
 
 func GetDB() *gorm.DB {
 	if db == nil {
-		logger.Logger.Error("db is not initiated yet", nil)
+		logger.Error("db is not initiated yet", nil)
 	}
 	return db
 }

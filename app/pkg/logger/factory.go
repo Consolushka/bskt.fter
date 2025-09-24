@@ -1,26 +1,26 @@
 package logger
 
 import (
-	"IMP/app/internal/adapters/logger"
+	loggerAdapters "IMP/app/internal/adapters/logger"
 	"IMP/app/internal/ports"
 )
 
 func BuildLoggers() []ports.Logger {
 	loggers := make([]ports.Logger, 1)
 
-	fileLoggerEnabled := logger.FileLogger{}.IsEnabled()
+	fileLoggerEnabled := loggerAdapters.FileLogger{}.IsEnabled()
 	if fileLoggerEnabled {
-		loggers = append(loggers, logger.NewFileLogger())
+		loggers = append(loggers, loggerAdapters.NewFileLogger())
 	}
 
-	telegramLoggerEnabled := logger.TelegramLogger{}.IsEnabled()
+	telegramLoggerEnabled := loggerAdapters.TelegramLogger{}.IsEnabled()
 	if telegramLoggerEnabled {
-		loggers = append(loggers, logger.NewTelegramLogger())
+		loggers = append(loggers, loggerAdapters.NewTelegramLogger())
 	}
 
-	consoleLoggerEnabled := logger.ConsoleLogger{}.IsEnabled()
+	consoleLoggerEnabled := loggerAdapters.ConsoleLogger{}.IsEnabled()
 	if consoleLoggerEnabled || len(loggers) == 0 {
-		loggers = append(loggers, logger.NewConsoleLogger())
+		loggers = append(loggers, loggerAdapters.NewConsoleLogger())
 	}
 
 	return loggers

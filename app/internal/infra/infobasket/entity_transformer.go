@@ -4,7 +4,7 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
-	"fmt"
+	"IMP/app/pkg/logger"
 	"time"
 )
 
@@ -32,8 +32,11 @@ func (e *EntityTransformer) transformTeam(team TeamBoxScoreDto) teams.TeamStatEn
 	for i, player := range team.Players {
 		playerStat, err := playersTrans(player)
 		if err != nil {
-			// todo: log
-			fmt.Println("There was an error with player statistics. Error: ", err, " . Player: ", player.PersonID, " ", player.PersonNameEn)
+			logger.Warn("There was an error with player statistics", map[string]interface{}{
+				"player": player,
+				"error":  err,
+			})
+			continue
 		}
 
 		playerStats[i] = playerStat

@@ -5,7 +5,7 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"IMP/app/internal/ports"
-	"fmt"
+	"IMP/app/pkg/logger"
 )
 
 type PersistenceServiceInterface interface {
@@ -59,15 +59,19 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	for _, playerStats := range game.HomeTeamStat.PlayerStats {
 		err = s.savePlayerModel(&playerStats)
 		if err != nil {
-			// todo: log
-			fmt.Println("There was an error. Error: ", err)
+			logger.Warn("savePlayerModel returned error", map[string]interface{}{
+				"playerStats": playerStats,
+				"error":       err,
+			})
 			continue
 		}
 
 		err = s.savePlayerStatModel(&playerStats)
 		if err != nil {
-			// todo: log
-			fmt.Println("There was an error. Error: ", err)
+			logger.Warn("savePlayerStatModel returned error", map[string]interface{}{
+				"playerStats": playerStats,
+				"error":       err,
+			})
 			continue
 		}
 	}
@@ -75,15 +79,19 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	for _, playerStats := range game.AwayTeamStat.PlayerStats {
 		err = s.savePlayerModel(&playerStats)
 		if err != nil {
-			// todo: log
-			fmt.Println("There was an error. Error: ", err)
+			logger.Warn("savePlayerModel returned error", map[string]interface{}{
+				"playerStats": playerStats,
+				"error":       err,
+			})
 			continue
 		}
 
 		err = s.savePlayerStatModel(&playerStats)
 		if err != nil {
-			// todo: log
-			fmt.Println("There was an error. Error: ", err)
+			logger.Warn("savePlayerStatModel returned error", map[string]interface{}{
+				"playerStats": playerStats,
+				"error":       err,
+			})
 			continue
 		}
 	}

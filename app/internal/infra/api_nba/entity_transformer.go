@@ -4,8 +4,8 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
+	"IMP/app/pkg/logger"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -68,8 +68,11 @@ func (e *EntityTransformer) enrichGamePlayers(game GameEntity, gameBusinessEntit
 
 		playerStatsErr := e.enrichPlayerStatistic(playerStat, &playerStatEntity)
 		if playerStatsErr != nil {
-			// todo: log
-			fmt.Println("There was an error with player statistics. Error: ", playerStatsErr, " . Player: ", playerStat.Player.Id, " ", playerStat.Player.Firstname, " ", playerStat.Player.Lastname)
+			logger.Warn("There was an error with player statistics", map[string]interface{}{
+				"playerStat":       playerStat,
+				"playerStatEntity": playerStatEntity,
+				"error":            playerStatsErr,
+			})
 			continue
 		}
 
