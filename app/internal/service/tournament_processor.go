@@ -40,6 +40,10 @@ func (t TournamentProcessor) Process() error {
 			})
 			continue
 		}
+
+		logger.Info("Game was successfully saved", map[string]interface{}{
+			"gameEntity": gameEntity,
+		})
 	}
 
 	return nil
