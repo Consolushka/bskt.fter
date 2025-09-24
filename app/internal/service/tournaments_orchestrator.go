@@ -4,7 +4,6 @@ import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"IMP/app/pkg/logger"
-	"fmt"
 	"sync"
 )
 
