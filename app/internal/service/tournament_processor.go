@@ -2,7 +2,7 @@ package service
 
 import (
 	"IMP/app/internal/ports"
-	"fmt"
+	"IMP/app/pkg/logger"
 	"time"
 )
 
@@ -34,7 +34,10 @@ func (t TournamentProcessor) Process() error {
 		gameEntity.GameModel.TournamentId = t.tournamentId
 		err = t.persistenceService.SaveGame(gameEntity)
 		if err != nil {
-			fmt.Println("Error while saving game to db: ", err)
+			logger.Error("t.persistenceService.SaveGame returned error", map[string]interface{}{
+				"error":      err,
+				"gameEntity": gameEntity,
+			})
 			continue
 		}
 	}

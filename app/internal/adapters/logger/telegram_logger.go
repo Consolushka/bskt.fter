@@ -81,7 +81,7 @@ func (t TelegramLogger) send(message string, context map[string]interface{}, lev
 
 	_, err := t.botApi.Send(tgMessage)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	return

@@ -3,6 +3,7 @@ package service
 import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
+	"IMP/app/pkg/logger"
 	"fmt"
 	"sync"
 )
@@ -38,14 +39,21 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 
 			statsProvider, err := NewStatsProvider(tournament.League.Alias, tournament.Id, t.tournamentsRepo)
 			if err != nil {
-				fmt.Println("There was an error creating stats provider. Error: ", err)
+				logger.Error("Error while creating stats provider", map[string]interface{}{
+					"error":      err,
+					"tournament": tournament,
+				})
 				return
 			}
 
 			processor := NewTournamentProcessor(statsProvider, t.persistenceService, tournament.Id)
 			err = processor.Process()
 			if err != nil {
-				fmt.Println("There was an error processing tournament games. Error: ", err)
+				logger.Error("Error while processing tournament games", map[string]interface{}{
+					"error":      err,
+					"tournament": tournament,
+					"processor":  processor,
+				})
 				return
 			}
 		}(tournament)
