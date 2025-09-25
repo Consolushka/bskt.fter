@@ -6,7 +6,7 @@ import (
 )
 
 func BuildLoggers() []ports.Logger {
-	loggers := make([]ports.Logger, 1)
+	loggers := make([]ports.Logger, 0, 1)
 
 	fileLoggerEnabled := loggerAdapters.FileLogger{}.IsEnabled()
 	if fileLoggerEnabled {
