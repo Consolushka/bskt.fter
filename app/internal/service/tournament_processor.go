@@ -28,7 +28,7 @@ func (t TournamentProcessor) Process() error {
 	logger.Info("Start processing tournament games", map[string]interface{}{
 		"tournamentId": t.tournamentId,
 	})
-	gameEntities, err := t.statsProvider.GetGamesStatsByDate(time.Now().Add(-time.Hour * 24 * 2))
+	gameEntities, err := t.statsProvider.GetGamesStatsByDate(time.Now().Add(-time.Hour * 24))
 	if err != nil {
 		return err
 	}
