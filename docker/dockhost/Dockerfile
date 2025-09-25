@@ -9,7 +9,6 @@ WORKDIR /imp
 COPY ../../app /imp/app
 COPY ../../go.mod /imp/
 COPY ../../go.sum /imp/
-COPY ../../main.go /imp/
 COPY docker/dockhost/startup.sh /
 
 RUN chmod +x /startup.sh
