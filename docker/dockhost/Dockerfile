@@ -1,15 +1,15 @@
-FROM golang:alpine
+FROM golang:1.23.5-alpine3.21
 
-RUN apk update && apk add --no-cache git && apk add --no-cach bash && apk add build-base
+RUN apk update && apk add --no-cache git && apk add --no-cache bash && apk add build-base
 
 # Change WORKDIR to match your module name
-WORKDIR /IMP
+WORKDIR /imp
 
 # Copy the app contents preserving the module structure
-COPY ../../app /IMP/app
-COPY ../../go.mod /IMP/
-COPY ../../go.sum /IMP/
-COPY ../../main.go /IMP/
+COPY ../../app /imp/app
+COPY ../../go.mod /imp/
+COPY ../../go.sum /imp/
+COPY ../../main.go /imp/
 COPY docker/dockhost/startup.sh /
 
 RUN chmod +x /startup.sh
