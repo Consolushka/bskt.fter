@@ -10,7 +10,7 @@ COPY ../../app /IMP/app
 COPY ../../go.mod /IMP/
 COPY ../../go.sum /IMP/
 COPY ../../main.go /IMP/
-COPY startup.sh /
+COPY docker/dockhost/startup.sh /
 
 RUN chmod +x /startup.sh
 
