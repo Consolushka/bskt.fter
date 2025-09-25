@@ -6,11 +6,11 @@ RUN apk update && apk add --no-cache git && apk add --no-cach bash && apk add bu
 WORKDIR /IMP
 
 # Copy the app contents preserving the module structure
-COPY ./app /IMP/app
-COPY go.mod /IMP/
-COPY go.sum /IMP/
-COPY main.go /IMP/
-COPY docker/dockhost/startup.sh /
+COPY ../../app /IMP/app
+COPY ../../go.mod /IMP/
+COPY ../../go.sum /IMP/
+COPY ../../main.go /IMP/
+COPY startup.sh /
 
 RUN chmod +x /startup.sh
 
