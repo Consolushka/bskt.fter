@@ -19,7 +19,7 @@ RUN go install github.com/golang/mock/mockgen@v1.6.0
 RUN go mod download
 RUN go get -d -v ./...
 RUN go install -v ./...
-RUN cd imp/app/cmd/app go build -o /build
+RUN cd imp/app/cmd/app && go build -o /build
 
 EXPOSE 8080
 
