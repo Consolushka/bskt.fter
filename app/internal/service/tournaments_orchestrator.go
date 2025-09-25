@@ -32,6 +32,10 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 	var tournamentsGroup sync.WaitGroup
 	tournamentsGroup.Add(len(activeTournaments))
 
+	logger.Info("Start processing tournaments", map[string]interface{}{
+		"tournaments": activeTournaments,
+	})
+
 	for _, tournament := range activeTournaments {
 		go func(tournament tournaments.TournamentModel) {
 			defer tournamentsGroup.Done()
@@ -46,6 +50,10 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 			}
 
 			processor := NewTournamentProcessor(statsProvider, t.persistenceService, tournament.Id)
+
+			logger.Info("Start processing tournament", map[string]interface{}{
+				"tournament": tournament,
+			})
 			err = processor.Process()
 			if err != nil {
 				logger.Error("Error while processing tournament games", map[string]interface{}{

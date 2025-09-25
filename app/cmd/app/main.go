@@ -17,10 +17,7 @@ func main() {
 	loc, _ := time.LoadLocation("Europe/Moscow")
 	time.Local = loc
 
-	err := godotenv.Load()
-	if err != nil {
-		panic("Couldn't load env file")
-	}
+	godotenv.Load()
 
 	logger.Init(logger.BuildLoggers())
 
@@ -32,7 +29,7 @@ func main() {
 		tournaments_repo.NewGormRepo(db),
 	)
 
-	err = tournamentsOrchestrator.ProcessAllTournamentsToday()
+	err := tournamentsOrchestrator.ProcessAllTournamentsToday()
 
 	if err != nil {
 		panic(err)
