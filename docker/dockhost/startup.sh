@@ -31,3 +31,6 @@ echo "Logs will be written to /var/log/app-cron.log"
 # Запускаем приложение один раз при старте (опционально)
 echo "Running application once at startup..."
 /build
+
+# Держим контейнер живым
+tail -f /var/log/app-cron.log
