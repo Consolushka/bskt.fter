@@ -9,28 +9,37 @@ goose up
 # Создаем лог файл для cron
 touch /var/log/app-cron.log
 
-# Настраиваем cron задачу (каждый день в 12:00)
+# Настраиваем cron задачу (каждую минуту для тестирования)
 echo "Setting up cron job..."
-echo "0 12 * * * cd /IMP && /build >> /var/log/app-cron.log 2>&1" > /etc/crontabs/root
+echo "* * * * * echo \"Cron job executed at \$(date)\" >> /var/log/app-cron.log 2>&1" > /etc/crontabs/root
 
 # Даем права на выполнение cron файлу
 chmod 0644 /etc/crontabs/root
 
-# Запускаем cron в фоновом режиме
+# Загружаем crontab для root пользователя
+crontab /etc/crontabs/root
+
+# Запускаем cron в фоновом режиме с логированием
 echo "Starting cron daemon..."
-crond
+crond -f &
 
 # Показываем текущую настройку cron
 echo "Current cron configuration:"
 crontab -l
 
 # Выводим сообщение о том, что контейнер готов
-echo "Container is ready! App will run daily at 12:00 Moscow time."
+echo "Container is ready! Cron job will run every minute (for testing)."
 echo "Logs will be written to /var/log/app-cron.log"
 
-# Запускаем приложение один раз при старте (опционально)
-echo "Running application once at startup..."
-/build
+# Ждем несколько секунд, чтобы cron запустился
+sleep 5
 
-# Держим контейнер живым
+# Проверяем, запущен ли cron
+if pgrep crond > /dev/null; then
+    echo "Cron daemon is running successfully!"
+else
+    echo "Warning: Cron daemon may not be running properly!"
+fi
+
+# Держим контейнер живым и показываем логи в реальном времени
 tail -f /var/log/app-cron.log

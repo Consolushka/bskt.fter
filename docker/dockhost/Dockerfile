@@ -1,6 +1,6 @@
 FROM golang:1.23.5-alpine3.21
 
-RUN apk update && apk add --no-cache git && apk add --no-cache bash && apk add build-base
+RUN apk update && apk add --no-cache git && apk add --no-cache bash && apk add build-base &&  apk add cronie
 
 # Change WORKDIR to match your module name
 WORKDIR /imp
