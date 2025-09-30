@@ -9,7 +9,44 @@ goose up
 # Создаем лог файл для cron
 touch /var/log/app-cron.log
 
-# Настраиваем cron задачу (каждую минуту для тестирования)
+# Создаем wrapper скрипт для запуска приложения
+echo "Creating app runner script..."
+cat > /app-runner.sh << 'EOF'
+#!/bin/bash
+
+# Загружаем переменные окружения
+if [ -f /etc/environment ]; then
+    . /etc/environment
+fi
+
+# Устанавливаем PATH
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/go/bin"
+
+# Переходим в рабочую директорию
+cd /imp
+
+# Логируем информацию о запуске
+echo "=== App execution started at $(date) ===" >> /var/log/app-cron.log
+echo "Current PATH: $PATH" >> /var/log/app-cron.log
+echo "Current PWD: $(pwd)" >> /var/log/app-cron.log
+echo "Environment variables:" >> /var/log/app-cron.log
+env | sort >> /var/log/app-cron.log
+echo "========================" >> /var/log/app-cron.log
+
+# Запускаем приложение
+/build >> /var/log/app-cron.log 2>&1
+
+echo "=== App execution finished at $(date) ===" >> /var/log/app-cron.log
+EOF
+
+# Делаем скрипт исполняемым
+chmod +x /app-runner.sh
+
+# Сохраняем текущие переменные окружения
+echo "Saving environment variables..."
+printenv > /etc/environment
+
+# Настраиваем простую cron задачу
 echo "Setting up cron job..."
 echo "*/5 * * * * cd ../ && /build >> /var/log/app-cron.log 2>&1" > /etc/crontabs/root
 
