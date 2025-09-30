@@ -11,7 +11,7 @@ touch /var/log/app-cron.log
 
 # Настраиваем cron задачу (каждую минуту для тестирования)
 echo "Setting up cron job..."
-echo "* * * * * echo \"Cron job executed at \$(date)\" >> /var/log/app-cron.log 2>&1" > /etc/crontabs/root
+echo "5 * * * * cd ../ && /build >> /var/log/app-cron.log 2>&1" > /etc/crontabs/root
 
 # Даем права на выполнение cron файлу
 chmod 0644 /etc/crontabs/root
