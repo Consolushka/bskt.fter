@@ -11,7 +11,7 @@ touch /var/log/app-cron.log
 
 # Настраиваем cron задачу (каждый день в 12:00)
 echo "Setting up cron job..."
-echo "0 * * * * cd /IMP && /build >> /var/log/app-cron.log 2>&1" > /etc/crontabs/root
+echo "0 12 * * * cd /IMP && /build >> /var/log/app-cron.log 2>&1" > /etc/crontabs/root
 
 # Даем права на выполнение cron файлу
 chmod 0644 /etc/crontabs/root
@@ -31,7 +31,3 @@ echo "Logs will be written to /var/log/app-cron.log"
 # Запускаем приложение один раз при старте (опционально)
 echo "Running application once at startup..."
 /build
-
-# Держим контейнер живым
-echo "Keeping container alive... Press Ctrl+C to stop."
-tail -f /var/log/app-cron.log
