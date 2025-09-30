@@ -4,7 +4,7 @@ echo "Starting application setup..."
 
 # Выполняем миграции один раз при старте
 echo "Running database migrations..."
-goose up
+#goose up
 
 # Создаем лог файл для cron
 touch /var/log/app-cron.log
@@ -18,9 +18,6 @@ cat > /app-runner.sh << 'EOF'
 if [ -f /etc/environment ]; then
     . /etc/environment
 fi
-
-# Устанавливаем PATH
-export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/go/bin"
 
 # Переходим в рабочую директорию
 cd /imp
@@ -58,7 +55,7 @@ crontab /etc/crontabs/root
 
 # Запускаем cron в фоновом режиме с логированием
 echo "Starting cron daemon..."
-crond -f &
+crond -f -s 2 &
 
 # Показываем текущую настройку cron
 echo "Current cron configuration:"
@@ -77,6 +74,10 @@ if pgrep crond > /dev/null; then
 else
     echo "Warning: Cron daemon may not be running properly!"
 fi
+
+# Тестируем wrapper скрипт один раз
+echo "Testing app runner script..."
+/app-runner.sh
 
 # Держим контейнер живым и показываем логи в реальном времени
 tail -f /var/log/app-cron.log
