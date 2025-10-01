@@ -9,7 +9,6 @@ import (
 	"IMP/app/internal/service"
 	"IMP/app/pkg/logger"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -48,7 +47,7 @@ func scheduleTasks() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	go scheduleDailyTask(tournamentsOrchestrator.ProcessAllTournamentsToday, &wg, ctx, 10, 38, 0)
+	go scheduleDailyTask(tournamentsOrchestrator.ProcessAllTournamentsToday, &wg, ctx, 12, 00, 0)
 
 	// Graceful shutdown
 	sigChan := make(chan os.Signal, 1)
@@ -74,10 +73,13 @@ func scheduleDailyTask(task func() error, wg *sync.WaitGroup, context context.Co
 		if now.Before(target) {
 			sleepDuration = target.Sub(now)
 		} else {
-			sleepDuration = target.Add(time.Hour * 24).Sub(now)
+			target = target.Add(time.Hour * 24)
+			sleepDuration = target.Sub(now)
 		}
 
-		fmt.Println(sleepDuration.String())
+		logger.Info("Next task execution is scheduled", map[string]interface{}{
+			"next_execution_at": target.Format("02-01-2006 15:04"),
+		})
 
 		timer := time.NewTimer(sleepDuration)
 
