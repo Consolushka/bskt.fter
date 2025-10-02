@@ -36,6 +36,24 @@ func NewTournamentStatsProvider(tournament tournaments.TournamentModel) (ports.S
 		factory = stats_provider_factory.MlblStatsProviderFactory{
 			ExternalId: externalId,
 		}
+	case "UBA":
+		providerName := stats_provider_factory.UbaStatsProviderFactory{}.ProviderName()
+
+		var externalIdModelForProvider tournaments.TournamentExternalIdModel
+		for _, model := range tournament.ExternalIds {
+			if model.ProviderName == providerName {
+				externalIdModelForProvider = model
+			}
+		}
+
+		if externalIdModelForProvider.ExternalId == "" {
+			return nil, errors.New(providerName + " external id not found")
+		}
+
+		factory = stats_provider_factory.UbaStatsProviderFactory{
+			Tag:  externalIdModelForProvider.ExternalId,
+			Year: tournament.EndAt.Year(),
+		}
 	default:
 		return nil, errors.New("unknown league: " + tournament.League.Alias)
 	}
