@@ -9,6 +9,9 @@ WORKDIR /imp
 COPY ../../app /imp/app
 COPY ../../go.mod /imp/
 COPY ../../go.sum /imp/
+COPY docker/dockhost/startup.sh /
+
+RUN chmod +x /startup.sh
 
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 RUN go install github.com/golang/mock/mockgen@v1.6.0
@@ -21,4 +24,4 @@ RUN cd /imp/app/cmd/scheduler && \
 
 EXPOSE 8080
 
-CMD [ "/build" ]
+CMD [ "/startup.sh" ]
