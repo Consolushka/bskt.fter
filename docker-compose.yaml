@@ -1,6 +1,26 @@
 services:
+  worker:
+    container_name: worker
+    env_file:
+      .env
+    tty: true
+    build:
+      context: .
+      dockerfile: docker/local/Dockerfile
+    ports:
+      - "8001:8080"
+    volumes:
+      - ./:/imp
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - imp
+    profiles:
+      - worker
+
   scheduler:
-    container_name: golang
+    container_name: scheduler
     env_file:
       .env
     tty: true
@@ -17,6 +37,8 @@ services:
         condition: service_healthy
     networks:
       - imp
+    command:
+      - /build
 
   db:
     image: postgres:16.6
