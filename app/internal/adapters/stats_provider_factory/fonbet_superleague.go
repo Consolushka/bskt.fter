@@ -6,17 +6,17 @@ import (
 	"IMP/app/internal/ports"
 )
 
-type MlblStatsProviderFactory struct {
+type FonbetSuperleagueStatsProviderFactory struct {
 	ExternalId int
 }
 
-func (m MlblStatsProviderFactory) ProviderName() string {
+func (m FonbetSuperleagueStatsProviderFactory) ProviderName() string {
 	return "INFOBASKET"
 }
 
-func (m MlblStatsProviderFactory) Create() (ports.StatsProvider, error) {
+func (m FonbetSuperleagueStatsProviderFactory) Create() (ports.StatsProvider, error) {
 	return stats_provider.NewInfobasketStatsProviderAdapter(
-		infobasket.NewInfobasketClient("reg"),
+		infobasket.NewInfobasketClient("org"),
 		m.ExternalId,
 	), nil
 }

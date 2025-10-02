@@ -21,5 +21,3 @@ RUN cd /imp/app/cmd/scheduler && \
     go build -o /build
 
 EXPOSE 8080
-
-CMD [ "/build" ]

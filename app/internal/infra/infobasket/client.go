@@ -28,8 +28,8 @@ func (c *Client) ScheduledGames(compId int) ([]GameScheduleDto, error) {
 	return http.Get[[]GameScheduleDto](c.baseUrl+fmt.Sprintf(scheduleEndpointPattern, compId), nil)
 }
 
-func NewInfobasketClient() ClientInterface {
+func NewInfobasketClient(leadHost string) ClientInterface {
 	return &Client{
-		baseUrl: "https://reg.infobasket.su",
+		baseUrl: "https://" + leadHost + ".infobasket.su",
 	}
 }
