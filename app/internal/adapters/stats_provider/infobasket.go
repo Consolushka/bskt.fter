@@ -17,6 +17,7 @@ type InfobasketStatsProviderAdapter struct {
 
 func (i InfobasketStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]games.GameStatEntity, error) {
 	var gamesEntities []games.GameStatEntity
+	// todo: cache
 	schedule, err := i.client.ScheduledGames(i.compId)
 	if err != nil {
 		return nil, err

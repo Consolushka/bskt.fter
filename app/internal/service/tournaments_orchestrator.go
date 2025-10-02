@@ -40,7 +40,7 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 		go func(tournament tournaments.TournamentModel) {
 			defer tournamentsGroup.Done()
 
-			statsProvider, err := NewStatsProvider(tournament.League.Alias, tournament.Id, t.tournamentsRepo)
+			statsProvider, err := NewTournamentStatsProvider(tournament)
 			if err != nil {
 				logger.Error("Error while creating stats provider", map[string]interface{}{
 					"error":      err,
