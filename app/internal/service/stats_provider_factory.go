@@ -54,6 +54,28 @@ func NewTournamentStatsProvider(tournament tournaments.TournamentModel) (ports.S
 			Tag:  externalIdModelForProvider.ExternalId,
 			Year: tournament.EndAt.Year(),
 		}
+	case "FONBETSL":
+		providerName := stats_provider_factory.FonbetSuperleagueStatsProviderFactory{}.ProviderName()
+
+		var externalIdModelForProvider tournaments.TournamentExternalIdModel
+		for _, model := range tournament.ExternalIds {
+			if model.ProviderName == providerName {
+				externalIdModelForProvider = model
+			}
+		}
+
+		if externalIdModelForProvider.ExternalId == "" {
+			return nil, errors.New(providerName + " external id not found")
+		}
+
+		externalId, err := strconv.Atoi(externalIdModelForProvider.ExternalId)
+		if err != nil {
+			return nil, err
+		}
+
+		factory = stats_provider_factory.FonbetSuperleagueStatsProviderFactory{
+			ExternalId: externalId,
+		}
 	default:
 		return nil, errors.New("unknown league: " + tournament.League.Alias)
 	}
