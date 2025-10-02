@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestNewStatsProvider tests the NewStatsProvider function
+// TestNewStatsProvider tests the NewTournamentStatsProvider function
 // Verify that when NBA league name is provided while creating stats provider - returns CdnNbaStatsProviderAdapter and no error
 // Verify that when MLBL league name is provided while creating stats provider - returns InfobasketStatsProviderAdapter and no error
 // Verify that when unknown league name is provided while creating stats provider - returns nil and specific error message
@@ -49,7 +49,7 @@ func TestNewStatsProvider(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			result, err := NewStatsProvider(tc.data)
+			result, err := NewTournamentStatsProvider(tc.data)
 
 			if tc.expectedError != nil {
 				assert.Equal(t, err, tc.expectedError)
