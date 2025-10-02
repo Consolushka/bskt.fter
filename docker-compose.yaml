@@ -1,12 +1,8 @@
 services:
-  app:
+  scheduler:
     container_name: golang
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-      - DATABASE_HOST=${DB_HOST}
-      - DATABASE_PORT=${DB_PORT}
+    env_file:
+      .env
     tty: true
     build:
       context: .
@@ -15,59 +11,22 @@ services:
       - "8000:8080"
     restart: on-failure
     volumes:
-      - ./:/IMP
+      - ./:/imp
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - imp
-    command: tail -f /dev/null
-
-  app_tests:
-    container_name: tests
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-      - DATABASE_HOST=${DB_HOST}
-      - DATABASE_PORT=${DB_PORT}
-    tty: true
-    build:
-      context: .
-      dockerfile: docker/local/Dockerfile
-    ports:
-      - "8001:8080"
-    restart: on-failure
-    volumes:
-      - ./:/IMP
-    depends_on:
-      - db
-    networks:
-      - imp
-
-  scheduler:
-    container_name: scheduler
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-      - DATABASE_HOST=${DB_HOST}
-      - DATABASE_PORT=${DB_PORT}
-    tty: true
-    build:
-      context: .
-      dockerfile: docker/local/Dockerfile
-    restart: on-failure
-    volumes:
-      - ./:/IMP
-    depends_on:
-      - db
-    networks:
-      - imp
-    command: go run main.go cron
 
   db:
     image: postgres:16.6
     container_name: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
