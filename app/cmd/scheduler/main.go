@@ -2,12 +2,15 @@ package main
 
 import (
 	"IMP/app/database"
+	"IMP/app/internal/adapters/executable_by_scheduler"
 	"IMP/app/internal/adapters/games_repo"
 	"IMP/app/internal/adapters/players_repo"
 	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
+	"IMP/app/internal/ports"
 	"IMP/app/internal/service"
 	"IMP/app/pkg/logger"
+	"IMP/app/pkg/time_utils"
 	"context"
 	"log"
 	"os"
@@ -45,9 +48,15 @@ func scheduleTasks() {
 	defer cancel()
 
 	var wg sync.WaitGroup
-	wg.Add(1)
 
-	go scheduleDailyTask(tournamentsOrchestrator.ProcessAllTournamentsToday, &wg, ctx, 12, 00, 0)
+	wg.Add(1)
+	go scheduleDailyTask(executable_by_scheduler.NewProcessTodayTournaments(tournamentsOrchestrator), &wg, ctx)
+
+	wg.Add(1)
+	go scheduleDailyTask(executable_by_scheduler.NewProcessNightlyTournaments(tournamentsOrchestrator), &wg, ctx)
+
+	wg.Add(1)
+	go scheduleDailyTask(executable_by_scheduler.NewProcessYesterdayDailyTournaments(tournamentsOrchestrator), &wg, ctx)
 
 	// Graceful shutdown
 	sigChan := make(chan os.Signal, 1)
@@ -60,26 +69,36 @@ func scheduleTasks() {
 	log.Println("Stopped.")
 }
 
-func scheduleDailyTask(task func() error, wg *sync.WaitGroup, context context.Context, hour int, minute int, second int) {
+func scheduleDailyTask(task ports.ExecutableByScheduler, wg *sync.WaitGroup, context context.Context) {
 	defer wg.Done()
 
 	for {
 		now := time.Now()
 
-		target := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, second, now.Nanosecond(), now.Location())
+		target := time_utils.ToMoscowTZ(task.ShouldBeExecutedAt())
 
 		var sleepDuration time.Duration
 
 		if now.Before(target) {
 			sleepDuration = target.Sub(now)
+
+			logger.Info(task.GetName()+" will be executed at "+target.Format("02-01-2006 15:04"), map[string]interface{}{})
 		} else {
+			logger.Info(task.GetName()+" should been executed at "+target.Format("02-01-2006 15:04")+". Executing...", map[string]interface{}{})
+
+			err := task.Execute()
+
+			if err != nil {
+				logger.Error("Error while processing tournament games", map[string]interface{}{
+					"error": err,
+				})
+			}
+
 			target = target.Add(time.Hour * 24)
+
+			logger.Info(task.GetName()+" will be executed at "+target.Format("02-01-2006 15:04"), map[string]interface{}{})
 			sleepDuration = target.Sub(now)
 		}
-
-		logger.Info("Next task execution is scheduled", map[string]interface{}{
-			"next_execution_at": target.Format("02-01-2006 15:04"),
-		})
 
 		timer := time.NewTimer(sleepDuration)
 
@@ -88,13 +107,15 @@ func scheduleDailyTask(task func() error, wg *sync.WaitGroup, context context.Co
 			return
 		case <-timer.C:
 			go func() {
-				err := task()
+				err := task.Execute()
 
 				if err != nil {
 					logger.Error("Error while processing tournament games", map[string]interface{}{
 						"error": err,
 					})
 				}
+
+				wg.Done()
 			}()
 		}
 
