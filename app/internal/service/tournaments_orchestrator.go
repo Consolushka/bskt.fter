@@ -51,9 +51,6 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 
 			processor := NewTournamentProcessor(statsProvider, t.persistenceService, tournament.Id)
 
-			logger.Info("Start processing tournament", map[string]interface{}{
-				"tournament": tournament,
-			})
 			err = processor.Process()
 			if err != nil {
 				logger.Error("Error while processing tournament games", map[string]interface{}{
