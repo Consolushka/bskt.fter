@@ -1,8 +1,10 @@
 package stats_provider
 
 import (
+	"IMP/app/internal/adapters/cached_remote_resource"
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/infra/infobasket"
+	"IMP/app/internal/service/remote_cache_loader"
 	"IMP/app/pkg/logger"
 	"strconv"
 	"time"
@@ -17,8 +19,9 @@ type InfobasketStatsProviderAdapter struct {
 
 func (i InfobasketStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]games.GameStatEntity, error) {
 	var gamesEntities []games.GameStatEntity
-	// todo: cache
-	schedule, err := i.client.ScheduledGames(i.compId)
+
+	cacher := cached_remote_resource.NewInfobasketCachedResource(i.client.ScheduledGames, i.compId)
+	schedule, err := remote_cache_loader.LoadLocalFile[[]infobasket.GameScheduleDto](cacher)
 	if err != nil {
 		return nil, err
 	}
