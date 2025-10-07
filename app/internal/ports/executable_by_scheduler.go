@@ -4,6 +4,6 @@ import "time"
 
 type ExecutableByScheduler interface {
 	GetName() string
-	ShouldBeExecutedAt() time.Time
+	GetPeriodicity() time.Duration
 	Execute() error
 }
