@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/ports"
 	"IMP/app/pkg/logger"
 	"sync"
+	"time"
 )
 
 type TournamentsOrchestrator struct {
@@ -17,7 +18,58 @@ func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, 
 		persistenceService: persistenceService,
 		tournamentsRepo:    tournamentsRepo,
 	}
+}
 
+// ProcessUrgentEuropeanTournaments
+// Fetches and processing tournaments, which need to be processed as soon as possible
+func (t TournamentsOrchestrator) ProcessUrgentEuropeanTournaments() error {
+	leaguesAliases := []string{
+		"MLBL",
+		"FONBETSL",
+	}
+
+	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
+	if err != nil {
+		return err
+	}
+
+	t.processTournamentsByDate(processingTournaments, time.Now())
+
+	return nil
+}
+
+// ProcessAmericanTournaments
+// Fetches and processing tournaments, which played at night by MSK
+func (t TournamentsOrchestrator) ProcessAmericanTournaments() error {
+	leaguesAliases := []string{
+		"NBA",
+	}
+
+	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
+	if err != nil {
+		return err
+	}
+
+	t.processTournamentsByDate(processingTournaments, time.Now().Add(-time.Hour*24))
+
+	return nil
+}
+
+// ProcessNotUrgentEuropeanTournaments
+// Fetches and processing tournaments, which need to process, but not urgent
+func (t TournamentsOrchestrator) ProcessNotUrgentEuropeanTournaments() error {
+	leaguesAliases := []string{
+		"UBA",
+	}
+
+	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
+	if err != nil {
+		return err
+	}
+
+	t.processTournamentsByDate(processingTournaments, time.Now().Add(-time.Hour*24))
+
+	return nil
 }
 
 // ProcessAllTournamentsToday
@@ -29,6 +81,12 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 		return err
 	}
 
+	t.processTournamentsByDate(activeTournaments, time.Now().Add(-time.Hour*24))
+
+	return nil
+}
+
+func (t TournamentsOrchestrator) processTournamentsByDate(activeTournaments []tournaments.TournamentModel, date time.Time) {
 	var tournamentsGroup sync.WaitGroup
 	tournamentsGroup.Add(len(activeTournaments))
 
@@ -51,10 +109,7 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 
 			processor := NewTournamentProcessor(statsProvider, t.persistenceService, tournament.Id)
 
-			logger.Info("Start processing tournament", map[string]interface{}{
-				"tournament": tournament,
-			})
-			err = processor.Process()
+			err = processor.Process(date)
 			if err != nil {
 				logger.Error("Error while processing tournament games", map[string]interface{}{
 					"error":      err,
@@ -67,6 +122,4 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
 	}
 
 	tournamentsGroup.Wait()
-
-	return nil
 }

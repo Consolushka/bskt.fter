@@ -7,7 +7,7 @@ import (
 )
 
 type TournamentProcessorInterface interface {
-	Process() error
+	Process(date time.Time) error
 }
 
 type TournamentProcessor struct {
@@ -24,13 +24,16 @@ func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface 
 	}
 }
 
-func (t TournamentProcessor) Process() error {
-	logger.Info("Start processing tournament games", map[string]interface{}{
-		"tournamentId": t.tournamentId,
-	})
-	gameEntities, err := t.statsProvider.GetGamesStatsByDate(time.Now().Add(-time.Hour * 24))
+func (t TournamentProcessor) Process(date time.Time) error {
+	gameEntities, err := t.statsProvider.GetGamesStatsByDate(date)
 	if err != nil {
 		return err
+	}
+
+	if len(gameEntities) > 0 {
+		logger.Info("Start processing tournament games", map[string]interface{}{
+			"tournamentId": t.tournamentId,
+		})
 	}
 
 	for _, gameEntity := range gameEntities {
@@ -49,9 +52,11 @@ func (t TournamentProcessor) Process() error {
 		})
 	}
 
-	logger.Info("Finished processing tournament games", map[string]interface{}{
-		"tournamentId": t.tournamentId,
-	})
+	if len(gameEntities) > 0 {
+		logger.Info("Finished processing tournament games", map[string]interface{}{
+			"tournamentId": t.tournamentId,
+		})
+	}
 
 	return nil
 }
