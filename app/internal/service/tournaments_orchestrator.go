@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-// todo: refactor to create table with schedule time etc.
-
 type TournamentsOrchestrator struct {
 	persistenceService PersistenceServiceInterface
 	tournamentsRepo    ports.TournamentsRepo
