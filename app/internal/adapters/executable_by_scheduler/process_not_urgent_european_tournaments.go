@@ -7,7 +7,6 @@ import (
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service"
-	"IMP/app/pkg/time_utils"
 	"time"
 
 	"gorm.io/gorm"
@@ -23,12 +22,6 @@ func (p ProcessNotUrgentEuropeanTournaments) GetPeriodicity() time.Duration {
 
 func (p ProcessNotUrgentEuropeanTournaments) GetName() string {
 	return "Process not urgent european tournaments task"
-}
-
-func (p ProcessNotUrgentEuropeanTournaments) ShouldBeExecutedAt() time.Time {
-	now := time.Now()
-
-	return time.Date(now.Year(), now.Month(), now.Day(), 5, 0, 0, now.Nanosecond(), time_utils.MoscowTZ)
 }
 
 func (p ProcessNotUrgentEuropeanTournaments) Execute() error {
