@@ -1,6 +1,6 @@
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 DOCKER_COMPOSE := docker compose
-GO_CONTAINER := app
+GO_CONTAINER := scheduler
 SERVER_CONTAINER := air
 DOCKER_COMPOSE_FILE := $(ROOT_DIR)/docker-compose.yaml
 ENV_FILE := $(ROOT_DIR)/.env
