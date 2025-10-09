@@ -36,6 +36,9 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]g
 				})
 				continue
 			}
+			if gameBoxScore.GameStatus != 1 {
+				continue
+			}
 
 			transform, err := i.transformer.Transform(gameBoxScore)
 			if err != nil {
