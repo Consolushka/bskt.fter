@@ -16,18 +16,18 @@ func Init(loggers []ports.Logger) {
 
 func Info(msg string, ctx map[string]interface{}) {
 	for _, logger := range instance.loggers {
-		logger.Info(msg, ctx)
+		logger.Info("[INFO] "+msg, ctx)
 	}
 }
 
 func Warn(msg string, ctx map[string]interface{}) {
 	for _, logger := range instance.loggers {
-		logger.Warn(msg, ctx)
+		logger.Warn("[WARNING] "+msg, ctx)
 	}
 }
 
 func Error(msg string, ctx map[string]interface{}) {
 	for _, logger := range instance.loggers {
-		logger.Error(msg, ctx)
+		logger.Error("[ERROR] "+msg, ctx)
 	}
 }

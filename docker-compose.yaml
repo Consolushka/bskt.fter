@@ -7,8 +7,6 @@ services:
     build:
       context: .
       dockerfile: docker/local/Dockerfile
-    ports:
-      - "8001:8080"
     volumes:
       - ./:/imp
     depends_on:
@@ -54,7 +52,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
       - DATABASE_HOST=${DB_HOST}
-      - TZ=Europe/Moscow
+      - TimeZone=Europe/Moscow
       - PGTZ=Europe/Moscow
     ports:
       - '5432:5432'
@@ -69,4 +67,4 @@ volumes:
 # Networks to be created to facilitate communication between containers
 networks:
   imp:
-    driver: bridge
+    external: true
