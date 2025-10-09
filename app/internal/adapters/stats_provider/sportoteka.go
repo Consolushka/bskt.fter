@@ -29,6 +29,10 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]g
 			return []games.GameStatEntity{}, err
 		}
 
+		if gameBoxScore.Result.Game.GameStatus != "ResultConfirmed" {
+			continue
+		}
+
 		entity, err := s.transformer.Transform(gameBoxScore.Result)
 		if err != nil {
 			return make([]games.GameStatEntity, 0), err

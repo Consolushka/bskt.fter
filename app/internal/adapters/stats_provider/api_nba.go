@@ -21,6 +21,9 @@ func (a ApiNbaStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]games
 	gamesStatsEntities := make([]games.GameStatEntity, 0, len(passedGames.Response))
 
 	for _, passedGame := range passedGames.Response {
+		if passedGame.Status.Short != 3 {
+			continue
+		}
 		transformer := api_nba.NewEntityTransformer(a.client)
 
 		gameStatEntity, err := transformer.Transform(passedGame)
