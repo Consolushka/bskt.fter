@@ -10,8 +10,7 @@ import (
 )
 
 func main() {
-	loc, _ := time.LoadLocation("Europe/Moscow")
-	time.Local = loc
+	time.Local = time.UTC
 
 	godotenv.Load()
 

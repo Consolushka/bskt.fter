@@ -66,22 +66,6 @@ func handleTask(taskModel scheduler.ScheduledTaskModel, db *gorm.DB, ctx context
 		} else {
 			logger.Info(task.GetName()+" should been executed at "+taskModel.NextExecutionAt.Format("02-01-2006 15:04")+". Executing...", map[string]interface{}{})
 
-			err := task.Execute()
-
-			if err != nil {
-				return err
-			}
-
-			taskModel, err = schedulerRepo.RescheduleTask(taskModel.Id, taskModel.NextExecutionAt.Add(task.GetPeriodicity()))
-			if err != nil {
-				logger.Warn("Couldn't reschedule taskModel", map[string]interface{}{
-					"error": err,
-				})
-			}
-
-			logger.Info(task.GetName()+" will be executed at "+taskModel.NextExecutionAt.Format("02-01-2006 15:04"), map[string]interface{}{
-				"taskModel": taskModel,
-			})
 			sleepDuration = taskModel.NextExecutionAt.Sub(now)
 		}
 
@@ -91,15 +75,20 @@ func handleTask(taskModel scheduler.ScheduledTaskModel, db *gorm.DB, ctx context
 		case <-ctx.Done():
 			return nil
 		case <-timer.C:
-			go func() {
-				err := task.Execute()
+			err := task.Execute()
 
-				if err != nil {
-					logger.Error("Error while processing tournament games", map[string]interface{}{
-						"error": err,
-					})
-				}
-			}()
+			if err != nil {
+				logger.Error("Error while processing tournament games", map[string]interface{}{
+					"error": err,
+				})
+			}
+
+			taskModel, err = schedulerRepo.RescheduleTask(taskModel.Id, taskModel.NextExecutionAt.Add(task.GetPeriodicity()))
+			if err != nil {
+				logger.Warn("Couldn't reschedule taskModel", map[string]interface{}{
+					"error": err,
+				})
+			}
 		}
 	}
 }
