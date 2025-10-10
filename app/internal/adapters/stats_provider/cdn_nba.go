@@ -9,6 +9,6 @@ import (
 type CdnNbaStatsProviderAdapter struct {
 }
 
-func (c CdnNbaStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]games.GameStatEntity, error) {
-	return nil, errors.New("CDN_NBA GetGamesStatsByDate")
+func (c CdnNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
+	return nil, errors.New("CDN_NBA GetGamesStatsByPeriod")
 }

@@ -36,9 +36,9 @@ func (m *MockStatsProvider) EXPECT() *MockStatsProviderMockRecorder {
 }
 
 // GetGamesStatsByDate mocks base method.
-func (m *MockStatsProvider) GetGamesStatsByDate(date time.Time) ([]games.GameStatEntity, error) {
+func (m *MockStatsProvider) GetGamesStatsByPeriod(date time.Time) ([]games.GameStatEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGamesStatsByDate", date)
+	ret := m.ctrl.Call(m, "GetGamesStatsByPeriod", date)
 	ret0, _ := ret[0].([]games.GameStatEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
@@ -47,5 +47,5 @@ func (m *MockStatsProvider) GetGamesStatsByDate(date time.Time) ([]games.GameSta
 // GetGamesStatsByDate indicates an expected call of GetGamesStatsByDate.
 func (mr *MockStatsProviderMockRecorder) GetGamesStatsByDate(date interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGamesStatsByDate", reflect.TypeOf((*MockStatsProvider)(nil).GetGamesStatsByDate), date)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGamesStatsByPeriod", reflect.TypeOf((*MockStatsProvider)(nil).GetGamesStatsByPeriod), date)
 }
