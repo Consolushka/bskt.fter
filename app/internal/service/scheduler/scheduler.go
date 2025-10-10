@@ -75,7 +75,7 @@ func handleTask(taskModel scheduler.ScheduledTaskModel, db *gorm.DB, ctx context
 		case <-ctx.Done():
 			return nil
 		case <-timer.C:
-			err := task.Execute()
+			err := task.Execute(taskModel.LastExecutedAt)
 
 			if err != nil {
 				logger.Error("Error while processing tournament games", map[string]interface{}{

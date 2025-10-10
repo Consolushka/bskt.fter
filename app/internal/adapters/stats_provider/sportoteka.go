@@ -15,8 +15,8 @@ type SportotekaStatsProviderAdapter struct {
 	transformer sportoteka.EntityTransformer
 }
 
-func (s SportotekaStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]games.GameStatEntity, error) {
-	calendar, err := s.client.Calendar(s.tag, s.year, date, date)
+func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
+	calendar, err := s.client.Calendar(s.tag, s.year, from, to)
 	if err != nil {
 		return make([]games.GameStatEntity, 0), err
 	}

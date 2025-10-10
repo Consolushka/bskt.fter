@@ -13,7 +13,7 @@ import (
 )
 
 type ProcessAmericanTournaments struct {
-	task func() error
+	task func(from, to time.Time) error
 }
 
 func (p ProcessAmericanTournaments) GetPeriodicity() time.Duration {
@@ -21,7 +21,7 @@ func (p ProcessAmericanTournaments) GetPeriodicity() time.Duration {
 }
 
 func (p ProcessAmericanTournaments) GetName() string {
-	return "Process american tournaments task"
+	return "ProcessByPeriod american tournaments task"
 }
 
 func (p ProcessAmericanTournaments) ShouldBeExecutedAt() time.Time {
@@ -31,8 +31,8 @@ func (p ProcessAmericanTournaments) ShouldBeExecutedAt() time.Time {
 	return time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, now.Nanosecond(), loc)
 }
 
-func (p ProcessAmericanTournaments) Execute() error {
-	return p.task()
+func (p ProcessAmericanTournaments) Execute(lastExecutedAt time.Time) error {
+	return p.task(lastExecutedAt, time.Now())
 }
 
 func NewProcessAmericanTournaments(db *gorm.DB) ports.ExecutableByScheduler {

@@ -6,5 +6,5 @@ import (
 )
 
 type StatsProvider interface {
-	GetGamesStatsByDate(date time.Time) ([]games.GameStatEntity, error)
+	GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error)
 }

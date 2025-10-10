@@ -17,7 +17,7 @@ type InfobasketStatsProviderAdapter struct {
 	compId      int
 }
 
-func (i InfobasketStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]games.GameStatEntity, error) {
+func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
 	var gamesEntities []games.GameStatEntity
 
 	cacher := cached_remote_resource.NewInfobasketCachedResource(i.client.ScheduledGames, i.compId)
@@ -27,7 +27,20 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByDate(date time.Time) ([]g
 	}
 
 	for _, game := range schedule {
-		if game.GameDate == date.Format("02.01.2006") {
+		// game haven't been scheduled yet
+		if game.GameTime == "--:--" {
+			continue
+		}
+
+		gameDate, err := time.Parse("02.01.2006 15:04", game.GameDate+" "+game.GameTime)
+		if err != nil {
+			logger.Error("There was an error while parsing game gameDate", map[string]interface{}{
+				"gameDate": game.GameDate,
+				"error":    err,
+			})
+			continue
+		}
+		if gameDate.After(from) && gameDate.Before(to) {
 			gameBoxScore, err := i.client.BoxScore(strconv.Itoa(game.GameID))
 			if err != nil {
 				logger.Error("There was an error while fetching game box score", map[string]interface{}{

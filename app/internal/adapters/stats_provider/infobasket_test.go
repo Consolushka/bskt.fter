@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestInfobasketStatsProviderAdapter_GetGamesStatsByDate tests the GetGamesStatsByDate method
-// Verify that when any date is provided while calling GetGamesStatsByDate - returns nil and specific error message
+// TestInfobasketStatsProviderAdapter_GetGamesStatsByDate tests the GetGamesStatsByPeriod method
+// Verify that when any date is provided while calling GetGamesStatsByPeriod - returns nil and specific error message
 func TestInfobasketStatsProviderAdapter_GetGamesStatsByDate(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -29,7 +29,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByDate(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			result, err := adapter.GetGamesStatsByDate(tc.data)
+			result, err := adapter.GetGamesStatsByPeriod(tc.data)
 
 			if tc.errorMsg != "" {
 				assert.EqualError(t, err, tc.errorMsg)

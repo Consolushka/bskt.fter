@@ -9,6 +9,7 @@ import (
 type ScheduledTaskModel struct {
 	Id              uint           `gorm:"column:id"`
 	Type            string         `gorm:"column:type"`
+	LastExecutedAt  time.Time      `gorm:"column:last_executed_at"`
 	NextExecutionAt time.Time      `gorm:"column:next_execution_at"`
 	CreatedAt       time.Time      `gorm:"column:created_at"`
 	UpdatedAt       time.Time      `gorm:"column:updated_at"`
