@@ -22,7 +22,7 @@ func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, 
 
 // ProcessUrgentEuropeanTournaments
 // Fetches and processing tournaments, which need to be processed as soon as possible
-func (t TournamentsOrchestrator) ProcessUrgentEuropeanTournaments() error {
+func (t TournamentsOrchestrator) ProcessUrgentEuropeanTournaments(from, to time.Time) error {
 	leaguesAliases := []string{
 		"MLBL",
 		"FONBETSL",
@@ -33,14 +33,14 @@ func (t TournamentsOrchestrator) ProcessUrgentEuropeanTournaments() error {
 		return err
 	}
 
-	t.processTournamentsByDate(processingTournaments, time.Now())
+	t.processTournamentsByPeriod(processingTournaments, from, to)
 
 	return nil
 }
 
 // ProcessAmericanTournaments
 // Fetches and processing tournaments, which played at night by MSK
-func (t TournamentsOrchestrator) ProcessAmericanTournaments() error {
+func (t TournamentsOrchestrator) ProcessAmericanTournaments(from, to time.Time) error {
 	leaguesAliases := []string{
 		"NBA",
 	}
@@ -50,14 +50,14 @@ func (t TournamentsOrchestrator) ProcessAmericanTournaments() error {
 		return err
 	}
 
-	t.processTournamentsByDate(processingTournaments, time.Now().Add(-time.Hour*24))
+	t.processTournamentsByPeriod(processingTournaments, from, to)
 
 	return nil
 }
 
 // ProcessNotUrgentEuropeanTournaments
 // Fetches and processing tournaments, which need to process, but not urgent
-func (t TournamentsOrchestrator) ProcessNotUrgentEuropeanTournaments() error {
+func (t TournamentsOrchestrator) ProcessNotUrgentEuropeanTournaments(from, to time.Time) error {
 	leaguesAliases := []string{
 		"UBA",
 	}
@@ -67,26 +67,26 @@ func (t TournamentsOrchestrator) ProcessNotUrgentEuropeanTournaments() error {
 		return err
 	}
 
-	t.processTournamentsByDate(processingTournaments, time.Now().Add(-time.Hour*24))
+	t.processTournamentsByPeriod(processingTournaments, from, to)
 
 	return nil
 }
 
 // ProcessAllTournamentsToday
 // Fetches all active tournaments from repository and processes today games
-func (t TournamentsOrchestrator) ProcessAllTournamentsToday() error {
+func (t TournamentsOrchestrator) ProcessAllTournamentsToday(from, to time.Time) error {
 	activeTournaments, err := t.tournamentsRepo.ListActiveTournaments()
 
 	if err != nil {
 		return err
 	}
 
-	t.processTournamentsByDate(activeTournaments, time.Now().Add(-time.Hour*24))
+	t.processTournamentsByPeriod(activeTournaments, from, to)
 
 	return nil
 }
 
-func (t TournamentsOrchestrator) processTournamentsByDate(activeTournaments []tournaments.TournamentModel, date time.Time) {
+func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []tournaments.TournamentModel, from, to time.Time) {
 	var tournamentsGroup sync.WaitGroup
 	tournamentsGroup.Add(len(activeTournaments))
 
@@ -109,7 +109,7 @@ func (t TournamentsOrchestrator) processTournamentsByDate(activeTournaments []to
 
 			processor := NewTournamentProcessor(statsProvider, t.persistenceService, tournament.Id)
 
-			err = processor.Process(date)
+			err = processor.ProcessByPeriod(from, to)
 			if err != nil {
 				logger.Error("Error while processing tournament games", map[string]interface{}{
 					"error":      err,

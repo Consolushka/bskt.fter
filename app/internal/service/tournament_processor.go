@@ -7,7 +7,7 @@ import (
 )
 
 type TournamentProcessorInterface interface {
-	Process(date time.Time) error
+	ProcessByPeriod(from, to time.Time) error
 }
 
 type TournamentProcessor struct {
@@ -24,8 +24,8 @@ func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface 
 	}
 }
 
-func (t TournamentProcessor) Process(date time.Time) error {
-	gameEntities, err := t.statsProvider.GetGamesStatsByDate(date)
+func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
+	gameEntities, err := t.statsProvider.GetGamesStatsByPeriod(from, to)
 	if err != nil {
 		return err
 	}
