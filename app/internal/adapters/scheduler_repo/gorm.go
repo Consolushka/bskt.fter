@@ -28,6 +28,7 @@ func (g Gorm) RescheduleTask(id uint, nextExecutionAt time.Time) (scheduler.Sche
 	}
 
 	result.NextExecutionAt = nextExecutionAt
+	result.LastExecutedAt = time.Now()
 	tx = g.db.Save(&result)
 
 	return result, tx.Error
