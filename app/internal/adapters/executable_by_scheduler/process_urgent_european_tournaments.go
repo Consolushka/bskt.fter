@@ -13,7 +13,7 @@ import (
 )
 
 type ProcessUrgentEuropeanTournaments struct {
-	task func() error
+	task func(from, to time.Time) error
 }
 
 func (p ProcessUrgentEuropeanTournaments) GetPeriodicity() time.Duration {
@@ -21,11 +21,11 @@ func (p ProcessUrgentEuropeanTournaments) GetPeriodicity() time.Duration {
 }
 
 func (p ProcessUrgentEuropeanTournaments) GetName() string {
-	return "Process urgent european tournaments task"
+	return "ProcessByPeriod urgent european tournaments task"
 }
 
-func (p ProcessUrgentEuropeanTournaments) Execute() error {
-	return p.task()
+func (p ProcessUrgentEuropeanTournaments) Execute(lastExecutedAt time.Time) error {
+	return p.task(lastExecutedAt, time.Now())
 }
 
 func NewProcessUrgentEuropeanTournaments(db *gorm.DB) ports.ExecutableByScheduler {

@@ -73,7 +73,7 @@ func TestTournamentProcessor_ProcessTournamentGames(t *testing.T) {
 			tc.setupMocks(mockPersistence, mockStats)
 
 			processor := NewTournamentProcessor(mockStats, mockPersistence)
-			result := processor.Process()
+			result := processor.ProcessByPeriod()
 
 			if tc.expected != nil {
 				assert.EqualError(t, result, tc.expected.Error())
