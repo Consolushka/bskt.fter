@@ -8,14 +8,15 @@ import (
 )
 
 type TournamentModel struct {
-	Id        uint           `gorm:"column:id"`
-	LeagueId  uint           `gorm:"column:league_id"`
-	Name      string         `gorm:"column:name"`
-	StartAt   time.Time      `gorm:"column:start_at"`
-	EndAt     time.Time      `gorm:"column:end_at"`
-	CreatedAt time.Time      `gorm:"column:created_at"`
-	UpdatedAt time.Time      `gorm:"column:updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at"`
+	Id                 uint           `gorm:"column:id"`
+	LeagueId           uint           `gorm:"column:league_id"`
+	Name               string         `gorm:"column:name"`
+	StartAt            time.Time      `gorm:"column:start_at"`
+	EndAt              time.Time      `gorm:"column:end_at"`
+	RegulationDuration int            `gorm:"column:regulation_duration"`
+	CreatedAt          time.Time      `gorm:"column:created_at"`
+	UpdatedAt          time.Time      `gorm:"column:updated_at"`
+	DeletedAt          gorm.DeletedAt `gorm:"column:deleted_at"`
 
 	League      leagues.LeagueModel         `gorm:"foreignKey:LeagueId"`
 	ExternalIds []TournamentExternalIdModel `gorm:"foreignKey:TournamentId"`
