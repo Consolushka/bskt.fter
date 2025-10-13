@@ -21,12 +21,12 @@ func (e *EntityTransformer) Transform(game GameBoxScoreResponse) (games.GameStat
 			ScheduledAt: parse,
 			Title:       game.GameTeams[0].TeamName.CompTeamAbcNameEn + " - " + game.GameTeams[1].TeamName.CompTeamAbcNameEn,
 		},
-		HomeTeamStat: e.transformTeam(game.GameTeams[0]),
-		AwayTeamStat: e.transformTeam(game.GameTeams[1]),
+		HomeTeamStat: e.transformTeam(game.GameTeams[0], game.GameTeams[1].Score),
+		AwayTeamStat: e.transformTeam(game.GameTeams[1], game.GameTeams[0].Score),
 	}, nil
 }
 
-func (e *EntityTransformer) transformTeam(team TeamBoxScoreDto) teams.TeamStatEntity {
+func (e *EntityTransformer) transformTeam(team TeamBoxScoreDto, opponentScore int) teams.TeamStatEntity {
 	playerStats := make([]players.PlayerStatisticEntity, len(team.Players))
 
 	for i, player := range team.Players {
@@ -48,7 +48,8 @@ func (e *EntityTransformer) transformTeam(team TeamBoxScoreDto) teams.TeamStatEn
 			HomeTown: team.TeamName.CompTeamRegionNameEn,
 		},
 		GameTeamStatModel: teams.GameTeamStatModel{
-			Score: team.Score,
+			Score:     team.Score,
+			FinalDiff: team.Score - opponentScore,
 		},
 		PlayerStats: playerStats,
 	}

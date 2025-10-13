@@ -19,6 +19,7 @@ type GameTeamStatModel struct {
 	GameId    uint      `gorm:"column:game_id"`
 	TeamId    uint      `gorm:"column:team_id"`
 	Score     int       `gorm:"column:score"`
+	FinalDiff int       `gorm:"column:final_differential"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
 }
