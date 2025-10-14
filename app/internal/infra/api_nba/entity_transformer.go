@@ -27,7 +27,8 @@ func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, er
 				HomeTown: strings.TrimRight(strings.Replace(game.Teams.Home.Name, game.Teams.Home.Nickname, "", 1), " "),
 			},
 			GameTeamStatModel: teams.GameTeamStatModel{
-				Score: game.Scores.Home.Points,
+				Score:     game.Scores.Home.Points,
+				FinalDiff: game.Scores.Home.Points - game.Scores.Visitors.Points,
 			},
 			PlayerStats: nil,
 		},
@@ -37,7 +38,8 @@ func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, er
 				HomeTown: strings.TrimRight(strings.Replace(game.Teams.Visitors.Name, game.Teams.Visitors.Nickname, "", 1), " "),
 			},
 			GameTeamStatModel: teams.GameTeamStatModel{
-				Score: game.Scores.Visitors.Points,
+				Score:     game.Scores.Visitors.Points,
+				FinalDiff: game.Scores.Visitors.Points - game.Scores.Home.Points,
 			},
 			PlayerStats: nil,
 		},
