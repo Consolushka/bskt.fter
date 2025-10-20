@@ -29,7 +29,7 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 			return []games.GameStatEntity{}, err
 		}
 
-		if gameBoxScore.Result.Game.GameStatus != "ResultConfirmed" {
+		if gameBoxScore.Result.Game.GameStatus != "ResultConfirmed" && gameBoxScore.Result.Game.GameStatus != "Result" {
 			continue
 		}
 
