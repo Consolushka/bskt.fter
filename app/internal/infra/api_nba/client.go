@@ -3,7 +3,6 @@ package api_nba
 import (
 	"IMP/app/pkg/http"
 	"strconv"
-	"time"
 )
 
 type ClientInterface interface {
@@ -30,41 +29,6 @@ func NewClient(baseUrl string, token string) ClientInterface {
 }
 
 func (c Client) Games(id int, date string, leagueId string, season string, teamId string, timezone string) (GamesResponse, error) {
-	return GamesResponse{
-		Response: []GameEntity{
-			{
-				Id: 4516,
-				Date: GameDateEntity{
-					Start:    time.Date(2025, 7, 23, 22, 0, 0, 0, time.UTC),
-					End:      time.Date(2025, 7, 23, 23, 50, 0, 0, time.UTC),
-					Duration: "",
-				},
-				Teams: GameTeamsEntity{
-					Visitors: TeamEntity{
-						Id:       23,
-						Name:     "New Orleans Pelicans",
-						Nickname: "Pelicans",
-						Code:     "NOP",
-					},
-					Home: TeamEntity{
-						Id:       31,
-						Name:     "San Antonio Spurs",
-						Nickname: "Spurs",
-						Code:     "SAS",
-					},
-				},
-				Scores: GameTeamsScoresEntity{
-					Visitors: TeamScoresEntity{
-						Points: 115,
-					},
-					Home: TeamScoresEntity{
-						Points: 120,
-					},
-				},
-			},
-		},
-	}, nil
-
 	return http.Get[GamesResponse](c.baseUrl+"/games?date="+date, &c.baseHeaders)
 }
 
