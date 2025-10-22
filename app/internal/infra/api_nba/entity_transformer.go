@@ -75,7 +75,6 @@ func (e *EntityTransformer) enrichGamePlayers(game GameEntity, gameBusinessEntit
 				"playerStatEntity": playerStatEntity,
 				"error":            playerStatsErr,
 			})
-			continue
 		}
 
 		if playerStat.Team.Id == homeTeamId {
@@ -97,9 +96,15 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 	if err != nil {
 		return errors.New(err.Error())
 	}
-	secondsAfterMinutes, err := strconv.Atoi(splittedGameTime[1])
-	if err != nil {
-		return errors.New(err.Error())
+
+	var secondsAfterMinutes int
+	if len(splittedGameTime) == 1 {
+		secondsAfterMinutes = 0
+	} else {
+		secondsAfterMinutes, err = strconv.Atoi(splittedGameTime[1])
+		if err != nil {
+			return errors.New(err.Error())
+		}
 	}
 
 	secondsPlayed := minutesPlayed*60 + secondsAfterMinutes
@@ -132,10 +137,12 @@ func (e *EntityTransformer) enrichPlayerBio(playerId int, playerEntity *players.
 		return err
 	}
 
-	// In current plan there is limit of 10 requests/minute
-	time.Sleep(6 * time.Second)
+	// For free plan limit is 10 requests/minute
+	//time.Sleep(6 * time.Second)
+	// todo: some players doesn't have birthdate
 	playerEntity.PlayerModel.BirthDate, err = time.Parse("2006-01-02", playerBio.Response[0].Birth.Date)
 	if err != nil {
+		playerEntity.PlayerModel.BirthDate = time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC)
 		return errors.New(err.Error())
 	}
 
