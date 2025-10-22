@@ -38,6 +38,10 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 			return make([]games.GameStatEntity, 0), err
 		}
 
+		entity.GameModel.Title = calendarGame.Team1.AbcName + " - " + calendarGame.Team2.AbcName
+		entity.HomeTeamStat.TeamModel.Name = calendarGame.Team1.Name
+		entity.AwayTeamStat.TeamModel.Name = calendarGame.Team2.Name
+
 		gamesEntities[i] = entity
 	}
 
