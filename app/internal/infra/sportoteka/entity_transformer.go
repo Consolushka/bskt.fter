@@ -28,12 +28,12 @@ func (e *EntityTransformer) Transform(game GameBoxScoreEntity) (games.GameStatEn
 			ScheduledAt: game.Game.ScheduledTime,
 			Title:       game.Team1.AbcName + " - " + game.Team2.AbcName,
 		},
-		HomeTeamStat: e.teamTransform(game.Team1, homeTeamStats),
-		AwayTeamStat: e.teamTransform(game.Team2, awayTeamStats),
+		HomeTeamStat: e.teamTransform(game.Team1, homeTeamStats, awayTeamStats.Total.Points),
+		AwayTeamStat: e.teamTransform(game.Team2, awayTeamStats, homeTeamStats.Total.Points),
 	}, nil
 }
 
-func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore TeamBoxScoreEntity) teams.TeamStatEntity {
+func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore TeamBoxScoreEntity, opponentsScore int) teams.TeamStatEntity {
 	playerStats := make([]players.PlayerStatisticEntity, len(teamBoxScore.Starts))
 
 	for i, player := range teamBoxScore.Starts {
@@ -59,7 +59,8 @@ func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore 
 			HomeTown: teamInfo.RegionName,
 		},
 		GameTeamStatModel: teams.GameTeamStatModel{
-			Score: teamBoxScore.Total.Points,
+			Score:     teamBoxScore.Total.Points,
+			FinalDiff: teamBoxScore.Total.Points - opponentsScore,
 		},
 		PlayerStats: playerStats,
 	}
