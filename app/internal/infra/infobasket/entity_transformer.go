@@ -61,9 +61,14 @@ func playersTrans(playerStat PlayerBoxScoreDto) (players.PlayerStatisticEntity, 
 		return players.PlayerStatisticEntity{}, err
 	}
 
+	playerName := playerStat.PersonNameEn
+	if playerName == "New Player" {
+		playerName = playerStat.PersonNameRu
+	}
+
 	return players.PlayerStatisticEntity{
 		PlayerModel: players.PlayerModel{
-			FullName:  playerStat.PersonNameEn,
+			FullName:  playerName,
 			BirthDate: parsedBirth,
 		},
 		GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
