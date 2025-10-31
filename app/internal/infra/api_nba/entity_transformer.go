@@ -114,6 +114,7 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 	}
 
 	*playerBusinessEntity = players.PlayerStatisticEntity{
+		PlayerExternalId: strconv.Itoa(player.Player.Id),
 		PlayerModel: players.PlayerModel{
 			FullName: player.Player.Firstname + " " + player.Player.Lastname,
 		},
