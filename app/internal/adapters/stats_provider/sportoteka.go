@@ -2,6 +2,7 @@ package stats_provider
 
 import (
 	"IMP/app/internal/core/games"
+	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/sportoteka"
 	"strconv"
 	"time"
@@ -13,6 +14,11 @@ type SportotekaStatsProviderAdapter struct {
 
 	client      sportoteka.ClientInterface
 	transformer sportoteka.EntityTransformer
+}
+
+func (s SportotekaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
