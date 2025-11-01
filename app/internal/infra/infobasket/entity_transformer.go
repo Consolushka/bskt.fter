@@ -16,9 +16,19 @@ func (e *EntityTransformer) Transform(game GameBoxScoreResponse) (games.GameStat
 		return games.GameStatEntity{}, err
 	}
 
+	duration := 0
+	for i := 0; i < game.MaxPeriod; i++ {
+		if i <= 4 {
+			duration += 10
+		} else {
+			duration += 5
+		}
+	}
+
 	return games.GameStatEntity{
 		GameModel: games.GameModel{
 			ScheduledAt: parse,
+			Duration:    duration,
 			Title:       game.GameTeams[0].TeamName.CompTeamAbcNameEn + " - " + game.GameTeams[1].TeamName.CompTeamAbcNameEn,
 		},
 		HomeTeamStat: e.transformTeam(game.GameTeams[0], game.GameTeams[1].Score),
