@@ -8,7 +8,6 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type EntityTransformer struct {
@@ -122,29 +121,6 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 			PlayedSeconds: secondsPlayed,
 			PlsMin:        int8(plsMin),
 		},
-	}
-
-	playerBioErr := e.enrichPlayerBio(player.Player.Id, playerBusinessEntity)
-	if playerBioErr != nil {
-		return playerBioErr
-	}
-
-	return nil
-}
-
-func (e *EntityTransformer) enrichPlayerBio(playerId int, playerEntity *players.PlayerStatisticEntity) error {
-	playerBio, err := e.client.PlayerInfo(playerId, "", 0, 0, "", "")
-	if err != nil {
-		return err
-	}
-
-	// For free plan limit is 10 requests/minute
-	//time.Sleep(6 * time.Second)
-	// todo: some players doesn't have birthdate
-	playerEntity.PlayerModel.BirthDate, err = time.Parse("2006-01-02", playerBio.Response[0].Birth.Date)
-	if err != nil {
-		playerEntity.PlayerModel.BirthDate = time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC)
-		return errors.New(err.Error())
 	}
 
 	return nil
