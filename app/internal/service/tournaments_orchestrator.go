@@ -11,12 +11,14 @@ import (
 type TournamentsOrchestrator struct {
 	persistenceService PersistenceServiceInterface
 	tournamentsRepo    ports.TournamentsRepo
+	playersRepo        ports.PlayersRepo
 }
 
-func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, tournamentsRepo ports.TournamentsRepo) *TournamentsOrchestrator {
+func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, tournamentsRepo ports.TournamentsRepo, playersRepo ports.PlayersRepo) *TournamentsOrchestrator {
 	return &TournamentsOrchestrator{
 		persistenceService: persistenceService,
 		tournamentsRepo:    tournamentsRepo,
+		playersRepo:        playersRepo,
 	}
 }
 
@@ -107,7 +109,7 @@ func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []
 				return
 			}
 
-			processor := NewTournamentProcessor(statsProvider, t.persistenceService, tournament.Id)
+			processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, tournament.Id)
 
 			err = processor.ProcessByPeriod(from, to)
 			if err != nil {

@@ -14,6 +14,7 @@ func (g Gorm) FindOrCreateGame(model games.GameModel) (games.GameModel, error) {
 	tx := g.db.FirstOrCreate(&model, games.GameModel{
 		TournamentId: model.TournamentId,
 		Title:        model.Title,
+		Duration:     model.Duration,
 		ScheduledAt:  model.ScheduledAt,
 	})
 

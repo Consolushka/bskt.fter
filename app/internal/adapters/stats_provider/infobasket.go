@@ -3,6 +3,7 @@ package stats_provider
 import (
 	"IMP/app/internal/adapters/cached_remote_resource"
 	"IMP/app/internal/core/games"
+	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/infobasket"
 	"IMP/app/internal/service/remote_cache_loader"
 	"IMP/app/pkg/logger"
@@ -15,6 +16,11 @@ type InfobasketStatsProviderAdapter struct {
 
 	transformer infobasket.EntityTransformer
 	compId      int
+}
+
+func (i InfobasketStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
