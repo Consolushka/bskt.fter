@@ -17,6 +17,11 @@ type MockPlayersRepo struct {
 	recorder *MockPlayersRepoMockRecorder
 }
 
+func (m *MockPlayersRepo) PlayersByFullName(fullName string) ([]players.PlayerModel, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 // MockPlayersRepoMockRecorder is the mock recorder for MockPlayersRepo.
 type MockPlayersRepoMockRecorder struct {
 	mock *MockPlayersRepo

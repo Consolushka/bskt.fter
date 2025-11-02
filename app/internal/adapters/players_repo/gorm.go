@@ -2,6 +2,7 @@ package players_repo
 
 import (
 	"IMP/app/internal/core/players"
+
 	"gorm.io/gorm"
 )
 
@@ -16,6 +17,16 @@ func (g Gorm) FirstOrCreatePlayer(player players.PlayerModel) (players.PlayerMod
 	})
 
 	return player, tx.Error
+}
+
+func (g Gorm) PlayersByFullName(fullName string) ([]players.PlayerModel, error) {
+	var playerModels []players.PlayerModel
+
+	tx := g.db.Model(&players.PlayerModel{}).Where(&playerModels, players.PlayerModel{
+		FullName: fullName,
+	})
+
+	return playerModels, tx.Error
 }
 
 func (g Gorm) FirstOrCreatePlayerStat(playerStat players.GameTeamPlayerStatModel) (players.GameTeamPlayerStatModel, error) {

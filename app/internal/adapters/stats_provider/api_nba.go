@@ -2,7 +2,10 @@ package stats_provider
 
 import (
 	"IMP/app/internal/core/games"
+	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/api_nba"
+	"errors"
+	"strconv"
 	"time"
 )
 
@@ -10,6 +13,30 @@ type ApiNbaStatsProviderAdapter struct {
 	client api_nba.ClientInterface
 
 	entityTransformer api_nba.EntityTransformer
+}
+
+func (a ApiNbaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
+	entity := players.PlayerBioEntity{}
+
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		return players.PlayerBioEntity{}, err
+	}
+	playerBio, err := a.client.PlayerInfo(intId, "", 0, 0, "", "")
+	if err != nil {
+		return players.PlayerBioEntity{}, err
+	}
+
+	// For free plan limit is 10 requests/minute
+	//time.Sleep(6 * time.Second)
+	// todo: some players doesn't have birthdate
+	entity.BirthDate, err = time.Parse("2006-01-02", playerBio.Response[0].Birth.Date)
+	if err != nil {
+		entity.BirthDate = time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC)
+		return entity, errors.New(err.Error())
+	}
+
+	return entity, nil
 }
 
 func (a ApiNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {

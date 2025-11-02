@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"IMP/app/pkg/logger"
+	"strconv"
 	"time"
 )
 
@@ -83,6 +84,7 @@ func (e *EntityTransformer) playerTransform(player TeamBoxScoreStartEntity) (pla
 	}
 
 	return players.PlayerStatisticEntity{
+		PlayerExternalId: strconv.Itoa(*player.PersonId),
 		PlayerModel: players.PlayerModel{
 			FullName:  player.LastName + " " + player.FirstName,
 			BirthDate: parsedBirth,
