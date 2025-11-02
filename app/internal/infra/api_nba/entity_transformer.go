@@ -16,9 +16,19 @@ type EntityTransformer struct {
 }
 
 func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, error) {
+	duration := 0
+	for i := 0; i < game.Periods.Total; i++ {
+		if i <= 4 {
+			duration += 12
+		} else {
+			duration += 5
+		}
+	}
+
 	businessEntity := games.GameStatEntity{
 		GameModel: games.GameModel{
 			ScheduledAt: game.Date.Start,
+			Duration:    duration,
 			Title:       game.Teams.Home.Code + " - " + game.Teams.Visitors.Code,
 		},
 		HomeTeamStat: teams.TeamStatEntity{
