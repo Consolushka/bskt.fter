@@ -59,13 +59,15 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 					"playerFullName": playerStat.PlayerModel.FullName,
 				})
 
-				playerBio, err := t.statsProvider.GetPlayerBio(playerStat.PlayerExternalId)
-				if err != nil {
-					return err
-				}
+				if playerStat.PlayerModel.FullName == "" || time.Time.IsZero(playerStat.PlayerModel.BirthDate) {
+					playerBio, err := t.statsProvider.GetPlayerBio(playerStat.PlayerExternalId)
+					if err != nil {
+						return err
+					}
 
-				playerStat.PlayerModel.FullName = playerBio.FullName
-				playerStat.PlayerModel.BirthDate = playerBio.BirthDate
+					playerStat.PlayerModel.FullName = playerBio.FullName
+					playerStat.PlayerModel.BirthDate = playerBio.BirthDate
+				}
 			}
 		}
 

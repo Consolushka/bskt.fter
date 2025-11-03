@@ -45,9 +45,9 @@ func (e *EntityTransformer) Transform(game GameBoxScoreEntity) (games.GameStatEn
 }
 
 func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore TeamBoxScoreEntity, opponentsScore int) teams.TeamStatEntity {
-	playerStats := make([]players.PlayerStatisticEntity, len(teamBoxScore.Starts))
+	playerStats := make([]players.PlayerStatisticEntity, 0)
 
-	for i, player := range teamBoxScore.Starts {
+	for _, player := range teamBoxScore.Starts {
 		if player.StartRole == "Team" {
 			continue
 		}
@@ -61,7 +61,7 @@ func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore 
 			continue
 		}
 
-		playerStats[i] = playerStat
+		playerStats = append(playerStats, playerStat)
 	}
 
 	return teams.TeamStatEntity{
