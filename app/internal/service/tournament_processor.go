@@ -62,11 +62,13 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 				if playerStat.PlayerModel.FullName == "" || time.Time.IsZero(playerStat.PlayerModel.BirthDate) {
 					playerBio, err := t.statsProvider.GetPlayerBio(playerStat.PlayerExternalId)
 					if err != nil {
-						return err
+						logger.Warn("error while fetching player bio", map[string]interface{}{
+							"err": err,
+						})
+					} else {
+						playerStat.PlayerModel.FullName = playerBio.FullName
+						playerStat.PlayerModel.BirthDate = playerBio.BirthDate
 					}
-
-					playerStat.PlayerModel.FullName = playerBio.FullName
-					playerStat.PlayerModel.BirthDate = playerBio.BirthDate
 				}
 			}
 		}

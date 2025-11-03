@@ -24,7 +24,7 @@ func (g Gorm) PlayersByFullName(fullName string) ([]players.PlayerModel, error) 
 
 	tx := g.db.Model(&players.PlayerModel{}).Where(&playerModels, players.PlayerModel{
 		FullName: fullName,
-	})
+	}).Find(&playerModels)
 
 	return playerModels, tx.Error
 }
