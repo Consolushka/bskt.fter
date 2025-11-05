@@ -3,7 +3,9 @@ package service
 import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
+	"IMP/app/internal/service/providers"
 	"IMP/app/pkg/logger"
+	"encoding/json"
 	"sync"
 	"time"
 )
@@ -62,6 +64,7 @@ func (t TournamentsOrchestrator) ProcessAmericanTournaments(from, to time.Time) 
 func (t TournamentsOrchestrator) ProcessNotUrgentEuropeanTournaments(from, to time.Time) error {
 	leaguesAliases := []string{
 		"UBA",
+		"VTB",
 	}
 
 	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
@@ -100,7 +103,22 @@ func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []
 		go func(tournament tournaments.TournamentModel) {
 			defer tournamentsGroup.Done()
 
-			statsProvider, err := NewTournamentStatsProvider(tournament)
+			var params *map[string]interface{}
+
+			if len(tournament.Provider.Params) == 0 {
+				params = nil
+			} else {
+				err := json.Unmarshal(tournament.Provider.Params, &params)
+				if err != nil {
+					logger.Error("Error while unmarshalling provider params", map[string]interface{}{
+						"error":      err,
+						"tournament": tournament,
+					})
+					return
+				}
+			}
+
+			statsProvider, err := providers.NewProvider(tournament.Provider.ProviderName, tournament.Provider.ExternalId, params)
 			if err != nil {
 				logger.Error("Error while creating stats provider", map[string]interface{}{
 					"error":      err,
