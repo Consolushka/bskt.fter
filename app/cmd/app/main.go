@@ -21,9 +21,10 @@ func main() {
 	//tournamentsOrchestrator := service.NewTournamentsOrchestrator(
 	//	*service.NewPersistenceService(games_repo.NewGormRepo(db), teams_repo.NewGormRepo(db), players_repo.NewGormRepo(db)),
 	//	tournaments_repo.NewGormRepo(db),
+	//	players_repo.NewGormRepo(db),
 	//)
 	//
-	//err := tournamentsOrchestrator.ProcessUrgentEuropeanTournaments(time.Date(2025, 10, 9, 16, 00, 00, 00, time.UTC), time.Now())
+	//err := tournamentsOrchestrator.ProcessNotUrgentEuropeanTournaments(time.Date(2025, 11, 04, 4, 59, 59, 59, time.UTC), time.Date(2025, 11, 05, 4, 59, 59, 59, time.UTC))
 	//
 	//if err != nil {
 	//	panic(err)
