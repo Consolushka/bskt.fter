@@ -25,14 +25,6 @@ func (u GormRepo) ListTournamentsByLeagueAliases(aliases []string) ([]tournament
 	return models, err
 }
 
-func (u GormRepo) FindTournamentExternalId(tournamentId uint, providerName string) (tournaments.TournamentProvider, error) {
-	var model tournaments.TournamentProvider
-
-	err := u.db.Preload("Tournament").Find(&model, tournaments.TournamentProvider{TournamentId: tournamentId, ProviderName: providerName}).Error
-
-	return model, err
-}
-
 func NewGormRepo(db *gorm.DB) GormRepo {
 	return GormRepo{db: db}
 }
