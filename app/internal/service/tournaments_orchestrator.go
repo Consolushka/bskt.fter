@@ -62,6 +62,7 @@ func (t TournamentsOrchestrator) ProcessAmericanTournaments(from, to time.Time) 
 func (t TournamentsOrchestrator) ProcessNotUrgentEuropeanTournaments(from, to time.Time) error {
 	leaguesAliases := []string{
 		"UBA",
+		"VTB",
 	}
 
 	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
