@@ -3,6 +3,7 @@ package api_nba
 import (
 	"IMP/app/pkg/http"
 	"strconv"
+	"time"
 )
 
 type ClientInterface interface {
@@ -34,10 +35,16 @@ func (c Client) Games(id int, date string, leagueId string, season string, teamI
 
 func (c Client) PlayersStatistics(playerId int, gameId int, teamId int, season string) (PlayerStatisticResponse, error) {
 	//todo: ignore zero values
+	//
+	// For free plan limit is 10 requests/minute
+	time.Sleep(7 * time.Second)
 	return http.Get[PlayerStatisticResponse](c.baseUrl+"/players/statistics?game="+strconv.Itoa(gameId), &c.baseHeaders)
 }
 
 func (c Client) PlayerInfo(playerId int, name string, teamId int, season int, country string, search string) (PlayersResponse, error) {
 	//todo: ignore zero values
+	//
+	// For free plan limit is 10 requests/minute
+	time.Sleep(7 * time.Second)
 	return http.Get[PlayersResponse](c.baseUrl+"/players?id="+strconv.Itoa(playerId), &c.baseHeaders)
 }

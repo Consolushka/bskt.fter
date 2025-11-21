@@ -27,9 +27,6 @@ func (a ApiNbaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEn
 		return players.PlayerBioEntity{}, err
 	}
 
-	// For free plan limit is 10 requests/minute
-	//time.Sleep(6 * time.Second)
-	// todo: some players doesn't have birthdate
 	entity.BirthDate, err = time.Parse("2006-01-02", playerBio.Response[0].Birth.Date)
 	if err != nil {
 		entity.BirthDate = time.Date(1, 1, 1, 1, 1, 1, 1, time.UTC)
