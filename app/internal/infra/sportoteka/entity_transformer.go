@@ -83,6 +83,13 @@ func (e *EntityTransformer) playerTransform(player TeamBoxScoreStartEntity) (pla
 		return players.PlayerStatisticEntity{}, err
 	}
 
+	playerAttempts := player.Stats.Shot2 + player.Stats.Shot3
+	var percentage float32
+	if playerAttempts == 0 {
+		percentage = 0
+	} else {
+		percentage = float32((player.Stats.Goal2 + player.Stats.Goal3) / playerAttempts)
+	}
 	return players.PlayerStatisticEntity{
 		PlayerExternalId: strconv.Itoa(*player.PersonId),
 		PlayerModel: players.PlayerModel{
@@ -90,8 +97,15 @@ func (e *EntityTransformer) playerTransform(player TeamBoxScoreStartEntity) (pla
 			BirthDate: parsedBirth,
 		},
 		GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-			PlayedSeconds: player.Stats.Second,
-			PlsMin:        int8(player.Stats.PlusMinus),
+			PlayedSeconds:        player.Stats.Second,
+			PlsMin:               int8(player.Stats.PlusMinus),
+			Points:               uint8(player.Stats.Points),
+			Rebounds:             uint8(player.Stats.DefReb + player.Stats.OffReb),
+			Assists:              uint8(player.Stats.Assist),
+			Steals:               uint8(player.Stats.Steal),
+			Blocks:               uint8(player.Stats.Block),
+			Turnovers:            uint8(player.Stats.Turnover),
+			FieldGoalsPercentage: percentage,
 		},
 	}, nil
 }

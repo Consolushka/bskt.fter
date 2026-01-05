@@ -77,6 +77,13 @@ func playersTrans(playerStat PlayerBoxScoreDto) (players.PlayerStatisticEntity, 
 		playerName = playerStat.PersonNameRu
 	}
 
+	playerAttempts := playerStat.Shot2 + playerStat.Shot3
+	var percentage float32
+	if playerAttempts == 0 {
+		percentage = 0
+	} else {
+		percentage = float32((playerStat.Goal2 + playerStat.Goal3) / playerAttempts)
+	}
 	return players.PlayerStatisticEntity{
 		PlayerExternalId: strconv.Itoa(playerStat.PersonID),
 		PlayerModel: players.PlayerModel{
@@ -84,8 +91,15 @@ func playersTrans(playerStat PlayerBoxScoreDto) (players.PlayerStatisticEntity, 
 			BirthDate: parsedBirth,
 		},
 		GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-			PlayedSeconds: playerStat.Seconds,
-			PlsMin:        int8(playerStat.PlusMinus),
+			PlayedSeconds:        playerStat.Seconds,
+			PlsMin:               int8(playerStat.PlusMinus),
+			Points:               uint8(playerStat.Points),
+			Rebounds:             uint8(playerStat.Rebound),
+			Assists:              uint8(playerStat.Assist),
+			Steals:               uint8(playerStat.Steal),
+			Blocks:               uint8(playerStat.Blocks),
+			Turnovers:            uint8(playerStat.Turnover),
+			FieldGoalsPercentage: percentage,
 		},
 	}, nil
 }
