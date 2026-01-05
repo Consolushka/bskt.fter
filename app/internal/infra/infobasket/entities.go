@@ -164,7 +164,7 @@ type PlayerBoxScoreDto struct {
 	PaintShots       string      `json:"PaintShots"`
 	PaintShotPercent string      `json:"PaintShotPercent"`
 	Shot3            int         `json:"Shot3"`
-	Goal3            interface{} `json:"Goal3"`
+	Goal3            int         `json:"Goal3"`
 	Shots3           string      `json:"Shots3"`
 	Shot3Percent     string      `json:"Shot3Percent"`
 	Assist           int         `json:"Assist"`
