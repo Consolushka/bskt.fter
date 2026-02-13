@@ -2,95 +2,109 @@ package scheduler
 
 import (
 	"IMP/app/internal/adapters/executable_by_scheduler"
-	"IMP/app/internal/adapters/scheduler_repo"
-	"IMP/app/internal/core/scheduler"
+	"IMP/app/internal/adapters/poll_watermarks_repo"
+	"IMP/app/internal/core/poll_watermarks"
 	"IMP/app/internal/ports"
 	"IMP/app/pkg/logger"
-	"context"
-	"errors"
 	"sync"
 	"time"
 
 	"gorm.io/gorm"
 )
 
+const (
+	pollInterval = 30 * time.Minute
+)
+
 func Handle(db *gorm.DB) {
-	schedulerRepo := scheduler_repo.NewGormRepo(db)
+	logger.Info("Scheduler started", map[string]interface{}{
+		"pollInterval": pollInterval.String(),
+	})
 
-	tasks, err := schedulerRepo.TasksList()
-	if err != nil {
-		panic(err)
+	executePollingCycle(db)
+
+	ticker := time.NewTicker(pollInterval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		executePollingCycle(db)
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+}
 
+func executePollingCycle(db *gorm.DB) {
+	var watermarkRepo ports.PollWatermarkRepo = poll_watermarks_repo.NewGormRepo(db)
+
+	taskTypes := []string{
+		ProcessAmericanTournamentsTaskType,
+		ProcessNotUrgentEuropeanTournamentsTaskType,
+		ProcessUrgentEuropeanTournamentsTaskType,
+	}
+
+	now := time.Now().UTC()
 	var wg sync.WaitGroup
-	wg.Add(len(tasks))
+	wg.Add(len(taskTypes))
 
-	for _, task := range tasks {
-		go func() {
-			err = handleTask(task, db, ctx)
-			if err != nil {
-				logger.Error("Error executing task", map[string]interface{}{
-					"task":  task,
-					"error": err,
+	for _, taskType := range taskTypes {
+		go func(taskType string) {
+			defer wg.Done()
+
+			task := matchExecutableAdapterByTaskType(taskType, db)
+			if task == nil {
+				logger.Error("Couldn't find executable adapter by task type", map[string]interface{}{
+					"taskType": taskType,
 				})
+				return
 			}
 
-			wg.Done()
-		}()
+			startOfDay := toStartOfUTCDay(now)
+			watermarkModel, err := watermarkRepo.FirstOrCreate(poll_watermarks.PollWatermarkModel{
+				TaskType:             taskType,
+				LastSuccessfulPollAt: startOfDay,
+			})
+			if err != nil {
+				logger.Error("Couldn't read or create task watermark", map[string]interface{}{
+					"taskType": taskType,
+					"error":    err,
+				})
+				return
+			}
+
+			from := watermarkModel.LastSuccessfulPollAt
+			if from.Before(startOfDay) || from.After(now) {
+				from = startOfDay
+			}
+
+			if err := task.Execute(from); err != nil {
+				logger.Error("Error while processing tournament games", map[string]interface{}{
+					"taskType": taskType,
+					"error":    err,
+				})
+				return
+			}
+
+			watermarkModel.LastSuccessfulPollAt = startOfDay
+			_, err = watermarkRepo.Update(watermarkModel)
+			if err != nil {
+				logger.Warn("Couldn't update task watermark", map[string]interface{}{
+					"taskType": taskType,
+					"error":    err,
+				})
+				return
+			}
+
+			logger.Info("Task executed successfully", map[string]interface{}{
+				"taskType": taskType,
+				"from":     from,
+				"to":       now,
+			})
+		}(taskType)
 	}
 
 	wg.Wait()
-}
 
-func handleTask(taskModel scheduler.ScheduledTaskModel, db *gorm.DB, ctx context.Context) error {
-	schedulerRepo := scheduler_repo.NewGormRepo(db)
-
-	for {
-		task := matchExecutableAdapterByTaskType(taskModel.Type, db)
-		if task == nil {
-			return errors.New("Couldn't find executable adapter for task type: " + taskModel.Type)
-		}
-
-		now := time.Now()
-
-		var sleepDuration time.Duration
-
-		if now.Before(taskModel.NextExecutionAt) {
-			sleepDuration = taskModel.NextExecutionAt.Sub(now)
-
-			logger.Info(task.GetName()+" will be executed at "+taskModel.NextExecutionAt.Format("02-01-2006 15:04"), map[string]interface{}{
-				"taskModel": taskModel,
-			})
-		} else {
-			logger.Info(task.GetName()+" should been executed at "+taskModel.NextExecutionAt.Format("02-01-2006 15:04")+". Executing...", map[string]interface{}{})
-
-			sleepDuration = taskModel.NextExecutionAt.Sub(now)
-		}
-
-		timer := time.NewTimer(sleepDuration)
-
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-timer.C:
-			err := task.Execute(taskModel.LastExecutedAt)
-
-			if err != nil {
-				logger.Error("Error while processing tournament games", map[string]interface{}{
-					"error": err,
-				})
-			}
-
-			taskModel, err = schedulerRepo.RescheduleTask(taskModel.Id, taskModel.NextExecutionAt.Add(task.GetPeriodicity()))
-			if err != nil {
-				logger.Warn("Couldn't reschedule taskModel", map[string]interface{}{
-					"error": err,
-				})
-			}
-		}
-	}
+	logger.Info("Polling cycle finished", map[string]interface{}{
+		"finishedAt": now,
+	})
 }
 
 func matchExecutableAdapterByTaskType(taskType string, db *gorm.DB) ports.ExecutableByScheduler {
@@ -104,4 +118,9 @@ func matchExecutableAdapterByTaskType(taskType string, db *gorm.DB) ports.Execut
 	default:
 		return nil
 	}
+}
+
+func toStartOfUTCDay(value time.Time) time.Time {
+	value = value.UTC()
+	return time.Date(value.Year(), value.Month(), value.Day(), 0, 0, 0, 0, time.UTC)
 }
