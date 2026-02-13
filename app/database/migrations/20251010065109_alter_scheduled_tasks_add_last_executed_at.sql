@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 alter table scheduled_tasks
-    add column last_executed_at timestamptz default date_subtract(now(), interval '1 day');
+    add column last_executed_at timestamptz default (now() - interval '1 day');
 -- +goose StatementEnd
 
 -- +goose Down
