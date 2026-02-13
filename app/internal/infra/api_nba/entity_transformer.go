@@ -15,6 +15,17 @@ type EntityTransformer struct {
 }
 
 func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, error) {
+	businessEntity := e.TransformWithoutPlayers(game)
+
+	err := e.EnrichGamePlayers(game.Id, game.Teams.Home.Id, game.Teams.Visitors.Id, &businessEntity)
+	if err != nil {
+		return games.GameStatEntity{}, err
+	}
+
+	return businessEntity, nil
+}
+
+func (e *EntityTransformer) TransformWithoutPlayers(game GameEntity) games.GameStatEntity {
 	duration := 0
 	for i := 0; i < game.Periods.Total; i++ {
 		if i <= 4 {
@@ -54,22 +65,15 @@ func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, er
 		},
 	}
 
-	err := e.enrichGamePlayers(game, &businessEntity)
-	if err != nil {
-		return games.GameStatEntity{}, err
-	}
-
-	return businessEntity, nil
+	return businessEntity
 }
 
-func (e *EntityTransformer) enrichGamePlayers(game GameEntity, gameBusinessEntity *games.GameStatEntity) error {
-	homeTeamId := game.Teams.Home.Id
+func (e *EntityTransformer) EnrichGamePlayers(gameId int, homeTeamId int, awayTeamId int, gameBusinessEntity *games.GameStatEntity) error {
 	homeTeamPlayers := make([]players.PlayerStatisticEntity, 0)
 
-	awayTeamId := game.Teams.Visitors.Id
 	awayTeamPlayers := make([]players.PlayerStatisticEntity, 0)
 
-	gameStat, err := e.client.PlayersStatistics(0, game.Id, 0, "")
+	gameStat, err := e.client.PlayersStatistics(0, gameId, 0, "")
 	if err != nil {
 		return err
 	}
@@ -97,6 +101,10 @@ func (e *EntityTransformer) enrichGamePlayers(game GameEntity, gameBusinessEntit
 	gameBusinessEntity.AwayTeamStat.PlayerStats = awayTeamPlayers
 
 	return nil
+}
+
+func (e *EntityTransformer) enrichGamePlayers(game GameEntity, gameBusinessEntity *games.GameStatEntity) error {
+	return e.EnrichGamePlayers(game.Id, game.Teams.Home.Id, game.Teams.Visitors.Id, gameBusinessEntity)
 }
 
 func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, playerBusinessEntity *players.PlayerStatisticEntity) error {
