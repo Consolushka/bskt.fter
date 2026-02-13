@@ -6,6 +6,7 @@ package stats_provider
 
 import (
 	games "IMP/app/internal/core/games"
+	players "IMP/app/internal/core/players"
 	reflect "reflect"
 	time "time"
 
@@ -35,17 +36,47 @@ func (m *MockStatsProvider) EXPECT() *MockStatsProviderMockRecorder {
 	return m.recorder
 }
 
-// GetGamesStatsByDate mocks base method.
-func (m *MockStatsProvider) GetGamesStatsByPeriod(date time.Time) ([]games.GameStatEntity, error) {
+// EnrichGameStats mocks base method.
+func (m *MockStatsProvider) EnrichGameStats(game games.GameStatEntity) (games.GameStatEntity, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetGamesStatsByPeriod", date)
+	ret := m.ctrl.Call(m, "EnrichGameStats", game)
+	ret0, _ := ret[0].(games.GameStatEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EnrichGameStats indicates an expected call of EnrichGameStats.
+func (mr *MockStatsProviderMockRecorder) EnrichGameStats(game interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnrichGameStats", reflect.TypeOf((*MockStatsProvider)(nil).EnrichGameStats), game)
+}
+
+// GetGamesStatsByPeriod mocks base method.
+func (m *MockStatsProvider) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetGamesStatsByPeriod", from, to)
 	ret0, _ := ret[0].([]games.GameStatEntity)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetGamesStatsByDate indicates an expected call of GetGamesStatsByDate.
-func (mr *MockStatsProviderMockRecorder) GetGamesStatsByDate(date interface{}) *gomock.Call {
+// GetGamesStatsByPeriod indicates an expected call of GetGamesStatsByPeriod.
+func (mr *MockStatsProviderMockRecorder) GetGamesStatsByPeriod(from, to interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGamesStatsByPeriod", reflect.TypeOf((*MockStatsProvider)(nil).GetGamesStatsByPeriod), date)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetGamesStatsByPeriod", reflect.TypeOf((*MockStatsProvider)(nil).GetGamesStatsByPeriod), from, to)
+}
+
+// GetPlayerBio mocks base method.
+func (m *MockStatsProvider) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPlayerBio", id)
+	ret0, _ := ret[0].(players.PlayerBioEntity)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPlayerBio indicates an expected call of GetPlayerBio.
+func (mr *MockStatsProviderMockRecorder) GetPlayerBio(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPlayerBio", reflect.TypeOf((*MockStatsProvider)(nil).GetPlayerBio), id)
 }

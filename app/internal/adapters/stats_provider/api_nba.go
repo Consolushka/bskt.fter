@@ -66,17 +66,33 @@ func (a ApiNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([
 		if passedGame.Status.Short != 3 {
 			continue
 		}
-		transformer := api_nba.NewEntityTransformer(a.client)
-
-		gameStatEntity, err := transformer.Transform(passedGame)
-		if err != nil {
-			return nil, err
-		}
+		gameStatEntity := a.entityTransformer.TransformWithoutPlayers(passedGame)
+		gameStatEntity.ExternalGameId = strconv.Itoa(passedGame.Id)
+		gameStatEntity.HomeTeamExternalId = passedGame.Teams.Home.Id
+		gameStatEntity.AwayTeamExternalId = passedGame.Teams.Visitors.Id
 
 		gamesStatsEntities = append(gamesStatsEntities, gameStatEntity)
 	}
 
 	return gamesStatsEntities, nil
+}
+
+func (a ApiNbaStatsProviderAdapter) EnrichGameStats(game games.GameStatEntity) (games.GameStatEntity, error) {
+	if game.ExternalGameId == "" {
+		return game, nil
+	}
+
+	gameId, err := strconv.Atoi(game.ExternalGameId)
+	if err != nil {
+		return games.GameStatEntity{}, err
+	}
+
+	err = a.entityTransformer.EnrichGamePlayers(gameId, game.HomeTeamExternalId, game.AwayTeamExternalId, &game)
+	if err != nil {
+		return games.GameStatEntity{}, err
+	}
+
+	return game, nil
 }
 
 func NewApiNbaStatsProviderAdapter(client api_nba.ClientInterface) ApiNbaStatsProviderAdapter {

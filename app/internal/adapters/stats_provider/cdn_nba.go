@@ -18,3 +18,7 @@ func (c CdnNbaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEn
 func (c CdnNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
 	return nil, errors.New("CDN_NBA GetGamesStatsByPeriod")
 }
+
+func (c CdnNbaStatsProviderAdapter) EnrichGameStats(game games.GameStatEntity) (games.GameStatEntity, error) {
+	return game, nil
+}

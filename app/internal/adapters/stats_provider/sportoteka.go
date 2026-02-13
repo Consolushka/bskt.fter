@@ -54,6 +54,10 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 	return gamesEntities, nil
 }
 
+func (s SportotekaStatsProviderAdapter) EnrichGameStats(game games.GameStatEntity) (games.GameStatEntity, error) {
+	return game, nil
+}
+
 func NewSportotekaStatsProvider(client sportoteka.ClientInterface, tag string, year int) SportotekaStatsProviderAdapter {
 	return SportotekaStatsProviderAdapter{
 		tag:         tag,

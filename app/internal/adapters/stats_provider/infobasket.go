@@ -74,6 +74,10 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 	return gamesEntities, nil
 }
 
+func (i InfobasketStatsProviderAdapter) EnrichGameStats(game games.GameStatEntity) (games.GameStatEntity, error) {
+	return game, nil
+}
+
 func NewInfobasketStatsProviderAdapter(client infobasket.ClientInterface, compId int) InfobasketStatsProviderAdapter {
 	return InfobasketStatsProviderAdapter{
 		client: client,
