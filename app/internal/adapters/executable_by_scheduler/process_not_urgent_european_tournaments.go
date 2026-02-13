@@ -33,6 +33,7 @@ func NewProcessNotUrgentEuropeanTournaments(db *gorm.DB) ports.ExecutableBySched
 		*service.NewPersistenceService(games_repo.NewGormRepo(db), teams_repo.NewGormRepo(db), players_repo.NewGormRepo(db)),
 		tournaments_repo.NewGormRepo(db),
 		players_repo.NewGormRepo(db),
+		games_repo.NewGormRepo(db),
 	)
 	return ProcessNotUrgentEuropeanTournaments{
 		task: orchestrator.ProcessNotUrgentEuropeanTournaments,

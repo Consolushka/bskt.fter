@@ -371,6 +371,7 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 			mockGamesRepo := games_repo.NewMockGamesRepo(ctrl)
 			mockTeamsRepo := teams_repo.NewMockTeamsRepo(ctrl)
 			mockPlayersRepo := players_repo.NewMockPlayersRepo(ctrl)
+			mockGamesRepo.EXPECT().GameExists(gomock.Any()).Return(false, nil).AnyTimes()
 
 			tc.setupMock(mockGamesRepo, mockTeamsRepo, mockPlayersRepo)
 

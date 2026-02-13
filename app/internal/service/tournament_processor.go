@@ -16,14 +16,16 @@ type TournamentProcessor struct {
 	statsProvider      ports.StatsProvider
 	persistenceService PersistenceServiceInterface
 	playersRepo        ports.PlayersRepo
+	gamesRepo          ports.GamesRepo
 }
 
-func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface, playersRepo ports.PlayersRepo, tournamentId uint) *TournamentProcessor {
+func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface, playersRepo ports.PlayersRepo, gamesRepo ports.GamesRepo, tournamentId uint) *TournamentProcessor {
 	return &TournamentProcessor{
 		tournamentId:       tournamentId,
 		statsProvider:      statsProvider,
 		persistenceService: serviceInterface,
 		playersRepo:        playersRepo,
+		gamesRepo:          gamesRepo,
 	}
 }
 
@@ -41,7 +43,34 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 
 	for _, gameEntity := range gameEntities {
 		gameEntity.GameModel.TournamentId = t.tournamentId
+		isExists, err := t.gamesRepo.GameExists(gameEntity.GameModel)
+		if err != nil {
+			return err
+		}
+		if isExists {
+			logger.Info("Game already exists. Skip game processing", map[string]interface{}{
+				"gameModel": gameEntity.GameModel,
+			})
+			continue
+		}
+
+		gameEntity, err = t.statsProvider.EnrichGameStats(gameEntity)
+		if err != nil {
+			logger.Warn("Couldn't enrich game stats", map[string]interface{}{
+				"gameModel": gameEntity.GameModel,
+				"error":     err,
+			})
+			continue
+		}
+
 		err = t.persistenceService.SaveGame(gameEntity)
+		if err != nil {
+			logger.Error("t.persistenceService.SaveGame returned error", map[string]interface{}{
+				"error":      err,
+				"gameEntity": gameEntity,
+			})
+			continue
+		}
 
 		var allPlayers []players.PlayerStatisticEntity
 
@@ -71,14 +100,6 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 					}
 				}
 			}
-		}
-
-		if err != nil {
-			logger.Error("t.persistenceService.SaveGame returned error", map[string]interface{}{
-				"error":      err,
-				"gameEntity": gameEntity,
-			})
-			continue
 		}
 
 		logger.Info("Game was successfully saved", map[string]interface{}{

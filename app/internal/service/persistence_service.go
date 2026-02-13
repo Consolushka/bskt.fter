@@ -29,6 +29,17 @@ func NewPersistenceService(gamesRepo ports.GamesRepo, teamsRepo ports.TeamsRepo,
 func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	var err error
 
+	isExists, err := s.gamesRepo.GameExists(game.GameModel)
+	if err != nil {
+		return err
+	}
+	if isExists {
+		logger.Info("Game already exists. Skip processing", map[string]interface{}{
+			"game": game.GameModel,
+		})
+		return nil
+	}
+
 	game.GameModel, err = s.gamesRepo.FindOrCreateGame(game.GameModel)
 	if err != nil {
 		return err
