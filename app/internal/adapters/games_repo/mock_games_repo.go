@@ -48,3 +48,18 @@ func (mr *MockGamesRepoMockRecorder) FindOrCreateGame(model interface{}) *gomock
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOrCreateGame", reflect.TypeOf((*MockGamesRepo)(nil).FindOrCreateGame), model)
 }
+
+// GameExists mocks base method.
+func (m *MockGamesRepo) GameExists(model games.GameModel) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GameExists", model)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GameExists indicates an expected call of GameExists.
+func (mr *MockGamesRepoMockRecorder) GameExists(model interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GameExists", reflect.TypeOf((*MockGamesRepo)(nil).GameExists), model)
+}
