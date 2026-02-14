@@ -1,43 +1,4 @@
 services:
-  worker:
-    container_name: worker
-    env_file:
-      .env
-    tty: true
-    build:
-      context: .
-      dockerfile: docker/local/Dockerfile
-    volumes:
-      - ./:/imp
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - imp
-    profiles:
-      - worker
-
-  scheduler:
-    container_name: scheduler
-    env_file:
-      .env
-    tty: true
-    build:
-      context: .
-      dockerfile: docker/local/Dockerfile
-    ports:
-      - "8000:8080"
-    restart: on-failure
-    volumes:
-      - ./:/imp
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - imp
-    command:
-      - /build
-
   db:
     image: postgres:16.6
     container_name: postgres
@@ -58,13 +19,3 @@ services:
       - '5432:5432'
     volumes:
       - ./_db/pg_data:/var/lib/postgresql/data
-    networks:
-      - imp
-
-volumes:
-  pg_data:
-
-# Networks to be created to facilitate communication between containers
-networks:
-  imp:
-    external: true

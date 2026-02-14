@@ -35,9 +35,9 @@
 
 ## Требования
 
-- Docker + Docker Compose
+- Go `1.23.x`
+- Docker + Docker Compose (только для PostgreSQL)
 - GNU Make
-- (опционально) Go `1.23.x` для локального запуска без Docker
 
 ## Переменные окружения
 
@@ -52,7 +52,7 @@
 
 Шаблон: `.example.env`.
 
-## Быстрый старт (Docker)
+## Быстрый старт (локальный Go + Docker DB)
 
 1. Подготовить `.env`:
 
@@ -60,19 +60,7 @@
 cp .example.env .env
 ```
 
-2. Убедиться, что docker network `imp` создана:
-
-```bash
-docker network create imp || true
-```
-
-3. Собрать контейнеры:
-
-```bash
-make build
-```
-
-4. Запустить сервисы:
+2. Запустить PostgreSQL:
 
 ```bash
 make start
@@ -80,8 +68,19 @@ make start
 
 После запуска:
 
-- `scheduler` выполняет задачи из таблицы `scheduled_tasks`;
 - `db` доступна на `localhost:5432`.
+
+3. Запустить scheduler локально:
+
+```bash
+make run-scheduler
+```
+
+4. Или запустить debug API локально:
+
+```bash
+make run-debug
+```
 
 ## Миграции
 
@@ -135,13 +134,13 @@ curl "http://localhost:8080/process/american?from=2026-02-10&to=2026-02-12"
 
 ## Полезные Make-команды
 
-- `make build` - сборка контейнеров
-- `make start` - запуск в фоне
-- `make up` - запуск в foreground
-- `make stop` - остановка сервисов
-- `make down` - остановка и удаление контейнеров
-- `make sh` - shell в контейнере `scheduler`
-- `make test-with-coverage` - тесты и coverage внутри контейнера
+- `make start` - запуск PostgreSQL в фоне
+- `make up` - запуск PostgreSQL в foreground
+- `make stop` - остановка PostgreSQL
+- `make down` - остановка и удаление PostgreSQL контейнера
+- `make run-scheduler` - запуск scheduler локально
+- `make run-debug` - запуск debug API локально
+- `make test-with-coverage` - тесты и coverage локально
 
 ## Тесты
 

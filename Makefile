@@ -1,53 +1,53 @@
-ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 DOCKER_COMPOSE := docker compose
-GO_CONTAINER := scheduler
-SERVER_CONTAINER := air
 DOCKER_COMPOSE_FILE := $(ROOT_DIR)/docker-compose.yaml
 ENV_FILE := $(ROOT_DIR)/.env
+GOOSE := goose
 
-.PHONY: help setup install build up start down clean logs ps all db-seed db-migrate db-fresh run-inside
+ifneq (,$(wildcard $(ENV_FILE)))
+include $(ENV_FILE)
+export
+endif
 
-.DEFAULT_GOAL := help
+.PHONY: setup db-up db-start db-stop db-down up start stop down run-scheduler run-debug test-with-coverage migrate create-migration
+
+.DEFAULT_GOAL := db-up
 
 setup: ## copy env
-	echo "127.0.0.1 bskt.imp" | sudo tee -a /etc/hosts
-	@[ -f $(ENV_FILE) ] && echo .env exists || cp .example.env .env
-	mkdir -p app/db/migrations
+	@[ -f $(ENV_FILE) ] && echo ".env exists" || cp .example.env .env
 
-build: ## build
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) build --no-cache --progress=plain
+db-up: ## run postgres in foreground
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up db
 
-up: ## up
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up
+db-start: ## run postgres in background
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d db
 
-start: ## up -d
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d
+db-stop: ## stop postgres container
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) stop db
 
-stop: ## stop all services
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) stop
+db-down: ## stop and remove postgres container
+	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down db
 
-down: ## down all services
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
+# Backward-compatible aliases
+up: db-up
+start: db-start
+stop: db-stop
+down: db-down
 
-sh: ## Enter Golang container sh
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) bash
+run-scheduler: ## run scheduler locally
+	@go run ./app/cmd/scheduler
 
-restart-server: ## Enter Golang container sh
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down $(SERVER_CONTAINER)
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up $(SERVER_CONTAINER) -d
+run-debug: ## run debug server locally
+	@go run ./app/cmd/debug-server
 
-install: ## first time installation
-	make setup
-	make build
+test-with-coverage: ## run tests with coverage locally
+	@go test -v -coverprofile=coverage.out.tmp ./...
+	@cat coverage.out.tmp | grep -v "mock_" > coverage.out
+	@go tool cover -func coverage.out
+	@rm coverage.out.tmp
 
-test-with-coverage: ## run tests with coverage
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) go test -v -coverprofile=coverage.out.tmp ./...
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) cat coverage.out.tmp | grep -v "mock_" > coverage.out
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) go tool cover -func coverage.out
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) rm coverage.out.tmp
+migrate: ## run goose up locally
+	@GOOSE_DRIVER=$(GOOSE_DRIVER) GOOSE_DBSTRING=$(GOOSE_DBSTRING) GOOSE_MIGRATION_DIR=$(GOOSE_MIGRATION_DIR) $(GOOSE) up
 
-migrate:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) goose up
-
-create-migration:
-	@$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) exec $(GO_CONTAINER) goose create $(name) sql
+create-migration: ## create goose migration locally: make create-migration name=add_some_column
+	@GOOSE_DRIVER=$(GOOSE_DRIVER) GOOSE_DBSTRING=$(GOOSE_DBSTRING) GOOSE_MIGRATION_DIR=$(GOOSE_MIGRATION_DIR) $(GOOSE) create $(name) sql
