@@ -19,11 +19,13 @@ func LoadLocalFile[T any](resource ports.CachedRemoteResource) (T, error) {
 		if err != nil {
 			logger.Error("Could not save resource to local cache", map[string]interface{}{
 				"resource": resource.LocalFileName(),
+				"error":    err,
+			})
+		} else {
+			logger.Info("Resource was successfully downloaded", map[string]interface{}{
+				"resource": resource.LocalFileName(),
 			})
 		}
-		logger.Info("Resource was successfully downloaded", map[string]interface{}{
-			"resource": resource.LocalFileName(),
-		})
 	}
 
 	return getFromLocalStorage[T](localCacheStorageDir + resource.LocalFileName())

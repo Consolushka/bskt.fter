@@ -6,6 +6,7 @@ import (
 	"IMP/app/internal/service/providers"
 	"IMP/app/pkg/logger"
 	"encoding/json"
+	"sort"
 	"sync"
 	"time"
 )
@@ -98,7 +99,8 @@ func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []
 	tournamentsGroup.Add(len(activeTournaments))
 
 	logger.Info("Start processing tournaments", map[string]interface{}{
-		"tournaments": activeTournaments,
+		"count":   len(activeTournaments),
+		"aliases": getTournamentsAliases(activeTournaments),
 	})
 
 	for _, tournament := range activeTournaments {
@@ -144,4 +146,23 @@ func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []
 	}
 
 	tournamentsGroup.Wait()
+}
+
+func getTournamentsAliases(activeTournaments []tournaments.TournamentModel) []string {
+	uniqueAliases := make(map[string]struct{})
+
+	for _, tournament := range activeTournaments {
+		if tournament.League.Alias == "" {
+			continue
+		}
+		uniqueAliases[tournament.League.Alias] = struct{}{}
+	}
+
+	aliases := make([]string, 0, len(uniqueAliases))
+	for alias := range uniqueAliases {
+		aliases = append(aliases, alias)
+	}
+	sort.Strings(aliases)
+
+	return aliases
 }

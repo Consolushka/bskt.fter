@@ -84,10 +84,6 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 			}
 
 			if len(playersByFullName) != 1 {
-				logger.Info("Player not found in database", map[string]interface{}{
-					"playerFullName": playerStat.PlayerModel.FullName,
-				})
-
 				if playerStat.PlayerModel.FullName == "" || time.Time.IsZero(playerStat.PlayerModel.BirthDate) {
 					playerBio, err := t.statsProvider.GetPlayerBio(playerStat.PlayerExternalId)
 					if err != nil {

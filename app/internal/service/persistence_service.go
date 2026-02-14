@@ -34,9 +34,6 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 		return err
 	}
 	if isExists {
-		logger.Info("Game already exists. Skip processing", map[string]interface{}{
-			"game": game.GameModel,
-		})
 		return nil
 	}
 
