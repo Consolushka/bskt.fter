@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -71,7 +72,7 @@ func (t TelegramLogger) Error(message string, context map[string]interface{}) {
 }
 
 func (t TelegramLogger) send(message string, context map[string]interface{}, level logrus.Level) {
-	if t.level > level {
+	if t.level < level {
 		return
 	}
 
@@ -108,18 +109,48 @@ func stringToTelegramMarkdown(message string, context map[string]interface{}, le
 		emoji = "⁉️⁉️"
 	}
 
-	jsonContext, err := json.MarshalIndent(context, "", "    ")
+	jsonContext, err := json.MarshalIndent(normalizeLogContext(context), "", "    ")
 	if err != nil {
 		panic(err)
 	}
 
 	text := fmt.Sprintf("%s *%s* %s\n%s %s\n\n```json\n%s\n```",
 		emoji,
-		level,
+		strings.ToUpper(level.String()),
 		emoji,
 		escapeMarkdownV2(now),
 		escapeMarkdownV2(message),
 		string(jsonContext))
 
 	return text
+}
+
+func normalizeLogContext(context map[string]interface{}) map[string]interface{} {
+	if context == nil {
+		return nil
+	}
+
+	normalized := make(map[string]interface{}, len(context))
+	for key, value := range context {
+		normalized[key] = normalizeLogContextValue(value)
+	}
+
+	return normalized
+}
+
+func normalizeLogContextValue(value interface{}) interface{} {
+	switch typed := value.(type) {
+	case error:
+		return typed.Error()
+	case map[string]interface{}:
+		return normalizeLogContext(typed)
+	case []interface{}:
+		items := make([]interface{}, len(typed))
+		for i, v := range typed {
+			items[i] = normalizeLogContextValue(v)
+		}
+		return items
+	default:
+		return value
+	}
 }
