@@ -48,3 +48,18 @@ func (mr *MockTournamentsRepoMockRecorder) ListActiveTournaments() *gomock.Call 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListActiveTournaments", reflect.TypeOf((*MockTournamentsRepo)(nil).ListActiveTournaments))
 }
+
+// ListTournamentsByLeagueAliases mocks base method.
+func (m *MockTournamentsRepo) ListTournamentsByLeagueAliases(aliases []string) ([]tournaments.TournamentModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListTournamentsByLeagueAliases", aliases)
+	ret0, _ := ret[0].([]tournaments.TournamentModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListTournamentsByLeagueAliases indicates an expected call of ListTournamentsByLeagueAliases.
+func (mr *MockTournamentsRepoMockRecorder) ListTournamentsByLeagueAliases(aliases interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListTournamentsByLeagueAliases", reflect.TypeOf((*MockTournamentsRepo)(nil).ListTournamentsByLeagueAliases), aliases)
+}

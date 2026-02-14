@@ -18,8 +18,11 @@ type MockPlayersRepo struct {
 }
 
 func (m *MockPlayersRepo) PlayersByFullName(fullName string) ([]players.PlayerModel, error) {
-	//TODO implement me
-	panic("implement me")
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PlayersByFullName", fullName)
+	ret0, _ := ret[0].([]players.PlayerModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // MockPlayersRepoMockRecorder is the mock recorder for MockPlayersRepo.
@@ -67,4 +70,10 @@ func (m *MockPlayersRepo) FirstOrCreatePlayerStat(playerStat players.GameTeamPla
 func (mr *MockPlayersRepoMockRecorder) FirstOrCreatePlayerStat(playerStat interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreatePlayerStat", reflect.TypeOf((*MockPlayersRepo)(nil).FirstOrCreatePlayerStat), playerStat)
+}
+
+// PlayersByFullName indicates an expected call of PlayersByFullName.
+func (mr *MockPlayersRepoMockRecorder) PlayersByFullName(fullName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PlayersByFullName", reflect.TypeOf((*MockPlayersRepo)(nil).PlayersByFullName), fullName)
 }
