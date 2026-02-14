@@ -12,7 +12,9 @@ import (
 func main() {
 	time.Local = time.UTC
 
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
 
 	logger.Init(logger.BuildLoggers())
 
