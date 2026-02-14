@@ -18,7 +18,10 @@ import (
 func main() {
 	time.Local = time.UTC
 
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
 	logger.Init(logger.BuildLoggers())
 
 	database.OpenDbConnection()
@@ -37,7 +40,11 @@ func main() {
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		_, err := w.Write([]byte("ok"))
+		if err != nil {
+			logger.Warn("Failed to write health check response", map[string]interface{}{"error": err})
+			return
+		}
 	})
 
 	http.HandleFunc("/process/american", func(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +60,11 @@ func main() {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf("ok american from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		_, err = w.Write([]byte(fmt.Sprintf("ok american from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		if err != nil {
+			logger.Warn("Failed to write american response", map[string]interface{}{"error": err})
+			return
+		}
 	})
 
 	http.HandleFunc("/process/european-urgent", func(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +80,10 @@ func main() {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf("ok european-urgent from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		_, err = w.Write([]byte(fmt.Sprintf("ok european-urgent from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		if err != nil {
+			logger.Warn("Failed to write european-urgent response", map[string]interface{}{"error": err})
+		}
 	})
 
 	http.HandleFunc("/process/european-not-urgent", func(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +99,10 @@ func main() {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf("ok european-not-urgent from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		_, err = w.Write([]byte(fmt.Sprintf("ok european-not-urgent from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		if err != nil {
+			logger.Warn("Failed to write european-not-urgent response", map[string]interface{}{"error": err})
+		}
 	})
 
 	logger.Info("Debug server started", map[string]interface{}{"port": 8080})
