@@ -66,5 +66,5 @@ func getFromLocalStorage[T any](filePath string) (T, error) {
 	}
 	err = json.Unmarshal(data, &result)
 
-	return result, nil
+	return result, err
 }
