@@ -1,9 +1,11 @@
 package service
 
 import (
+	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/ports"
 	"IMP/app/pkg/logger"
+	"strconv"
 	"time"
 )
 
@@ -34,6 +36,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 	if err != nil {
 		return err
 	}
+	savedGames := make([]string, 0, len(gameEntities))
 
 	if len(gameEntities) > 0 {
 		logger.Info("Start processing tournament games", map[string]interface{}{
@@ -97,17 +100,26 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 				}
 			}
 		}
-
-		logger.Info("Game was successfully saved", map[string]interface{}{
-			"gameEntity": gameEntity,
-		})
+		savedGames = append(savedGames, formatSavedGameLog(gameEntity))
 	}
 
 	if len(gameEntities) > 0 {
 		logger.Info("Finished processing tournament games", map[string]interface{}{
 			"tournamentId": t.tournamentId,
+			"savedCount":   len(savedGames),
+			"savedGames":   savedGames,
 		})
 	}
 
 	return nil
+}
+
+func formatSavedGameLog(gameEntity games.GameStatEntity) string {
+	return gameEntity.GameModel.Title + " " +
+		formatScore(gameEntity.HomeTeamStat.GameTeamStatModel.Score) + ":" +
+		formatScore(gameEntity.AwayTeamStat.GameTeamStatModel.Score)
+}
+
+func formatScore(score int) string {
+	return strconv.Itoa(score)
 }
