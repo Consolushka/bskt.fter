@@ -5,9 +5,10 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"errors"
-	"github.com/golang/mock/gomock"
 	"testing"
 	"time"
+
+	"github.com/golang/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 )

@@ -1,9 +1,10 @@
 package crawler
 
 import (
-	"github.com/PuerkitoBio/goquery"
 	"io"
 	"net/http"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 func FetchPage(url string) (*goquery.Document, error) {
