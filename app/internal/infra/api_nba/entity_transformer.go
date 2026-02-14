@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type EntityTransformer struct {
@@ -88,6 +89,7 @@ func (e *EntityTransformer) EnrichGamePlayers(gameId int, homeTeamId int, awayTe
 				"playerStatEntity": playerStatEntity,
 				"error":            playerStatsErr,
 			})
+			continue
 		}
 
 		if playerStat.Team.Id == homeTeamId {
@@ -141,6 +143,30 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 		},
 	}
 
+	err = e.enrichPlayerBio(player.Player.Id, playerBusinessEntity)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *EntityTransformer) enrichPlayerBio(playerId int, playerBusinessEntity *players.PlayerStatisticEntity) error {
+	playerResponse, err := e.client.PlayerInfo(playerId, "", 0, 0, "", "")
+	if err != nil {
+		return err
+	}
+
+	if len(playerResponse.Response) == 0 {
+		return errors.New("empty player info response")
+	}
+
+	birthDate, err := time.Parse("2006-01-02", playerResponse.Response[0].Birth.Date)
+	if err != nil {
+		return err
+	}
+
+	playerBusinessEntity.PlayerModel.BirthDate = birthDate
 	return nil
 }
 

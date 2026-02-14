@@ -117,10 +117,12 @@ func TestEntityTransformer_Transform(t *testing.T) {
 						HomeTown: "Los Angeles", // "Los Angeles Lakers" -> remove "Lakers" -> trim space
 					},
 					GameTeamStatModel: teams.GameTeamStatModel{
-						Score: 115,
+						Score:     115,
+						FinalDiff: 7,
 					},
 					PlayerStats: []players.PlayerStatisticEntity{
 						{
+							PlayerExternalId: "101",
 							PlayerModel: players.PlayerModel{
 								FullName:  "LeBron James",
 								BirthDate: time.Date(1984, 12, 30, 0, 0, 0, 0, time.UTC),
@@ -138,10 +140,12 @@ func TestEntityTransformer_Transform(t *testing.T) {
 						HomeTown: "Boston", // "Boston Celtics" -> remove "Celtics" -> trim space
 					},
 					GameTeamStatModel: teams.GameTeamStatModel{
-						Score: 108,
+						Score:     108,
+						FinalDiff: -7,
 					},
 					PlayerStats: []players.PlayerStatisticEntity{
 						{
+							PlayerExternalId: "102",
 							PlayerModel: players.PlayerModel{
 								FullName:  "Jayson Tatum",
 								BirthDate: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -192,7 +196,8 @@ func TestEntityTransformer_Transform(t *testing.T) {
 						HomeTown: "Golden State", // "Golden State Warriors" -> remove "Warriors" -> trim space
 					},
 					GameTeamStatModel: teams.GameTeamStatModel{
-						Score: 120,
+						Score:     120,
+						FinalDiff: 25,
 					},
 					PlayerStats: []players.PlayerStatisticEntity{},
 				},
@@ -202,7 +207,8 @@ func TestEntityTransformer_Transform(t *testing.T) {
 						HomeTown: "Miami", // "Miami Heat" -> remove "Heat" -> trim space
 					},
 					GameTeamStatModel: teams.GameTeamStatModel{
-						Score: 95,
+						Score:     95,
+						FinalDiff: -25,
 					},
 					PlayerStats: []players.PlayerStatisticEntity{},
 				},
@@ -264,6 +270,58 @@ func TestEntityTransformer_Transform(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expectedGameStatEntity, result)
+		})
+	}
+}
+
+// TestEntityTransformer_TransformWithoutPlayers_Duration verifies
+// duration calculation for regular periods and overtimes.
+func TestEntityTransformer_TransformWithoutPlayers_Duration(t *testing.T) {
+	cases := []struct {
+		name             string
+		periodsTotal     int
+		expectedDuration int
+	}{
+		{
+			name:             "regular_game_four_periods",
+			periodsTotal:     4,
+			expectedDuration: 48,
+		},
+		{
+			name:             "five_periods_uses_regular_duration_for_first_five",
+			periodsTotal:     5,
+			expectedDuration: 60,
+		},
+		{
+			name:             "overtime_adds_five_minutes_after_fifth_period",
+			periodsTotal:     6,
+			expectedDuration: 65,
+		},
+	}
+
+	transformer := EntityTransformer{}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := transformer.TransformWithoutPlayers(GameEntity{
+				Periods: GamePeriodsEntity{
+					Total: tc.periodsTotal,
+				},
+				Teams: GameTeamsEntity{
+					Home: TeamEntity{
+						Name:     "Los Angeles Lakers",
+						Nickname: "Lakers",
+						Code:     "LAL",
+					},
+					Visitors: TeamEntity{
+						Name:     "Boston Celtics",
+						Nickname: "Celtics",
+						Code:     "BOS",
+					},
+				},
+			})
+
+			assert.Equal(t, tc.expectedDuration, result.GameModel.Duration)
 		})
 	}
 }
@@ -366,6 +424,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 			expectedResult: expectedResult{
 				homePlayerStats: []players.PlayerStatisticEntity{
 					{
+						PlayerExternalId: "101",
 						PlayerModel: players.PlayerModel{
 							FullName:  "LeBron James",
 							BirthDate: time.Date(1984, 12, 30, 0, 0, 0, 0, time.UTC),
@@ -376,6 +435,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 						},
 					},
 					{
+						PlayerExternalId: "103",
 						PlayerModel: players.PlayerModel{
 							FullName:  "Anthony Davis",
 							BirthDate: time.Date(1993, 3, 11, 0, 0, 0, 0, time.UTC),
@@ -388,6 +448,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 				},
 				awayPlayerStats: []players.PlayerStatisticEntity{
 					{
+						PlayerExternalId: "102",
 						PlayerModel: players.PlayerModel{
 							FullName:  "Jayson Tatum",
 							BirthDate: time.Date(1998, 3, 3, 0, 0, 0, 0, time.UTC),
@@ -486,6 +547,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 			expectedResult: expectedResult{
 				homePlayerStats: []players.PlayerStatisticEntity{
 					{
+						PlayerExternalId: "201",
 						PlayerModel: players.PlayerModel{
 							FullName:  "Good Player",
 							BirthDate: time.Date(1995, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -572,6 +634,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 			expectedResult: expectedResult{
 				homePlayerStats: []players.PlayerStatisticEntity{
 					{
+						PlayerExternalId: "301",
 						PlayerModel: players.PlayerModel{
 							FullName:  "Home Player1",
 							BirthDate: time.Date(1990, 5, 15, 0, 0, 0, 0, time.UTC),
@@ -584,6 +647,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 				},
 				awayPlayerStats: []players.PlayerStatisticEntity{
 					{
+						PlayerExternalId: "302",
 						PlayerModel: players.PlayerModel{
 							FullName:  "Away Player1",
 							BirthDate: time.Date(1992, 8, 20, 0, 0, 0, 0, time.UTC),
@@ -674,6 +738,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 			},
 			expectedResult: expectedResult{
 				playerStatisticEntity: players.PlayerStatisticEntity{
+					PlayerExternalId: "123",
 					PlayerModel: players.PlayerModel{
 						FullName:  "Stephen Curry",
 						BirthDate: time.Date(1988, 3, 14, 0, 0, 0, 0, time.UTC),
@@ -710,6 +775,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 			},
 			expectedResult: expectedResult{
 				playerStatisticEntity: players.PlayerStatisticEntity{
+					PlayerExternalId: "456",
 					PlayerModel: players.PlayerModel{
 						FullName:  "Russell Westbrook",
 						BirthDate: time.Date(1988, 11, 12, 0, 0, 0, 0, time.UTC),
@@ -746,6 +812,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 			},
 			expectedResult: expectedResult{
 				playerStatisticEntity: players.PlayerStatisticEntity{
+					PlayerExternalId: "789",
 					PlayerModel: players.PlayerModel{
 						FullName:  "Bench Player",
 						BirthDate: time.Date(1995, 6, 25, 0, 0, 0, 0, time.UTC),
@@ -753,6 +820,43 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
 						PlayedSeconds: 0,
 						PlsMin:        0,
+					},
+				},
+				expectError: nil,
+			},
+		},
+		{
+			name: "Handles minutes without seconds",
+			inputPlayer: PlayerStatisticEntity{
+				Player: PlayerStatisticsPlayerGeneralDataEntity{
+					Id:        333,
+					Firstname: "NoSeconds",
+					Lastname:  "Player",
+				},
+				Min:       "25",
+				PlusMinus: "4",
+			},
+			setupMockClient: func(mock *MockClientInterface) {
+				mock.EXPECT().PlayerInfo(333, "", 0, 0, "", "").Return(PlayersResponse{
+					Response: []PlayerEntity{
+						{
+							Birth: PlayerBirthEntity{
+								Date: "1994-01-10",
+							},
+						},
+					},
+				}, nil)
+			},
+			expectedResult: expectedResult{
+				playerStatisticEntity: players.PlayerStatisticEntity{
+					PlayerExternalId: "333",
+					PlayerModel: players.PlayerModel{
+						FullName:  "NoSeconds Player",
+						BirthDate: time.Date(1994, 1, 10, 0, 0, 0, 0, time.UTC),
+					},
+					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
+						PlayedSeconds: 25 * 60,
+						PlsMin:        4,
 					},
 				},
 				expectError: nil,
@@ -885,6 +989,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 			},
 			expectedResult: expectedResult{
 				playerStatisticEntity: players.PlayerStatisticEntity{
+					PlayerExternalId: "111",
 					PlayerModel: players.PlayerModel{
 						FullName:  "Short Time",
 						BirthDate: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -921,6 +1026,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 			},
 			expectedResult: expectedResult{
 				playerStatisticEntity: players.PlayerStatisticEntity{
+					PlayerExternalId: "222",
 					PlayerModel: players.PlayerModel{
 						FullName:  "High Impact",
 						BirthDate: time.Date(1985, 12, 25, 0, 0, 0, 0, time.UTC),
@@ -1116,6 +1222,36 @@ func TestEntityTransformer_enrichPlayerBio(t *testing.T) {
 					},
 				},
 				expectError: errors.New("player not found"),
+			},
+		},
+		{
+			name:     "Returns error when PlayerInfo response is empty",
+			playerId: 405,
+			initialPlayer: players.PlayerStatisticEntity{
+				PlayerModel: players.PlayerModel{
+					FullName: "Empty Response Player",
+				},
+				GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
+					PlayedSeconds: 1000,
+					PlsMin:        1,
+				},
+			},
+			setupMockClient: func(mock *MockClientInterface) {
+				mock.EXPECT().PlayerInfo(405, "", 0, 0, "", "").Return(PlayersResponse{
+					Response: []PlayerEntity{},
+				}, nil)
+			},
+			expectedResult: expectedResult{
+				playerEntity: players.PlayerStatisticEntity{
+					PlayerModel: players.PlayerModel{
+						FullName: "Empty Response Player",
+					},
+					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
+						PlayedSeconds: 1000,
+						PlsMin:        1,
+					},
+				},
+				expectError: errors.New("empty player info response"),
 			},
 		},
 		{

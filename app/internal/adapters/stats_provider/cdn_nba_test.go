@@ -29,7 +29,7 @@ func TestCdnNbaStatsProviderAdapter_GetGamesStatsByDate(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			result, err := adapter.GetGamesStatsByPeriod(tc.data)
+			result, err := adapter.GetGamesStatsByPeriod(tc.data, tc.data)
 
 			if tc.errorMsg != "" {
 				assert.EqualError(t, err, tc.errorMsg)
