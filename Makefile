@@ -9,7 +9,7 @@ include $(ENV_FILE)
 export
 endif
 
-.PHONY: setup db-up db-start db-stop db-down up start stop down run-scheduler run-debug test-with-coverage migrate create-migration
+.PHONY: setup db-up db-start db-stop db-down up start stop down run-scheduler run-debug test-with-coverage migrate create-migration lint lint-fix
 
 .DEFAULT_GOAL := db-up
 
@@ -45,6 +45,12 @@ test-with-coverage: ## run tests with coverage locally
 	@cat coverage.out.tmp | grep -v "mock_" > coverage.out
 	@go tool cover -func coverage.out
 	@rm coverage.out.tmp
+
+lint: ## run golangci-lint (includes testifylint)
+	@golangci-lint run
+
+lint-fix: ## run golangci-lint with auto-fix where available
+	@golangci-lint run --fix
 
 migrate: ## run goose up locally
 	@GOOSE_DRIVER=$(GOOSE_DRIVER) GOOSE_DBSTRING=$(GOOSE_DBSTRING) GOOSE_MIGRATION_DIR=$(GOOSE_MIGRATION_DIR) $(GOOSE) up

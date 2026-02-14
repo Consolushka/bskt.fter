@@ -38,6 +38,7 @@
 - Go `1.23.x`
 - Docker + Docker Compose (только для PostgreSQL)
 - GNU Make
+- `golangci-lint` (для `make lint`)
 
 ## Переменные окружения
 
@@ -141,6 +142,8 @@ curl "http://localhost:8080/process/american?from=2026-02-10&to=2026-02-12"
 - `make run-scheduler` - запуск scheduler локально
 - `make run-debug` - запуск debug API локально
 - `make test-with-coverage` - тесты и coverage локально
+- `make lint` - запуск golangci-lint (включая testifylint)
+- `make lint-fix` - автоисправления линтера там, где это возможно
 
 ## Тесты
 
