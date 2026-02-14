@@ -48,6 +48,12 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 		gameEntity.GameModel.TournamentId = t.tournamentId
 		isExists, err := t.gamesRepo.GameExists(gameEntity.GameModel)
 		if err != nil {
+			logger.Error("Failed to check whether game exists", map[string]interface{}{
+				"tournamentId": gameEntity.GameModel.TournamentId,
+				"title":        gameEntity.GameModel.Title,
+				"scheduledAt":  gameEntity.GameModel.ScheduledAt,
+				"error":        err,
+			})
 			return err
 		}
 		if isExists {
@@ -83,6 +89,13 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 		for _, playerStat := range allPlayers {
 			playersByFullName, err := t.playersRepo.PlayersByFullName(playerStat.PlayerModel.FullName)
 			if err != nil {
+				logger.Error("Failed to search players by full name", map[string]interface{}{
+					"tournamentId":   gameEntity.GameModel.TournamentId,
+					"title":          gameEntity.GameModel.Title,
+					"scheduledAt":    gameEntity.GameModel.ScheduledAt,
+					"playerFullName": playerStat.PlayerModel.FullName,
+					"error":          err,
+				})
 				return err
 			}
 
