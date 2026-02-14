@@ -69,12 +69,7 @@ func executePollingCycle(db *gorm.DB) {
 				return
 			}
 
-			from := watermarkModel.LastSuccessfulPollAt
-			if from.Before(startOfDay) || from.After(now) {
-				from = startOfDay
-			}
-
-			if err := task.Execute(from); err != nil {
+			if err := task.Execute(startOfDay); err != nil {
 				logger.Error("Error while processing tournament games", map[string]interface{}{
 					"taskType": taskType,
 					"error":    err,
@@ -82,7 +77,7 @@ func executePollingCycle(db *gorm.DB) {
 				return
 			}
 
-			watermarkModel.LastSuccessfulPollAt = startOfDay
+			watermarkModel.LastSuccessfulPollAt = now
 			_, err = watermarkRepo.Update(watermarkModel)
 			if err != nil {
 				logger.Warn("Couldn't update task watermark", map[string]interface{}{
@@ -94,7 +89,7 @@ func executePollingCycle(db *gorm.DB) {
 
 			logger.Info("Task executed successfully", map[string]interface{}{
 				"taskType": taskType,
-				"from":     from,
+				"from":     startOfDay,
 				"to":       now,
 			})
 		}(taskType)
