@@ -19,6 +19,8 @@ type TelegramLogger struct {
 	level     logrus.Level
 }
 
+var newTelegramBotAPI = tgbotapi.NewBotAPI
+
 func (t TelegramLogger) IsEnabled() bool {
 	isEnabled := os.Getenv("LOGGER_TELEGRAM_ENABLED")
 
@@ -41,7 +43,7 @@ func NewTelegramLogger() TelegramLogger {
 		loggerLevel = logrus.InfoLevel
 	}
 
-	botApi, err := tgbotapi.NewBotAPI(os.Getenv("LOGGER_TELEGRAM_TOKEN"))
+	botApi, err := newTelegramBotAPI(os.Getenv("LOGGER_TELEGRAM_TOKEN"))
 	if err != nil {
 		panic("Error creating telegram bot api. Error: " + err.Error())
 	}
