@@ -1,145 +1,176 @@
 package service
 
 import (
+	"IMP/app/internal/adapters/games_repo"
+	"IMP/app/internal/adapters/players_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
-	"IMP/app/internal/core/leagues"
 	"IMP/app/internal/core/tournaments"
-	"IMP/app/internal/ports"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestNewTournamentsOrchestrator tests the NewTournamentsOrchestrator function
-// Verify that when persistenceService and repository are provided while creating orchestrator - returns TournamentsOrchestrator instance with both services set
 func TestNewTournamentsOrchestrator(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cases := []struct {
-		name               string
-		persistenceService PersistenceServiceInterface
-		tournamentsRepo    ports.TournamentsRepo
-		expectedResult     *TournamentsOrchestrator
-		errorMsg           string
-	}{
-		{
-			name:               "successfully creates TournamentsOrchestrator with persistenceService and repository",
-			persistenceService: NewMockPersistenceServiceInterface(ctrl),
-			tournamentsRepo:    tournaments_repo.NewMockTournamentsRepo(ctrl),
-			expectedResult: &TournamentsOrchestrator{
-				persistenceService: NewMockPersistenceServiceInterface(ctrl),
-				tournamentsRepo:    tournaments_repo.NewMockTournamentsRepo(ctrl),
-			},
-			errorMsg: "",
-		},
-	}
+	persistence := NewMockPersistenceServiceInterface(ctrl)
+	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
+	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
+	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := NewTournamentsOrchestrator(tc.persistenceService, tc.tournamentsRepo)
+	result := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo)
 
-			assert.NotNil(t, result)
-			assert.NotNil(t, result.persistenceService)
-			assert.NotNil(t, result.tournamentsRepo)
-		})
-	}
+	assert.NotNil(t, result)
+	assert.Equal(t, persistence, result.persistenceService)
+	assert.Equal(t, tournamentsRepo, result.tournamentsRepo)
+	assert.Equal(t, playersRepo, result.playersRepo)
+	assert.Equal(t, gamesRepo, result.gamesRepo)
 }
 
-// TestTournamentsOrchestrator_ProcessAllTournamentsToday tests the ProcessAllTournamentsToday method
-// Verify that when repository returns tournaments successfully while processing tournaments - returns no error
-// Verify that when repository returns error while fetching tournaments - returns the same error
+func TestTournamentsOrchestrator_ProcessAmericanTournaments(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	persistence := NewMockPersistenceServiceInterface(ctrl)
+	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
+	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
+	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
+
+	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo)
+	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
+
+	t.Run("returns repo error", func(t *testing.T) {
+		tournamentsRepo.EXPECT().
+			ListTournamentsByLeagueAliases([]string{"NBA"}).
+			Return(nil, errors.New("repo error"))
+
+		err := orchestrator.ProcessAmericanTournaments(from, to)
+		assert.EqualError(t, err, "repo error")
+	})
+
+	t.Run("success with empty tournaments", func(t *testing.T) {
+		tournamentsRepo.EXPECT().
+			ListTournamentsByLeagueAliases([]string{"NBA"}).
+			Return([]tournaments.TournamentModel{}, nil)
+
+		err := orchestrator.ProcessAmericanTournaments(from, to)
+		assert.NoError(t, err)
+	})
+}
+
+func TestTournamentsOrchestrator_ProcessUrgentEuropeanTournaments(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	persistence := NewMockPersistenceServiceInterface(ctrl)
+	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
+	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
+	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
+
+	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo)
+	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
+
+	t.Run("returns repo error", func(t *testing.T) {
+		tournamentsRepo.EXPECT().
+			ListTournamentsByLeagueAliases([]string{"MLBL", "FONBETSL"}).
+			Return(nil, errors.New("repo error"))
+
+		err := orchestrator.ProcessUrgentEuropeanTournaments(from, to)
+		assert.EqualError(t, err, "repo error")
+	})
+
+	t.Run("success with empty tournaments", func(t *testing.T) {
+		tournamentsRepo.EXPECT().
+			ListTournamentsByLeagueAliases([]string{"MLBL", "FONBETSL"}).
+			Return([]tournaments.TournamentModel{}, nil)
+
+		err := orchestrator.ProcessUrgentEuropeanTournaments(from, to)
+		assert.NoError(t, err)
+	})
+}
+
+func TestTournamentsOrchestrator_ProcessNotUrgentEuropeanTournaments(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	persistence := NewMockPersistenceServiceInterface(ctrl)
+	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
+	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
+	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
+
+	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo)
+	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
+
+	t.Run("returns repo error", func(t *testing.T) {
+		tournamentsRepo.EXPECT().
+			ListTournamentsByLeagueAliases([]string{"UBA", "VTB"}).
+			Return(nil, errors.New("repo error"))
+
+		err := orchestrator.ProcessNotUrgentEuropeanTournaments(from, to)
+		assert.EqualError(t, err, "repo error")
+	})
+
+	t.Run("success with empty tournaments", func(t *testing.T) {
+		tournamentsRepo.EXPECT().
+			ListTournamentsByLeagueAliases([]string{"UBA", "VTB"}).
+			Return([]tournaments.TournamentModel{}, nil)
+
+		err := orchestrator.ProcessNotUrgentEuropeanTournaments(from, to)
+		assert.NoError(t, err)
+	})
+}
+
 func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cases := []struct {
-		name          string
-		data          struct{}
-		expectedError error
-		setupMocks    func(*MockPersistenceServiceInterface, *tournaments_repo.MockTournamentsRepo)
-	}{
-		{
-			name:          "successfully processes tournaments with NBA and MLBL leagues",
-			data:          struct{}{},
-			expectedError: nil,
-			setupMocks: func(mockPersistence *MockPersistenceServiceInterface, mockRepo *tournaments_repo.MockTournamentsRepo) {
-				mockRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{
-					{
-						League: leagues.LeagueModel{
-							Alias: "NBA",
-						},
-					},
-					{
-						League: leagues.LeagueModel{
-							Alias: "MLBL",
-						},
-					},
-				}, nil)
-				// Ожидаем вызовы SaveGame для каждой игры
-				mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil).Times(0)
+	persistence := NewMockPersistenceServiceInterface(ctrl)
+	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
+	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
+	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
+
+	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo)
+	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
+
+	t.Run("returns repo error", func(t *testing.T) {
+		tournamentsRepo.EXPECT().ListActiveTournaments().Return(nil, errors.New("repository error"))
+		err := orchestrator.ProcessAllTournamentsToday(from, to)
+		assert.EqualError(t, err, "repository error")
+	})
+
+	t.Run("success with empty tournaments", func(t *testing.T) {
+		tournamentsRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{}, nil)
+		err := orchestrator.ProcessAllTournamentsToday(from, to)
+		assert.NoError(t, err)
+	})
+
+	t.Run("processes non-empty tournaments and enters goroutine loop branches", func(t *testing.T) {
+		tournamentsRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{
+			{
+				Id: 1,
+				Provider: tournaments.TournamentProvider{
+					ProviderName: "API_NBA",
+					Params:       []byte("{invalid-json}"),
+				},
 			},
-		},
-		{
-			name:          "returns error when repository fails - differs from successful case",
-			data:          struct{}{},
-			expectedError: errors.New("repository error"),
-			setupMocks: func(mockPersistence *MockPersistenceServiceInterface, mockRepo *tournaments_repo.MockTournamentsRepo) {
-				mockRepo.EXPECT().ListActiveTournaments().Return(nil, errors.New("repository error"))
+			{
+				Id: 2,
+				Provider: tournaments.TournamentProvider{
+					ProviderName: "UNKNOWN_PROVIDER",
+					Params:       nil,
+				},
 			},
-		},
-		{
-			name:          "successfully processes tournaments with even with unexpected league",
-			data:          struct{}{},
-			expectedError: nil,
-			setupMocks: func(mockPersistence *MockPersistenceServiceInterface, mockRepo *tournaments_repo.MockTournamentsRepo) {
-				mockRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{
-					{
-						League: leagues.LeagueModel{
-							Alias: "NBA",
-						},
-					},
-					{
-						League: leagues.LeagueModel{
-							Alias: "UNEXPECTED",
-						},
-					},
-				}, nil)
-				// Ожидаем вызовы SaveGame для игр из NBA (для UNEXPECTED провайдер не создастся)
-				mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil).AnyTimes()
-			},
-		},
-		{
-			name:          "successfully processes empty tournaments list",
-			data:          struct{}{},
-			expectedError: nil,
-			setupMocks: func(mockPersistence *MockPersistenceServiceInterface, mockRepo *tournaments_repo.MockTournamentsRepo) {
-				mockRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{}, nil)
-			},
-		},
-	}
+		}, nil)
 
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			mockPersistence := NewMockPersistenceServiceInterface(ctrl)
-			mockRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
-			tc.setupMocks(mockPersistence, mockRepo)
-
-			orchestrator := TournamentsOrchestrator{
-				persistenceService: mockPersistence,
-				tournamentsRepo:    mockRepo,
-			}
-
-			result := orchestrator.ProcessAllTournamentsToday()
-
-			if tc.expectedError != nil {
-				assert.Equal(t, result, tc.expectedError)
-				return
-			}
-
-			assert.NoError(t, result)
-		})
-	}
+		err := orchestrator.ProcessAllTournamentsToday(from, to)
+		assert.NoError(t, err)
+	})
 }
