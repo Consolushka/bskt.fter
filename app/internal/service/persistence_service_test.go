@@ -12,6 +12,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestNewPersistenceService verifies the behavior of the NewPersistenceService constructor
@@ -474,7 +475,7 @@ func TestPersistenceService_saveTeamModel(t *testing.T) {
 				return
 			}
 
-			assert.NoError(t, result)
+			require.NoError(t, result)
 			assert.Equal(t, uint(tc.expectedModelId), tc.data.GameTeamStatModel.TeamId)
 			assert.Equal(t, tc.expectedError, result)
 		})
@@ -541,7 +542,7 @@ func TestPersistenceService_saveTeamStatModel(t *testing.T) {
 				return
 			}
 
-			assert.NoError(t, result)
+			require.NoError(t, result)
 			// Verify that GameTeamId was assigned to all player stats
 			for _, playerStat := range tc.data.PlayerStats {
 				assert.Equal(t, uint(2), playerStat.GameTeamPlayerStatModel.GameId)
@@ -604,7 +605,7 @@ func TestPersistenceService_savePlayerModel(t *testing.T) {
 				return
 			}
 
-			assert.NoError(t, result)
+			require.NoError(t, result)
 			assert.Equal(t, uint(1), tc.data.GameTeamPlayerStatModel.PlayerId)
 		})
 	}

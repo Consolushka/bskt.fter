@@ -87,8 +87,6 @@ func (t TelegramLogger) send(message string, context map[string]interface{}, lev
 	if err != nil {
 		panic(err)
 	}
-
-	return
 }
 
 func stringToTelegramMarkdown(message string, context map[string]interface{}, level logrus.Level) string {

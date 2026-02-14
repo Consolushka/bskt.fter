@@ -23,7 +23,7 @@ func TestNormalizeLogContext_ConvertsErrorToString(t *testing.T) {
 	normalized := normalizeLogContext(context)
 	raw, err := json.Marshal(normalized)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Contains(t, string(raw), `"error":"provider timeout"`)
 	assert.Contains(t, string(raw), `"err":"nested failure"`)
 }

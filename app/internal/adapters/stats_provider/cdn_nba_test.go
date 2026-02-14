@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestCdnNbaStatsProviderAdapter_GetGamesStatsByDate tests the GetGamesStatsByPeriod method
@@ -32,9 +33,9 @@ func TestCdnNbaStatsProviderAdapter_GetGamesStatsByDate(t *testing.T) {
 			result, err := adapter.GetGamesStatsByPeriod(tc.data, tc.data)
 
 			if tc.errorMsg != "" {
-				assert.EqualError(t, err, tc.errorMsg)
+				require.EqualError(t, err, tc.errorMsg)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 
 			assert.Equal(t, tc.expected, result)

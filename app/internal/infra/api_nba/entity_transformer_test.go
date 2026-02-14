@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -269,7 +270,7 @@ func TestEntityTransformer_Transform(t *testing.T) {
 				return
 			}
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.expectedGameStatEntity, result)
 		})
 	}
@@ -684,7 +685,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 				return
 			}
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.expectedResult.homePlayerStats, gameBusinessEntity.HomeTeamStat.PlayerStats)
 			assert.Equal(t, tc.expectedResult.awayPlayerStats, gameBusinessEntity.AwayTeamStat.PlayerStats)
 		})
@@ -1057,7 +1058,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				return
 			}
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.expectedResult.playerStatisticEntity, actualPlayerEntity)
 		})
 	}
@@ -1421,7 +1422,7 @@ func TestEntityTransformer_enrichPlayerBio(t *testing.T) {
 				return
 			}
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tc.expectedResult.playerEntity, actualPlayerEntity)
 		})
 	}
