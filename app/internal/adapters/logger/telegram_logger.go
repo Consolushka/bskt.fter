@@ -78,6 +78,7 @@ func (t TelegramLogger) send(message string, context map[string]interface{}, lev
 	text := stringToTelegramMarkdown(message, context, level)
 
 	tgMessage := tgbotapi.NewMessage(t.logChatId, text)
+	tgMessage.ParseMode = "MarkdownV2"
 
 	_, err := t.botApi.Send(tgMessage)
 	if err != nil {
