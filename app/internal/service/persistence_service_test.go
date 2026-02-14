@@ -80,9 +80,34 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 	cases := []struct {
 		name        string
 		inputGame   games.GameStatEntity
+		setupExists func(*games_repo.MockGamesRepo)
 		setupMock   func(*games_repo.MockGamesRepo, *teams_repo.MockTeamsRepo, *players_repo.MockPlayersRepo)
 		expectError error
 	}{
+		{
+			name: "Returns error when checking existing game fails",
+			inputGame: games.GameStatEntity{
+				GameModel: games.GameModel{Id: 100},
+			},
+			setupExists: func(mockGamesRepo *games_repo.MockGamesRepo) {
+				mockGamesRepo.EXPECT().GameExists(gomock.Any()).Return(false, errors.New("game exists check error"))
+			},
+			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
+			},
+			expectError: errors.New("game exists check error"),
+		},
+		{
+			name: "Skips processing when game already exists",
+			inputGame: games.GameStatEntity{
+				GameModel: games.GameModel{Id: 101},
+			},
+			setupExists: func(mockGamesRepo *games_repo.MockGamesRepo) {
+				mockGamesRepo.EXPECT().GameExists(gomock.Any()).Return(true, nil)
+			},
+			setupMock: func(mockGamesRepo *games_repo.MockGamesRepo, mockTeamsRepo *teams_repo.MockTeamsRepo, mockPlayersRepo *players_repo.MockPlayersRepo) {
+			},
+			expectError: nil,
+		},
 		{
 			name: "Successfully saves game with all entities",
 			inputGame: games.GameStatEntity{
@@ -371,7 +396,12 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 			mockGamesRepo := games_repo.NewMockGamesRepo(ctrl)
 			mockTeamsRepo := teams_repo.NewMockTeamsRepo(ctrl)
 			mockPlayersRepo := players_repo.NewMockPlayersRepo(ctrl)
-			mockGamesRepo.EXPECT().GameExists(gomock.Any()).Return(false, nil).AnyTimes()
+
+			if tc.setupExists != nil {
+				tc.setupExists(mockGamesRepo)
+			} else {
+				mockGamesRepo.EXPECT().GameExists(gomock.Any()).Return(false, nil)
+			}
 
 			tc.setupMock(mockGamesRepo, mockTeamsRepo, mockPlayersRepo)
 
