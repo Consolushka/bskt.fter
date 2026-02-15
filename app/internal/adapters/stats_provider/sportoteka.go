@@ -29,9 +29,12 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 		return make([]games.GameStatEntity, 0), err
 	}
 
-	gamesEntities := make([]games.GameStatEntity, calendar.TotalCount)
+	gamesEntities := make([]games.GameStatEntity, 0, calendar.TotalCount)
 
-	for i, calendarGame := range calendar.Items {
+	for _, calendarGame := range calendar.Items {
+		if calendarGame.Game.GameStatus != "Result" {
+			continue
+		}
 		gameBoxScore, err := s.client.BoxScore(strconv.Itoa(calendarGame.Game.Id))
 		if err != nil {
 			return []games.GameStatEntity{}, fmt.Errorf("BoxScore with %v from %s returned error: %w", strconv.Itoa(calendarGame.Game.Id), reflect.TypeOf(s.client), err)
@@ -50,7 +53,7 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 		entity.HomeTeamStat.TeamModel.Name = calendarGame.Team1.Name
 		entity.AwayTeamStat.TeamModel.Name = calendarGame.Team2.Name
 
-		gamesEntities[i] = entity
+		gamesEntities = append(gamesEntities, entity)
 	}
 
 	return gamesEntities, nil
