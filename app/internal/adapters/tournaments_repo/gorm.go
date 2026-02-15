@@ -2,7 +2,6 @@ package tournaments_repo
 
 import (
 	"IMP/app/internal/core/tournaments"
-	"strings"
 
 	"gorm.io/gorm"
 )
@@ -13,14 +12,16 @@ type GormRepo struct {
 
 func (u GormRepo) ListTournamentsByLeagueAliases(aliases []string) ([]tournaments.TournamentModel, error) {
 	var models []tournaments.TournamentModel
-	conditionLeaguesAliases := "("
-
-	for _, alias := range aliases {
-		conditionLeaguesAliases += "'" + alias + "',"
+	if len(aliases) == 0 {
+		return models, nil
 	}
-	conditionLeaguesAliases = strings.TrimRight(conditionLeaguesAliases, ",") + ")"
 
-	err := u.db.Model(&tournaments.TournamentModel{}).Preload("League").Preload("Provider").InnerJoins("left join leagues on tournaments.league_id = leagues.id").Find(&models, "leagues.alias in "+conditionLeaguesAliases).Error
+	err := u.db.Model(&tournaments.TournamentModel{}).
+		Joins("JOIN leagues ON tournaments.league_id = leagues.id").
+		Preload("League").
+		Preload("Provider").
+		Where("leagues.alias IN ?", aliases).
+		Find(&models).Error
 
 	return models, err
 }
