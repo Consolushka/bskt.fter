@@ -1420,7 +1420,7 @@ func TestEntityTransformer_enrichPlayerBio(t *testing.T) {
 
 			if tc.expectedResult.expectError != nil {
 				require.Error(t, err)
-				assert.ErrorContains(t, err, tc.expectedResult.expectError.Error())
+				require.ErrorContains(t, err, tc.expectedResult.expectError.Error())
 				// Verify that the original data is preserved when there's an error
 				assert.Equal(t, tc.expectedResult.playerEntity, actualPlayerEntity)
 				return
