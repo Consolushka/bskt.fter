@@ -4,6 +4,7 @@ import (
 	"IMP/app/internal/ports"
 	"IMP/app/pkg/logger"
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 )
@@ -43,20 +44,24 @@ func isNeedToBeDownload(filePath string, exp time.Duration) bool {
 
 func saveToLocalCacheStorage(resource ports.CachedRemoteResource) error {
 	if err := os.MkdirAll(localCacheStorageDir, 0755); err != nil {
-		return err
+		return fmt.Errorf("mkdir %s returned error: %w", localCacheStorageDir, err)
 	}
 
 	data, err := resource.Load()
 	if err != nil {
-		return err
+		return fmt.Errorf("load resource %v returned error: %w", resource, err)
 	}
 
 	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return fmt.Errorf("marshal data %v returned error: %w", data, err)
 	}
 
-	return os.WriteFile(localCacheStorageDir+resource.LocalFileName(), jsonData, 0644)
+	err = os.WriteFile(localCacheStorageDir+resource.LocalFileName(), jsonData, 0644)
+	if err != nil {
+		return fmt.Errorf("write file to %s with data %v returned error: %w", localCacheStorageDir+resource.LocalFileName(), jsonData, err)
+	}
+	return nil
 }
 
 func getFromLocalStorage[T any](filePath string) (T, error) {
@@ -64,9 +69,12 @@ func getFromLocalStorage[T any](filePath string) (T, error) {
 
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		return result, err
+		return result, fmt.Errorf("read file %s: %w", filePath, err)
 	}
-	err = json.Unmarshal(data, &result)
 
-	return result, err
+	if err = json.Unmarshal(data, &result); err != nil {
+		return result, fmt.Errorf("unmarshal cache file %s: %w", filePath, err)
+	}
+
+	return result, nil
 }

@@ -5,6 +5,8 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/api_nba"
 	"errors"
+	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -20,11 +22,11 @@ func (a ApiNbaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEn
 
 	intId, err := strconv.Atoi(id)
 	if err != nil {
-		return players.PlayerBioEntity{}, err
+		return players.PlayerBioEntity{}, fmt.Errorf("atoi with %s returned error: %w", id, err)
 	}
 	playerBio, err := a.client.PlayerInfo(intId, "", 0, 0, "", "")
 	if err != nil {
-		return players.PlayerBioEntity{}, err
+		return players.PlayerBioEntity{}, fmt.Errorf("playerInfo with %v, %v, %v, %v, %v, %v from %s returned error: %w", intId, "", 0, 0, "", "", reflect.TypeOf(a.client), err)
 	}
 
 	entity.BirthDate, err = time.Parse("2006-01-02", playerBio.Response[0].Birth.Date)
@@ -42,19 +44,19 @@ func (a ApiNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([
 	if from.Truncate(24*time.Hour) != to.Truncate(24*time.Hour) {
 		fromResponse, err := a.client.Games(0, from.Format("2006-01-02"), "1", "", "", "")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, from.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
 		}
 		passedGames = fromResponse.Response
 
 		toResponse, err := a.client.Games(0, to.Format("2006-01-02"), "1", "", "", "")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, to.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
 		}
 		passedGames = append(passedGames, toResponse.Response...)
 	} else {
 		response, err := a.client.Games(0, to.Format("2006-01-02"), "1", "", "", "")
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, to.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
 		}
 
 		passedGames = response.Response
@@ -84,12 +86,12 @@ func (a ApiNbaStatsProviderAdapter) EnrichGameStats(game games.GameStatEntity) (
 
 	gameId, err := strconv.Atoi(game.ExternalGameId)
 	if err != nil {
-		return games.GameStatEntity{}, err
+		return games.GameStatEntity{}, fmt.Errorf("atoi with %v returned error: %w", game.ExternalGameId, err)
 	}
 
 	err = a.entityTransformer.EnrichGamePlayers(gameId, game.HomeTeamExternalId, game.AwayTeamExternalId, &game)
 	if err != nil {
-		return games.GameStatEntity{}, err
+		return games.GameStatEntity{}, fmt.Errorf("BoxScore with %v, %v, %v, %v returned error: %w", gameId, game.HomeTeamExternalId, game.AwayTeamExternalId, &game, err)
 	}
 
 	return game, nil

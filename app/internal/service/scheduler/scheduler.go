@@ -69,7 +69,7 @@ func executePollingCycle(db *gorm.DB) {
 				return
 			}
 
-			if err := task.Execute(startOfDay); err != nil {
+			if err = task.Execute(startOfDay); err != nil {
 				logger.Error("Error while processing tournament games", map[string]interface{}{
 					"taskType": taskType,
 					"error":    err,

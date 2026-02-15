@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"IMP/app/pkg/logger"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -80,7 +81,7 @@ func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore 
 func (e *EntityTransformer) playerTransform(player TeamBoxScoreStartEntity) (players.PlayerStatisticEntity, error) {
 	parsedBirth, err := time.Parse(time.RFC3339, player.Birthday+"+03:00")
 	if err != nil {
-		return players.PlayerStatisticEntity{}, err
+		return players.PlayerStatisticEntity{}, fmt.Errorf("time.Parse with %s, %s returned error: %w", time.RFC3339, player.Birthday+"+03:00", err)
 	}
 
 	return players.PlayerStatisticEntity{

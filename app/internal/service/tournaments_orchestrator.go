@@ -6,6 +6,8 @@ import (
 	"IMP/app/internal/service/providers"
 	"IMP/app/pkg/logger"
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"sort"
 	"sync"
 	"time"
@@ -37,7 +39,7 @@ func (t TournamentsOrchestrator) ProcessUrgentEuropeanTournaments(from, to time.
 
 	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
 	if err != nil {
-		return err
+		return fmt.Errorf("ListTournamentsByLeagueAliases with %v from %s returned error: %w", leaguesAliases, reflect.TypeOf(t.tournamentsRepo), err)
 	}
 
 	t.processTournamentsByPeriod(processingTournaments, from, to)
@@ -54,7 +56,7 @@ func (t TournamentsOrchestrator) ProcessAmericanTournaments(from, to time.Time) 
 
 	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
 	if err != nil {
-		return err
+		return fmt.Errorf("ListTournamentsByLeagueAliases with %v from %s returned error: %w", leaguesAliases, reflect.TypeOf(t.tournamentsRepo), err)
 	}
 
 	t.processTournamentsByPeriod(processingTournaments, from, to)
@@ -72,7 +74,7 @@ func (t TournamentsOrchestrator) ProcessNotUrgentEuropeanTournaments(from, to ti
 
 	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
 	if err != nil {
-		return err
+		return fmt.Errorf("ListTournamentsByLeagueAliases with %v from %s returned error: %w", leaguesAliases, reflect.TypeOf(t.tournamentsRepo), err)
 	}
 
 	t.processTournamentsByPeriod(processingTournaments, from, to)
@@ -86,7 +88,7 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday(from, to time.Time) 
 	activeTournaments, err := t.tournamentsRepo.ListActiveTournaments()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("ListActiveTournaments from %s returned error: %w", reflect.TypeOf(t.tournamentsRepo), err)
 	}
 
 	t.processTournamentsByPeriod(activeTournaments, from, to)

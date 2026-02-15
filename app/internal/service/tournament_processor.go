@@ -5,6 +5,8 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/ports"
 	"IMP/app/pkg/logger"
+	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -34,7 +36,7 @@ func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface 
 func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 	gameEntities, err := t.statsProvider.GetGamesStatsByPeriod(from, to)
 	if err != nil {
-		return err
+		return fmt.Errorf("GetGamesStatsByPeriod with %v, %v from %s returned error: %w", from, to, reflect.TypeOf(t.statsProvider), err)
 	}
 	savedGames := make([]string, 0, len(gameEntities))
 
@@ -54,7 +56,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 				"scheduledAt":  gameEntity.GameModel.ScheduledAt,
 				"error":        err,
 			})
-			return err
+			return fmt.Errorf("GameExists with %v from %s returned error: %w", gameEntity.GameModel, reflect.TypeOf(t.gamesRepo), err)
 		}
 		if isExists {
 			logger.Info("Game already exists. Skip game processing", map[string]interface{}{
@@ -96,7 +98,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 					"playerFullName": playerStat.PlayerModel.FullName,
 					"error":          err,
 				})
-				return err
+				return fmt.Errorf("PlayersByFullName with %s from %s returned error: %w", playerStat.PlayerModel.FullName, reflect.TypeOf(t.playersRepo), err)
 			}
 
 			if len(playersByFullName) != 1 {

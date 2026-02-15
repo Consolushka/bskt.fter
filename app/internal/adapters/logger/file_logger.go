@@ -33,7 +33,7 @@ func NewFileLogger() FileLogger {
 	logrusInstance.SetLevel(loggerLevel)
 
 	logDir := filepath.Dir(filePath)
-	if err := os.MkdirAll(logDir, 0755); err != nil {
+	if err = os.MkdirAll(logDir, 0755); err != nil {
 		logrusInstance.Fatalf("Failed to create logrusInstance directory: %v", err)
 	}
 

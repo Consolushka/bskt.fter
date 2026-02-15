@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"IMP/app/pkg/logger"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -14,7 +15,7 @@ type EntityTransformer struct{}
 func (e *EntityTransformer) Transform(game GameBoxScoreResponse) (games.GameStatEntity, error) {
 	parse, err := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTimeMsk)
 	if err != nil {
-		return games.GameStatEntity{}, err
+		return games.GameStatEntity{}, fmt.Errorf("time.Parse with %s, %v,  returned error: %w", "02.01.2006 15.04", game.GameDate+" "+game.GameTimeMsk, err)
 	}
 
 	duration := 0
@@ -69,7 +70,7 @@ func (e *EntityTransformer) transformTeam(team TeamBoxScoreDto, opponentScore in
 func playersTrans(playerStat PlayerBoxScoreDto) (players.PlayerStatisticEntity, error) {
 	parsedBirth, err := time.Parse("02.01.2006", playerStat.PersonBirth)
 	if err != nil {
-		return players.PlayerStatisticEntity{}, err
+		return players.PlayerStatisticEntity{}, fmt.Errorf("time.Parse with %s, %v,  returned error: %w", "02.01.2006", playerStat.PersonBirth, err)
 	}
 
 	playerName := playerStat.PersonNameEn

@@ -15,6 +15,15 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// todo: i want to fix 'Declaration of 'err' shadows declaration at tournament_processor.go' in linter
+// todo: Вынести scheduler policy в конфиг
+// todo: Ввести единый provider rate limiter слой
+// todo: test before deploy
+// todo: db integration tests
+// todo: мб логгер в defer?
+// todo: Разделить pipeline на discovery и ingestion явно
+// todo: Добавить provider health/state в БД
+// todo: Сделать observability минимально production-ready
 func main() {
 	time.Local = time.UTC
 
@@ -54,7 +63,7 @@ func main() {
 			return
 		}
 
-		if err := orchestrator.ProcessAmericanTournaments(from, to); err != nil {
+		if err = orchestrator.ProcessAmericanTournaments(from, to); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -74,7 +83,7 @@ func main() {
 			return
 		}
 
-		if err := orchestrator.ProcessUrgentEuropeanTournaments(from, to); err != nil {
+		if err = orchestrator.ProcessUrgentEuropeanTournaments(from, to); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -93,7 +102,7 @@ func main() {
 			return
 		}
 
-		if err := orchestrator.ProcessNotUrgentEuropeanTournaments(from, to); err != nil {
+		if err = orchestrator.ProcessNotUrgentEuropeanTournaments(from, to); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

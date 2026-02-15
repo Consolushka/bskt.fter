@@ -6,6 +6,8 @@ import (
 	"IMP/app/internal/core/teams"
 	"IMP/app/pkg/logger"
 	"errors"
+	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -76,7 +78,7 @@ func (e *EntityTransformer) EnrichGamePlayers(gameId int, homeTeamId int, awayTe
 
 	gameStat, err := e.client.PlayersStatistics(0, gameId, 0, "")
 	if err != nil {
-		return err
+		return fmt.Errorf("e.client.PlayersStatistics with %v, %v, %v, %v from %s returned error: %w", 0, gameId, 0, "", reflect.TypeOf(e.client), err)
 	}
 
 	for _, playerStat := range gameStat.Response {
@@ -154,7 +156,7 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 func (e *EntityTransformer) enrichPlayerBio(playerId int, playerBusinessEntity *players.PlayerStatisticEntity) error {
 	playerResponse, err := e.client.PlayerInfo(playerId, "", 0, 0, "", "")
 	if err != nil {
-		return err
+		return fmt.Errorf("e.client.PlayerInfo with %v, %v, %v, %v, %v, %v from %s returned error: %w", playerId, "", 0, 0, "", "", reflect.TypeOf(e.client), err)
 	}
 
 	if len(playerResponse.Response) == 0 {
@@ -163,7 +165,7 @@ func (e *EntityTransformer) enrichPlayerBio(playerId int, playerBusinessEntity *
 
 	birthDate, err := time.Parse("2006-01-02", playerResponse.Response[0].Birth.Date)
 	if err != nil {
-		return err
+		return fmt.Errorf("time.Parse with %s, %v returned error: %w", "2006-01-02", playerResponse.Response[0].Birth.Date, err)
 	}
 
 	playerBusinessEntity.PlayerModel.BirthDate = birthDate

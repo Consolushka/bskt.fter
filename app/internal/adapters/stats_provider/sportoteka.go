@@ -4,6 +4,8 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/sportoteka"
+	"fmt"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -32,7 +34,7 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 	for i, calendarGame := range calendar.Items {
 		gameBoxScore, err := s.client.BoxScore(strconv.Itoa(calendarGame.Game.Id))
 		if err != nil {
-			return []games.GameStatEntity{}, err
+			return []games.GameStatEntity{}, fmt.Errorf("BoxScore with %v from %s returned error: %w", strconv.Itoa(calendarGame.Game.Id), reflect.TypeOf(s.client), err)
 		}
 
 		if gameBoxScore.Result.Game.GameStatus != "ResultConfirmed" && gameBoxScore.Result.Game.GameStatus != "Result" {
