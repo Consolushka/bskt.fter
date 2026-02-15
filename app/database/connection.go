@@ -25,7 +25,13 @@ func OpenDbConnection() *gorm.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", host, user, password, dbName, port)
 	connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("failed to connect database: " + dsn)
+		logger.Error("failed to connect database", map[string]interface{}{
+			"host":   host,
+			"dbName": dbName,
+			"port":   port,
+			"error":  err,
+		})
+		panic("failed to connect database")
 	}
 
 	db = connection // Store the connection in the package-level variable
