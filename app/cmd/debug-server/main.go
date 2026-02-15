@@ -15,12 +15,20 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// todo: Вынести scheduler policy в конфиг
+// 2.1
+// todo: remove tasks. run scheduler for every tournament
+// 2.2
 // todo: Ввести единый provider rate limiter слой
+// 2.3
+// todo: gap between every poll. for example betwen every single tournament delay is 30, but betwen different is like 5 minutes.
+// 2.4
 // todo: test before deploy
+// 2.5
 // todo: db integration tests
+// 2.6
 // todo: мб логгер в defer?
 // todo: Разделить pipeline на discovery и ingestion явно
+// 3.0
 // todo: Добавить provider health/state в БД
 // todo: Сделать observability минимально production-ready
 func main() {
