@@ -32,7 +32,7 @@ func NewGormRepo(db *gorm.DB) GormRepo {
 func (u GormRepo) ListActiveTournaments() ([]tournaments.TournamentModel, error) {
 	var models []tournaments.TournamentModel
 
-	err := u.db.Preload("League").Preload("Providers").Find(&models).Error
+	err := u.db.Preload("League").Preload("Provider").Find(&models).Error
 
 	return models, err
 }
