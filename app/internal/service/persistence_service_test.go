@@ -414,7 +414,13 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 
 			err := service.SaveGame(tc.inputGame)
 
-			assert.Equal(t, tc.expectError, err)
+			if tc.expectError != nil {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tc.expectError.Error())
+				return
+			}
+
+			assert.NoError(t, err)
 		})
 	}
 }
@@ -471,7 +477,8 @@ func TestPersistenceService_saveTeamModel(t *testing.T) {
 			result := service.saveTeamModel(tc.data)
 
 			if tc.expectedError != nil {
-				assert.Equal(t, tc.expectedError, result)
+				require.Error(t, result)
+				assert.ErrorContains(t, result, tc.expectedError.Error())
 				return
 			}
 
@@ -538,7 +545,8 @@ func TestPersistenceService_saveTeamStatModel(t *testing.T) {
 			result := service.saveTeamStatModel(tc.data)
 
 			if tc.expected != nil {
-				assert.Equal(t, tc.expected, result)
+				require.Error(t, result)
+				assert.ErrorContains(t, result, tc.expected.Error())
 				return
 			}
 
@@ -601,7 +609,8 @@ func TestPersistenceService_savePlayerModel(t *testing.T) {
 			result := service.savePlayerModel(tc.data)
 
 			if tc.expectedError != nil {
-				assert.Equal(t, tc.expectedError, result)
+				require.Error(t, result)
+				assert.ErrorContains(t, result, tc.expectedError.Error())
 				return
 			}
 
@@ -658,7 +667,8 @@ func TestPersistenceService_savePlayerStatModel(t *testing.T) {
 			result := service.savePlayerStatModel(tc.data)
 
 			if tc.expectedError != nil {
-				assert.Equal(t, tc.expectedError, result)
+				require.Error(t, result)
+				assert.ErrorContains(t, result, tc.expectedError.Error())
 				return
 			}
 

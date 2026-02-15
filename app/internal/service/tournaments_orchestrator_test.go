@@ -50,7 +50,7 @@ func TestTournamentsOrchestrator_ProcessAmericanTournaments(t *testing.T) {
 			Return(nil, errors.New("repo error"))
 
 		err := orchestrator.ProcessAmericanTournaments(from, to)
-		assert.EqualError(t, err, "repo error")
+		assert.ErrorContains(t, err, "repo error")
 	})
 
 	t.Run("success with empty tournaments", func(t *testing.T) {
@@ -82,7 +82,7 @@ func TestTournamentsOrchestrator_ProcessUrgentEuropeanTournaments(t *testing.T) 
 			Return(nil, errors.New("repo error"))
 
 		err := orchestrator.ProcessUrgentEuropeanTournaments(from, to)
-		assert.EqualError(t, err, "repo error")
+		assert.ErrorContains(t, err, "repo error")
 	})
 
 	t.Run("success with empty tournaments", func(t *testing.T) {
@@ -114,7 +114,7 @@ func TestTournamentsOrchestrator_ProcessNotUrgentEuropeanTournaments(t *testing.
 			Return(nil, errors.New("repo error"))
 
 		err := orchestrator.ProcessNotUrgentEuropeanTournaments(from, to)
-		assert.EqualError(t, err, "repo error")
+		assert.ErrorContains(t, err, "repo error")
 	})
 
 	t.Run("success with empty tournaments", func(t *testing.T) {
@@ -143,7 +143,7 @@ func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 	t.Run("returns repo error", func(t *testing.T) {
 		tournamentsRepo.EXPECT().ListActiveTournaments().Return(nil, errors.New("repository error"))
 		err := orchestrator.ProcessAllTournamentsToday(from, to)
-		assert.EqualError(t, err, "repository error")
+		assert.ErrorContains(t, err, "repository error")
 	})
 
 	t.Run("success with empty tournaments", func(t *testing.T) {

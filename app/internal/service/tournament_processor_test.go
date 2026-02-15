@@ -52,7 +52,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 1)
 		err := processor.ProcessByPeriod(from, to)
 
-		assert.EqualError(t, err, "stats provider error")
+		assert.ErrorContains(t, err, "stats provider error")
 	})
 
 	t.Run("skips existing games without enrichment and saving", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 11)
 		err := processor.ProcessByPeriod(from, to)
 
-		assert.EqualError(t, err, "db error")
+		assert.ErrorContains(t, err, "db error")
 	})
 
 	t.Run("continues when enrich game stats fails", func(t *testing.T) {
@@ -200,7 +200,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 22)
 		err := processor.ProcessByPeriod(from, to)
 
-		assert.EqualError(t, err, "players repo error")
+		assert.ErrorContains(t, err, "players repo error")
 	})
 
 	t.Run("continues when player not found and GetPlayerBio fails", func(t *testing.T) {

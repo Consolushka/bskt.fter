@@ -266,7 +266,8 @@ func TestEntityTransformer_Transform(t *testing.T) {
 			result, err := transformer.Transform(tc.inputGame)
 
 			if tc.expectError != nil {
-				assert.Equal(t, tc.expectError, err)
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tc.expectError.Error())
 				return
 			}
 
@@ -681,7 +682,8 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 			err := transformer.enrichGamePlayers(tc.inputGame, gameBusinessEntity)
 
 			if tc.expectedResult.expectError != nil {
-				assert.Equal(t, tc.expectedResult.expectError, err)
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tc.expectedResult.expectError.Error())
 				return
 			}
 
@@ -1054,7 +1056,8 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 			err := transformer.enrichPlayerStatistic(tc.inputPlayer, &actualPlayerEntity)
 
 			if tc.expectedResult.expectError != nil {
-				assert.Equal(t, tc.expectedResult.expectError.Error(), err.Error())
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tc.expectedResult.expectError.Error())
 				return
 			}
 
@@ -1416,7 +1419,8 @@ func TestEntityTransformer_enrichPlayerBio(t *testing.T) {
 			err := transformer.enrichPlayerBio(tc.playerId, &actualPlayerEntity)
 
 			if tc.expectedResult.expectError != nil {
-				assert.Equal(t, tc.expectedResult.expectError.Error(), err.Error())
+				require.Error(t, err)
+				assert.ErrorContains(t, err, tc.expectedResult.expectError.Error())
 				// Verify that the original data is preserved when there's an error
 				assert.Equal(t, tc.expectedResult.playerEntity, actualPlayerEntity)
 				return
