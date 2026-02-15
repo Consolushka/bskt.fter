@@ -15,7 +15,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// todo: i want to fix 'Declaration of 'err' shadows declaration at tournament_processor.go' in linter
 // todo: Вынести scheduler policy в конфиг
 // todo: Ввести единый provider rate limiter слой
 // todo: test before deploy
