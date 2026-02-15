@@ -4,7 +4,7 @@
 
 ## Что делает сервис
 
-- запускает фоновые задачи по расписанию (`scheduled_tasks`);
+- запускает фоновый цикл опроса с конфигурируемым интервалом;
 - получает статистику игр из внешних провайдеров;
 - сохраняет игры, командную и индивидуальную статистику игроков;
 - поддерживает ручной запуск обработки через debug HTTP API.
@@ -50,6 +50,7 @@
 - `DB_NAME`
 - `DB_PORT`
 - `API_SPORT_API_KEY` (для `API_NBA`)
+- `SCHEDULER_POLL_INTERVAL` (минуты, optional; по умолчанию `30`)
 
 Шаблон: `.example.env`.
 
@@ -109,9 +110,11 @@ make create-migration name=<migration_name>
 
 Шедулер:
 
-- читает задачи из `scheduled_tasks`;
-- для каждой задачи поднимает отдельный обработчик;
-- после выполнения пересчитывает `next_execution_at` и обновляет `last_executed_at`.
+- работает циклом с интервалом из `SCHEDULER_POLL_INTERVAL` (в минутах);
+- если значение `SCHEDULER_POLL_INTERVAL` невалидно или `<= 0`, используется значение по умолчанию `30`;
+- для каждого `task_type` поднимает отдельный обработчик;
+- обрабатывает период от начала текущих UTC-суток до текущего момента;
+- хранит watermark по задаче в `poll_watermarks`.
 
 ## Ручной запуск через debug API
 
@@ -169,7 +172,7 @@ make test-with-coverage
 - `players`
 - `game_team_stats`
 - `game_team_player_stats`
-- `scheduled_tasks`
+- `poll_watermarks`
 
 ## Логирование
 

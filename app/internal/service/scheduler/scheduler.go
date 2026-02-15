@@ -6,24 +6,32 @@ import (
 	"IMP/app/internal/core/poll_watermarks"
 	"IMP/app/internal/ports"
 	"IMP/app/pkg/logger"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
 	"gorm.io/gorm"
 )
 
-const (
-	pollInterval = 30 * time.Minute
-)
-
 func Handle(db *gorm.DB) {
+	pollIntervalString := os.Getenv("SCHEDULER_POLL_INTERVAL")
+	pollIntervalInMinutes, err := strconv.Atoi(pollIntervalString)
+	if err != nil || pollIntervalInMinutes <= 0 {
+		logger.Warn("Couldn't load SCHEDULER_POLL_INTERVAL. uses default 30", map[string]interface{}{
+			"value": pollIntervalString,
+			"error": err,
+		})
+		pollIntervalInMinutes = 30
+	}
+
 	logger.Info("Scheduler started", map[string]interface{}{
-		"pollInterval": pollInterval.String(),
+		"pollIntervalInMinutes": pollIntervalInMinutes,
 	})
 
 	executePollingCycle(db)
 
-	ticker := time.NewTicker(pollInterval)
+	ticker := time.NewTicker(time.Duration(pollIntervalInMinutes) * time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
