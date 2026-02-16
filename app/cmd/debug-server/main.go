@@ -10,6 +10,7 @@ import (
 	"IMP/app/pkg/logger"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -17,6 +18,7 @@ import (
 
 // 2.1
 // todo: remove tasks. run scheduler for every tournament
+// todo: rename repos names (tournaments at least)
 // 2.2
 // todo: Ввести единый provider rate limiter слой
 // 2.3
@@ -43,13 +45,14 @@ func main() {
 	database.OpenDbConnection()
 	db := database.GetDB()
 
+	tr := tournaments_repo.NewGormRepo(db)
 	orchestrator := service.NewTournamentsOrchestrator(
 		*service.NewPersistenceService(
 			games_repo.NewGormRepo(db),
 			teams_repo.NewGormRepo(db),
 			players_repo.NewGormRepo(db),
 		),
-		tournaments_repo.NewGormRepo(db),
+		tr,
 		players_repo.NewGormRepo(db),
 		games_repo.NewGormRepo(db),
 	)
@@ -63,61 +66,55 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/process/american", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/process/all", func(w http.ResponseWriter, r *http.Request) {
 		from, to, err := parsePeriod(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if err = orchestrator.ProcessAmericanTournaments(from, to); err != nil {
+		if err = orchestrator.ProcessAll(from, to); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte(fmt.Sprintf("ok american from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		_, err = w.Write([]byte(fmt.Sprintf("ok all from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
 		if err != nil {
-			logger.Warn("Failed to write american response", map[string]interface{}{"error": err})
+			logger.Warn("Failed to write all response", map[string]interface{}{"error": err})
 			return
 		}
 	})
 
-	http.HandleFunc("/process/european-urgent", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/process/tournament", func(w http.ResponseWriter, r *http.Request) {
 		from, to, err := parsePeriod(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		if err = orchestrator.ProcessUrgentEuropeanTournaments(from, to); err != nil {
+		idStr := r.URL.Query().Get("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil || id <= 0 {
+			http.Error(w, "invalid tournament id", http.StatusBadRequest)
+			return
+		}
+
+		tournament, err := tr.GetTournament(uint(id))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to get tournament: %v", err), http.StatusNotFound)
+			return
+		}
+
+		if err = orchestrator.ProcessTournament(tournament, from, to); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte(fmt.Sprintf("ok european-urgent from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		_, err = w.Write([]byte(fmt.Sprintf("ok tournament=%d from=%s to=%s", id, from.Format(time.RFC3339), to.Format(time.RFC3339))))
 		if err != nil {
-			logger.Warn("Failed to write european-urgent response", map[string]interface{}{"error": err})
-		}
-	})
-
-	http.HandleFunc("/process/european-not-urgent", func(w http.ResponseWriter, r *http.Request) {
-		from, to, err := parsePeriod(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if err = orchestrator.ProcessNotUrgentEuropeanTournaments(from, to); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte(fmt.Sprintf("ok european-not-urgent from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
-		if err != nil {
-			logger.Warn("Failed to write european-not-urgent response", map[string]interface{}{"error": err})
+			logger.Warn("Failed to write tournament response", map[string]interface{}{"error": err})
 		}
 	})
 
