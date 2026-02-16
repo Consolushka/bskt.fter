@@ -13,38 +13,59 @@ import (
 	"IMP/app/pkg/logger"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	"gorm.io/gorm"
 )
 
 func Handle(db *gorm.DB) {
-	pollIntervalString := os.Getenv("SCHEDULER_POLL_INTERVAL")
-	pollIntervalInMinutes, err := strconv.Atoi(pollIntervalString)
-	if err != nil || pollIntervalInMinutes <= 0 {
-		logger.Warn("Couldn't load SCHEDULER_POLL_INTERVAL. uses default 30", map[string]interface{}{
-			"value": pollIntervalString,
-			"error": err,
-		})
-		pollIntervalInMinutes = 30
-	}
+	pollIntervalInMinutes := getEnvInt("SCHEDULER_POLL_INTERVAL", 30)
+	staggerIntervalInMinutes := getEnvInt("SCHEDULER_STAGGER_INTERVAL_MINUTES", 5)
 
-	logger.Info("Scheduler started", map[string]interface{}{
-		"pollIntervalInMinutes": pollIntervalInMinutes,
+	logger.Info("Scheduler starting staggered workers", map[string]interface{}{
+		"pollIntervalInMinutes":    pollIntervalInMinutes,
+		"staggerIntervalInMinutes": staggerIntervalInMinutes,
 	})
 
-	executePollingCycle(db)
+	tournamentsRepo := tournaments_repo.NewGormRepo(db)
+	activeTournaments, err := tournamentsRepo.ListActive()
+	if err != nil {
+		logger.Error("Couldn't fetch active tournaments", map[string]interface{}{
+			"error": err,
+		})
+		return
+	}
 
-	ticker := time.NewTicker(time.Duration(pollIntervalInMinutes) * time.Minute)
+	for _, tournament := range activeTournaments {
+		go runTournamentWorker(db, tournament, time.Duration(pollIntervalInMinutes)*time.Minute)
+
+		// Wait before starting the next worker to distribute the load
+		time.Sleep(time.Duration(staggerIntervalInMinutes) * time.Minute)
+	}
+
+	// Keep the main goroutine alive
+	select {}
+}
+
+func runTournamentWorker(db *gorm.DB, tournament tournaments.TournamentModel, interval time.Duration) {
+	logger.Info("Worker started", map[string]interface{}{
+		"tournamentId": tournament.Id,
+		"interval":     interval.String(),
+	})
+
+	// Immediate first run
+	processTournament(db, tournament)
+
+	// Periodic runs
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		executePollingCycle(db)
+		processTournament(db, tournament)
 	}
 }
 
-func executePollingCycle(db *gorm.DB) {
+func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
 	var watermarkRepo ports.PollWatermarkRepo = poll_watermarks_repo.NewGormRepo(db)
 	var tournamentsRepo ports.TournamentsRepo = tournaments_repo.NewGormRepo(db)
 
@@ -55,70 +76,60 @@ func executePollingCycle(db *gorm.DB) {
 		games_repo.NewGormRepo(db),
 	)
 
-	activeTournaments, err := tournamentsRepo.ListActive()
+	now := time.Now().UTC()
+	startOfDay := toStartOfUTCDay(now)
+
+	watermarkModel, err := watermarkRepo.FirstOrCreate(poll_watermarks.PollWatermarkModel{
+		TournamentId:         tournament.Id,
+		LastSuccessfulPollAt: startOfDay,
+	})
 	if err != nil {
-		logger.Error("Couldn't fetch active tournaments", map[string]interface{}{
-			"error": err,
+		logger.Error("Couldn't read or create tournament watermark", map[string]interface{}{
+			"tournamentId": tournament.Id,
+			"error":        err,
 		})
 		return
 	}
 
-	now := time.Now().UTC()
-	var wg sync.WaitGroup
-	wg.Add(len(activeTournaments))
-
-	for _, tournament := range activeTournaments {
-		go func(tournament tournaments.TournamentModel) {
-			defer wg.Done()
-
-			startOfDay := toStartOfUTCDay(now)
-			watermarkModel, err := watermarkRepo.FirstOrCreate(poll_watermarks.PollWatermarkModel{
-				TournamentId:         tournament.Id,
-				LastSuccessfulPollAt: startOfDay,
-			})
-			if err != nil {
-				logger.Error("Couldn't read or create tournament watermark", map[string]interface{}{
-					"tournamentId": tournament.Id,
-					"error":        err,
-				})
-				return
-			}
-
-			oldPollAt := watermarkModel.LastSuccessfulPollAt
-			if err = orchestrator.ProcessTournament(tournament, oldPollAt, now); err != nil {
-				logger.Error("Error while processing tournament games", map[string]interface{}{
-					"tournamentId": tournament.Id,
-					"error":        err,
-				})
-				return
-			}
-
-			watermarkModel.LastSuccessfulPollAt = now
-			_, err = watermarkRepo.Update(watermarkModel)
-			if err != nil {
-				logger.Warn("Couldn't update tournament watermark", map[string]interface{}{
-					"tournamentId": tournament.Id,
-					"error":        err,
-				})
-				return
-			}
-
-			logger.Info("Tournament processed successfully", map[string]interface{}{
-				"tournamentId": tournament.Id,
-				"from":         oldPollAt,
-				"to":           now,
-			})
-		}(tournament)
+	oldPollAt := watermarkModel.LastSuccessfulPollAt
+	if err = orchestrator.ProcessTournament(tournament, oldPollAt, now); err != nil {
+		logger.Error("Error while processing tournament games", map[string]interface{}{
+			"tournamentId": tournament.Id,
+			"error":        err,
+		})
+		return
 	}
 
-	wg.Wait()
+	watermarkModel.LastSuccessfulPollAt = now
+	_, err = watermarkRepo.Update(watermarkModel)
+	if err != nil {
+		logger.Warn("Couldn't update tournament watermark", map[string]interface{}{
+			"tournamentId": tournament.Id,
+			"error":        err,
+		})
+		return
+	}
 
-	logger.Info("Polling cycle finished", map[string]interface{}{
-		"finishedAt": now,
+	logger.Info("Tournament processed successfully", map[string]interface{}{
+		"tournamentId": tournament.Id,
+		"from":         oldPollAt,
+		"to":           now,
 	})
 }
 
 func toStartOfUTCDay(value time.Time) time.Time {
 	value = value.UTC()
 	return time.Date(value.Year(), value.Month(), value.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func getEnvInt(key string, defaultVal int) int {
+	valStr := os.Getenv(key)
+	if valStr == "" {
+		return defaultVal
+	}
+	val, err := strconv.Atoi(valStr)
+	if err != nil {
+		return defaultVal
+	}
+	return val
 }

@@ -12,11 +12,10 @@ This project, named **IMP**, is a Go-based service designed to collect basketbal
     *   `app/internal/service`: Business logic, orchestration (scheduler, processor, persistence).
     *   `app/internal/infra`: Low-level HTTP clients and transformers for external APIs.
 *   **Main Components:**
-    *   **Scheduler:** A background worker (`app/cmd/scheduler`) that polls statistics at regular intervals.
+    *   **Scheduler:** A background worker (`app/cmd/scheduler`) that manages distributed workers for each tournament with staggered start times.
     *   **Debug Server:** A small HTTP server (`app/cmd/debug-server`) for manual triggers and debugging.
     *   **Persistence:** Uses GORM to interact with PostgreSQL.
-
-## Technologies
+    ## Technologies
 
 *   **Language:** Go 1.23.4
 *   **Database:** PostgreSQL
@@ -58,7 +57,7 @@ The project uses a `Makefile` for common tasks:
 *   **Error Handling:** Use standard library `errors`. Avoid `github.com/pkg/errors`.
 *   **Linting:** Adhere to `.golangci.yml` rules. Shadowing is checked, and cyclomatic complexity is limited to 20.
 *   **Documentation:** Always update `AGENTS.md` when architectural or significant logic changes are made.
-*   **Environment:** Use `.env` for configuration. Mandatory variables include `DB_*` settings, provider API keys (e.g., `API_SPORT_API_KEY`), and rate limits (`*_RATE_LIMIT_PER_MINUTE`).
+*   **Environment:** Use `.env` for configuration. Mandatory variables include `DB_*` settings, provider API keys (e.g., `API_SPORT_API_KEY`), rate limits (`*_RATE_LIMIT_PER_MINUTE`), and scheduler settings (`SCHEDULER_POLL_INTERVAL`, `SCHEDULER_STAGGER_INTERVAL_MINUTES`).
 
 ## Directory Structure Highlights
 
