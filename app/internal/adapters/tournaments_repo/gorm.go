@@ -6,17 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-type GormRepo struct {
+type Gorm struct {
 	db *gorm.DB
 }
 
-func (u GormRepo) ListTournamentsByLeagueAliases(aliases []string) ([]tournaments.TournamentModel, error) {
+func (g Gorm) ListByLeagueAliases(aliases []string) ([]tournaments.TournamentModel, error) {
 	var models []tournaments.TournamentModel
 	if len(aliases) == 0 {
 		return models, nil
 	}
 
-	err := u.db.Model(&tournaments.TournamentModel{}).
+	err := g.db.Model(&tournaments.TournamentModel{}).
 		Joins("JOIN leagues ON tournaments.league_id = leagues.id").
 		Preload("League").
 		Preload("Provider").
@@ -26,20 +26,20 @@ func (u GormRepo) ListTournamentsByLeagueAliases(aliases []string) ([]tournament
 	return models, err
 }
 
-func (u GormRepo) GetTournament(id uint) (tournaments.TournamentModel, error) {
+func (g Gorm) Get(id uint) (tournaments.TournamentModel, error) {
 	var model tournaments.TournamentModel
-	err := u.db.Preload("League").Preload("Provider").First(&model, id).Error
+	err := g.db.Preload("League").Preload("Provider").First(&model, id).Error
 	return model, err
 }
 
-func NewGormRepo(db *gorm.DB) GormRepo {
-	return GormRepo{db: db}
+func NewGormRepo(db *gorm.DB) Gorm {
+	return Gorm{db: db}
 }
 
-func (u GormRepo) ListActiveTournaments() ([]tournaments.TournamentModel, error) {
+func (g Gorm) ListActive() ([]tournaments.TournamentModel, error) {
 	var models []tournaments.TournamentModel
 
-	err := u.db.Preload("League").Preload("Provider").Find(&models).Error
+	err := g.db.Preload("League").Preload("Provider").Find(&models).Error
 
 	return models, err
 }
