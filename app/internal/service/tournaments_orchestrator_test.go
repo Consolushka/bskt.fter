@@ -31,103 +31,7 @@ func TestNewTournamentsOrchestrator(t *testing.T) {
 	assert.Equal(t, gamesRepo, result.gamesRepo)
 }
 
-func TestTournamentsOrchestrator_ProcessAmericanTournaments(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	persistence := NewMockPersistenceServiceInterface(ctrl)
-	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
-	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
-	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
-
-	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo)
-	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
-	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
-
-	t.Run("returns repo error", func(t *testing.T) {
-		tournamentsRepo.EXPECT().
-			ListTournamentsByLeagueAliases([]string{"NBA"}).
-			Return(nil, errors.New("repo error"))
-
-		err := orchestrator.ProcessAmericanTournaments(from, to)
-		assert.ErrorContains(t, err, "repo error")
-	})
-
-	t.Run("success with empty tournaments", func(t *testing.T) {
-		tournamentsRepo.EXPECT().
-			ListTournamentsByLeagueAliases([]string{"NBA"}).
-			Return([]tournaments.TournamentModel{}, nil)
-
-		err := orchestrator.ProcessAmericanTournaments(from, to)
-		assert.NoError(t, err)
-	})
-}
-
-func TestTournamentsOrchestrator_ProcessUrgentEuropeanTournaments(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	persistence := NewMockPersistenceServiceInterface(ctrl)
-	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
-	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
-	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
-
-	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo)
-	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
-	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
-
-	t.Run("returns repo error", func(t *testing.T) {
-		tournamentsRepo.EXPECT().
-			ListTournamentsByLeagueAliases([]string{"MLBL", "FONBETSL"}).
-			Return(nil, errors.New("repo error"))
-
-		err := orchestrator.ProcessUrgentEuropeanTournaments(from, to)
-		assert.ErrorContains(t, err, "repo error")
-	})
-
-	t.Run("success with empty tournaments", func(t *testing.T) {
-		tournamentsRepo.EXPECT().
-			ListTournamentsByLeagueAliases([]string{"MLBL", "FONBETSL"}).
-			Return([]tournaments.TournamentModel{}, nil)
-
-		err := orchestrator.ProcessUrgentEuropeanTournaments(from, to)
-		assert.NoError(t, err)
-	})
-}
-
-func TestTournamentsOrchestrator_ProcessNotUrgentEuropeanTournaments(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	persistence := NewMockPersistenceServiceInterface(ctrl)
-	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
-	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
-	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
-
-	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo)
-	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
-	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
-
-	t.Run("returns repo error", func(t *testing.T) {
-		tournamentsRepo.EXPECT().
-			ListTournamentsByLeagueAliases([]string{"UBA", "VTB"}).
-			Return(nil, errors.New("repo error"))
-
-		err := orchestrator.ProcessNotUrgentEuropeanTournaments(from, to)
-		assert.ErrorContains(t, err, "repo error")
-	})
-
-	t.Run("success with empty tournaments", func(t *testing.T) {
-		tournamentsRepo.EXPECT().
-			ListTournamentsByLeagueAliases([]string{"UBA", "VTB"}).
-			Return([]tournaments.TournamentModel{}, nil)
-
-		err := orchestrator.ProcessNotUrgentEuropeanTournaments(from, to)
-		assert.NoError(t, err)
-	})
-}
-
-func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
+func TestTournamentsOrchestrator_ProcessAll(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -142,13 +46,13 @@ func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 
 	t.Run("returns repo error", func(t *testing.T) {
 		tournamentsRepo.EXPECT().ListActiveTournaments().Return(nil, errors.New("repository error"))
-		err := orchestrator.ProcessAllTournamentsToday(from, to)
+		err := orchestrator.ProcessAll(from, to)
 		assert.ErrorContains(t, err, "repository error")
 	})
 
 	t.Run("success with empty tournaments", func(t *testing.T) {
 		tournamentsRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{}, nil)
-		err := orchestrator.ProcessAllTournamentsToday(from, to)
+		err := orchestrator.ProcessAll(from, to)
 		assert.NoError(t, err)
 	})
 
@@ -170,7 +74,7 @@ func TestTournamentsOrchestrator_ProcessAllTournamentsToday(t *testing.T) {
 			},
 		}, nil)
 
-		err := orchestrator.ProcessAllTournamentsToday(from, to)
+		err := orchestrator.ProcessAll(from, to)
 		assert.NoError(t, err)
 	})
 }

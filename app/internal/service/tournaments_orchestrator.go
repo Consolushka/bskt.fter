@@ -29,62 +29,9 @@ func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, 
 	}
 }
 
-// ProcessUrgentEuropeanTournaments
-// Fetches and processing tournaments, which need to be processed as soon as possible
-func (t TournamentsOrchestrator) ProcessUrgentEuropeanTournaments(from, to time.Time) error {
-	leaguesAliases := []string{
-		"MLBL",
-		"FONBETSL",
-	}
-
-	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
-	if err != nil {
-		return fmt.Errorf("ListTournamentsByLeagueAliases with %v from %s returned error: %w", leaguesAliases, reflect.TypeOf(t.tournamentsRepo), err)
-	}
-
-	t.processTournamentsByPeriod(processingTournaments, from, to)
-
-	return nil
-}
-
-// ProcessAmericanTournaments
-// Fetches and processing tournaments, which played at night by MSK
-func (t TournamentsOrchestrator) ProcessAmericanTournaments(from, to time.Time) error {
-	leaguesAliases := []string{
-		"NBA",
-	}
-
-	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
-	if err != nil {
-		return fmt.Errorf("ListTournamentsByLeagueAliases with %v from %s returned error: %w", leaguesAliases, reflect.TypeOf(t.tournamentsRepo), err)
-	}
-
-	t.processTournamentsByPeriod(processingTournaments, from, to)
-
-	return nil
-}
-
-// ProcessNotUrgentEuropeanTournaments
-// Fetches and processing tournaments, which need to process, but not urgent
-func (t TournamentsOrchestrator) ProcessNotUrgentEuropeanTournaments(from, to time.Time) error {
-	leaguesAliases := []string{
-		"UBA",
-		"VTB",
-	}
-
-	processingTournaments, err := t.tournamentsRepo.ListTournamentsByLeagueAliases(leaguesAliases)
-	if err != nil {
-		return fmt.Errorf("ListTournamentsByLeagueAliases with %v from %s returned error: %w", leaguesAliases, reflect.TypeOf(t.tournamentsRepo), err)
-	}
-
-	t.processTournamentsByPeriod(processingTournaments, from, to)
-
-	return nil
-}
-
-// ProcessAllTournamentsToday
-// Fetches all active tournaments from repository and processes today games
-func (t TournamentsOrchestrator) ProcessAllTournamentsToday(from, to time.Time) error {
+// ProcessAll
+// Fetches all active tournaments from repository and processes games for the given period
+func (t TournamentsOrchestrator) ProcessAll(from, to time.Time) error {
 	activeTournaments, err := t.tournamentsRepo.ListActiveTournaments()
 
 	if err != nil {
@@ -92,6 +39,35 @@ func (t TournamentsOrchestrator) ProcessAllTournamentsToday(from, to time.Time) 
 	}
 
 	t.processTournamentsByPeriod(activeTournaments, from, to)
+
+	return nil
+}
+
+// ProcessTournament
+// Processes a single tournament for a given period
+func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.TournamentModel, from, to time.Time) error {
+	var params *map[string]interface{}
+
+	if len(tournament.Provider.Params) == 0 {
+		params = nil
+	} else {
+		err := json.Unmarshal(tournament.Provider.Params, &params)
+		if err != nil {
+			return fmt.Errorf("error while unmarshalling provider params for tournament %d: %w", tournament.Id, err)
+		}
+	}
+
+	statsProvider, err := providers.NewProvider(tournament.Provider.ProviderName, tournament.Provider.ExternalId, params)
+	if err != nil {
+		return fmt.Errorf("error while creating stats provider for tournament %d: %w", tournament.Id, err)
+	}
+
+	processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, t.gamesRepo, tournament.Id)
+
+	err = processor.ProcessByPeriod(from, to)
+	if err != nil {
+		return fmt.Errorf("error while processing tournament %d games: %w", tournament.Id, err)
+	}
 
 	return nil
 }
@@ -109,40 +85,12 @@ func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []
 		go func(tournament tournaments.TournamentModel) {
 			defer tournamentsGroup.Done()
 
-			var params *map[string]interface{}
-
-			if len(tournament.Provider.Params) == 0 {
-				params = nil
-			} else {
-				err := json.Unmarshal(tournament.Provider.Params, &params)
-				if err != nil {
-					logger.Error("Error while unmarshalling provider params", map[string]interface{}{
-						"error":      err,
-						"tournament": tournament,
-					})
-					return
-				}
-			}
-
-			statsProvider, err := providers.NewProvider(tournament.Provider.ProviderName, tournament.Provider.ExternalId, params)
+			err := t.ProcessTournament(tournament, from, to)
 			if err != nil {
-				logger.Error("Error while creating stats provider", map[string]interface{}{
+				logger.Error("Error while processing tournament", map[string]interface{}{
 					"error":      err,
 					"tournament": tournament,
 				})
-				return
-			}
-
-			processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, t.gamesRepo, tournament.Id)
-
-			err = processor.ProcessByPeriod(from, to)
-			if err != nil {
-				logger.Error("Error while processing tournament games", map[string]interface{}{
-					"error":      err,
-					"tournament": tournament,
-					"processor":  processor,
-				})
-				return
 			}
 		}(tournament)
 	}

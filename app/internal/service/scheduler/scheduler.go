@@ -1,10 +1,15 @@
 package scheduler
 
 import (
-	"IMP/app/internal/adapters/executable_by_scheduler"
+	"IMP/app/internal/adapters/games_repo"
+	"IMP/app/internal/adapters/players_repo"
 	"IMP/app/internal/adapters/poll_watermarks_repo"
+	"IMP/app/internal/adapters/teams_repo"
+	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/core/poll_watermarks"
+	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
+	"IMP/app/internal/service"
 	"IMP/app/pkg/logger"
 	"os"
 	"strconv"
@@ -41,46 +46,49 @@ func Handle(db *gorm.DB) {
 
 func executePollingCycle(db *gorm.DB) {
 	var watermarkRepo ports.PollWatermarkRepo = poll_watermarks_repo.NewGormRepo(db)
+	var tournamentsRepo ports.TournamentsRepo = tournaments_repo.NewGormRepo(db)
 
-	taskTypes := []string{
-		ProcessAmericanTournamentsTaskType,
-		ProcessNotUrgentEuropeanTournamentsTaskType,
-		ProcessUrgentEuropeanTournamentsTaskType,
+	orchestrator := service.NewTournamentsOrchestrator(
+		*service.NewPersistenceService(games_repo.NewGormRepo(db), teams_repo.NewGormRepo(db), players_repo.NewGormRepo(db)),
+		tournamentsRepo,
+		players_repo.NewGormRepo(db),
+		games_repo.NewGormRepo(db),
+	)
+
+	activeTournaments, err := tournamentsRepo.ListActiveTournaments()
+	if err != nil {
+		logger.Error("Couldn't fetch active tournaments", map[string]interface{}{
+			"error": err,
+		})
+		return
 	}
 
 	now := time.Now().UTC()
 	var wg sync.WaitGroup
-	wg.Add(len(taskTypes))
+	wg.Add(len(activeTournaments))
 
-	for _, taskType := range taskTypes {
-		go func(taskType string) {
+	for _, tournament := range activeTournaments {
+		go func(tournament tournaments.TournamentModel) {
 			defer wg.Done()
-
-			task := matchExecutableAdapterByTaskType(taskType, db)
-			if task == nil {
-				logger.Error("Couldn't find executable adapter by task type", map[string]interface{}{
-					"taskType": taskType,
-				})
-				return
-			}
 
 			startOfDay := toStartOfUTCDay(now)
 			watermarkModel, err := watermarkRepo.FirstOrCreate(poll_watermarks.PollWatermarkModel{
-				TaskType:             taskType,
+				TournamentId:         tournament.Id,
 				LastSuccessfulPollAt: startOfDay,
 			})
 			if err != nil {
-				logger.Error("Couldn't read or create task watermark", map[string]interface{}{
-					"taskType": taskType,
-					"error":    err,
+				logger.Error("Couldn't read or create tournament watermark", map[string]interface{}{
+					"tournamentId": tournament.Id,
+					"error":        err,
 				})
 				return
 			}
 
-			if err = task.Execute(startOfDay); err != nil {
+			oldPollAt := watermarkModel.LastSuccessfulPollAt
+			if err = orchestrator.ProcessTournament(tournament, oldPollAt, now); err != nil {
 				logger.Error("Error while processing tournament games", map[string]interface{}{
-					"taskType": taskType,
-					"error":    err,
+					"tournamentId": tournament.Id,
+					"error":        err,
 				})
 				return
 			}
@@ -88,19 +96,19 @@ func executePollingCycle(db *gorm.DB) {
 			watermarkModel.LastSuccessfulPollAt = now
 			_, err = watermarkRepo.Update(watermarkModel)
 			if err != nil {
-				logger.Warn("Couldn't update task watermark", map[string]interface{}{
-					"taskType": taskType,
-					"error":    err,
+				logger.Warn("Couldn't update tournament watermark", map[string]interface{}{
+					"tournamentId": tournament.Id,
+					"error":        err,
 				})
 				return
 			}
 
-			logger.Info("Task executed successfully", map[string]interface{}{
-				"taskType": taskType,
-				"from":     startOfDay,
-				"to":       now,
+			logger.Info("Tournament processed successfully", map[string]interface{}{
+				"tournamentId": tournament.Id,
+				"from":         oldPollAt,
+				"to":           now,
 			})
-		}(taskType)
+		}(tournament)
 	}
 
 	wg.Wait()
@@ -110,20 +118,8 @@ func executePollingCycle(db *gorm.DB) {
 	})
 }
 
-func matchExecutableAdapterByTaskType(taskType string, db *gorm.DB) ports.ExecutableByScheduler {
-	switch taskType {
-	case ProcessAmericanTournamentsTaskType:
-		return executable_by_scheduler.NewProcessAmericanTournaments(db)
-	case ProcessNotUrgentEuropeanTournamentsTaskType:
-		return executable_by_scheduler.NewProcessNotUrgentEuropeanTournaments(db)
-	case ProcessUrgentEuropeanTournamentsTaskType:
-		return executable_by_scheduler.NewProcessUrgentEuropeanTournaments(db)
-	default:
-		return nil
-	}
-}
-
 func toStartOfUTCDay(value time.Time) time.Time {
 	value = value.UTC()
 	return time.Date(value.Year(), value.Month(), value.Day(), 0, 0, 0, 0, time.UTC)
 }
+

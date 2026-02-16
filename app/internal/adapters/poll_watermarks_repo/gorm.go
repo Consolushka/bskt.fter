@@ -15,7 +15,7 @@ type Gorm struct {
 func (g Gorm) FirstOrCreate(model poll_watermarks.PollWatermarkModel) (poll_watermarks.PollWatermarkModel, error) {
 	var foundModel poll_watermarks.PollWatermarkModel
 
-	tx := g.db.Where("task_type = ?", model.TaskType).First(&foundModel)
+	tx := g.db.Where("tournament_id = ?", model.TournamentId).First(&foundModel)
 	if tx.Error == nil {
 		return foundModel, nil
 	}
