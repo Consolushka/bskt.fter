@@ -26,6 +26,12 @@ func (u GormRepo) ListTournamentsByLeagueAliases(aliases []string) ([]tournament
 	return models, err
 }
 
+func (u GormRepo) GetTournament(id uint) (tournaments.TournamentModel, error) {
+	var model tournaments.TournamentModel
+	err := u.db.Preload("League").Preload("Provider").First(&model, id).Error
+	return model, err
+}
+
 func NewGormRepo(db *gorm.DB) GormRepo {
 	return GormRepo{db: db}
 }
