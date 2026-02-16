@@ -34,32 +34,32 @@ func (m *MockTeamsRepo) EXPECT() *MockTeamsRepoMockRecorder {
 	return m.recorder
 }
 
-// FirstOrCreateTeam mocks base method.
-func (m *MockTeamsRepo) FirstOrCreateTeam(model teams.TeamModel) (teams.TeamModel, error) {
+// FirstOrCreate mocks base method.
+func (m *MockTeamsRepo) FirstOrCreate(model teams.TeamModel) (teams.TeamModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FirstOrCreateTeam", model)
+	ret := m.ctrl.Call(m, "FirstOrCreate", model)
 	ret0, _ := ret[0].(teams.TeamModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FirstOrCreateTeam indicates an expected call of FirstOrCreateTeam.
-func (mr *MockTeamsRepoMockRecorder) FirstOrCreateTeam(model interface{}) *gomock.Call {
+// FirstOrCreate indicates an expected call of FirstOrCreate.
+func (mr *MockTeamsRepoMockRecorder) FirstOrCreate(model interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreateTeam", reflect.TypeOf((*MockTeamsRepo)(nil).FirstOrCreateTeam), model)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreate", reflect.TypeOf((*MockTeamsRepo)(nil).FirstOrCreate), model)
 }
 
-// FirstOrCreateTeamStats mocks base method.
-func (m *MockTeamsRepo) FirstOrCreateTeamStats(model teams.GameTeamStatModel) (teams.GameTeamStatModel, error) {
+// FirstOrCreateStats mocks base method.
+func (m *MockTeamsRepo) FirstOrCreateStats(model teams.GameTeamStatModel) (teams.GameTeamStatModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FirstOrCreateTeamStats", model)
+	ret := m.ctrl.Call(m, "FirstOrCreateStats", model)
 	ret0, _ := ret[0].(teams.GameTeamStatModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FirstOrCreateTeamStats indicates an expected call of FirstOrCreateTeamStats.
-func (mr *MockTeamsRepoMockRecorder) FirstOrCreateTeamStats(model interface{}) *gomock.Call {
+// FirstOrCreateStats indicates an expected call of FirstOrCreateStats.
+func (mr *MockTeamsRepoMockRecorder) FirstOrCreateStats(model interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreateTeamStats", reflect.TypeOf((*MockTeamsRepo)(nil).FirstOrCreateTeamStats), model)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreateStats", reflect.TypeOf((*MockTeamsRepo)(nil).FirstOrCreateStats), model)
 }
