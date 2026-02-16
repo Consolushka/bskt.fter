@@ -31,31 +31,27 @@ func NewPersistenceService(gamesRepo ports.GamesRepo, teamsRepo ports.TeamsRepo,
 func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	var err error
 
-		isExists, err := s.gamesRepo.Exists(game.GameModel)
+	isExists, err := s.gamesRepo.Exists(game.GameModel)
 
-		if err != nil {
+	if err != nil {
 
-			return fmt.Errorf("Exists with %v from %s returned error: %w", game.GameModel, reflect.TypeOf(s.gamesRepo), err)
+		return fmt.Errorf("Exists with %v from %s returned error: %w", game.GameModel, reflect.TypeOf(s.gamesRepo), err)
 
-		}
+	}
 
-	
+	if isExists {
 
-		if isExists {
+		return nil
 
-			return nil
+	}
 
-		}
+	game.GameModel, err = s.gamesRepo.FirstOrCreate(game.GameModel)
 
-	
+	if err != nil {
 
-		game.GameModel, err = s.gamesRepo.FirstOrCreate(game.GameModel)
+		return fmt.Errorf("FirstOrCreate with %v from %s returned error: %w", game.GameModel, reflect.TypeOf(s.gamesRepo), err)
 
-		if err != nil {
-
-			return fmt.Errorf("FirstOrCreate with %v from %s returned error: %w", game.GameModel, reflect.TypeOf(s.gamesRepo), err)
-
-		}
+	}
 	game.HomeTeamStat.GameTeamStatModel.GameId = game.GameModel.Id
 	game.AwayTeamStat.GameTeamStatModel.GameId = game.GameModel.Id
 
