@@ -23,6 +23,7 @@ This project, named **IMP**, is a Go-based service designed to collect basketbal
 *   **ORM:** GORM
 *   **Logging:** Logrus (with support for console, file, and Telegram)
 *   **Testing:** Testify, GoMock
+*   **Rate Limiting:** golang.org/x/time/rate
 *   **Migrations:** Goose
 *   **Linting:** golangci-lint
 
@@ -57,7 +58,7 @@ The project uses a `Makefile` for common tasks:
 *   **Error Handling:** Use standard library `errors`. Avoid `github.com/pkg/errors`.
 *   **Linting:** Adhere to `.golangci.yml` rules. Shadowing is checked, and cyclomatic complexity is limited to 20.
 *   **Documentation:** Always update `AGENTS.md` when architectural or significant logic changes are made.
-*   **Environment:** Use `.env` for configuration. Mandatory variables include `DB_*` settings and provider API keys (e.g., `API_SPORT_API_KEY`).
+*   **Environment:** Use `.env` for configuration. Mandatory variables include `DB_*` settings, provider API keys (e.g., `API_SPORT_API_KEY`), and rate limits (`*_RATE_LIMIT_PER_MINUTE`).
 
 ## Directory Structure Highlights
 
