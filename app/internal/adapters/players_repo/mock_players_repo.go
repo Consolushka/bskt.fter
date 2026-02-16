@@ -17,14 +17,6 @@ type MockPlayersRepo struct {
 	recorder *MockPlayersRepoMockRecorder
 }
 
-func (m *MockPlayersRepo) PlayersByFullName(fullName string) ([]players.PlayerModel, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PlayersByFullName", fullName)
-	ret0, _ := ret[0].([]players.PlayerModel)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
 // MockPlayersRepoMockRecorder is the mock recorder for MockPlayersRepo.
 type MockPlayersRepoMockRecorder struct {
 	mock *MockPlayersRepo
@@ -42,38 +34,47 @@ func (m *MockPlayersRepo) EXPECT() *MockPlayersRepoMockRecorder {
 	return m.recorder
 }
 
-// FirstOrCreatePlayer mocks base method.
-func (m *MockPlayersRepo) FirstOrCreatePlayer(player players.PlayerModel) (players.PlayerModel, error) {
+// FirstOrCreate mocks base method.
+func (m *MockPlayersRepo) FirstOrCreate(player players.PlayerModel) (players.PlayerModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FirstOrCreatePlayer", player)
+	ret := m.ctrl.Call(m, "FirstOrCreate", player)
 	ret0, _ := ret[0].(players.PlayerModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FirstOrCreatePlayer indicates an expected call of FirstOrCreatePlayer.
-func (mr *MockPlayersRepoMockRecorder) FirstOrCreatePlayer(player interface{}) *gomock.Call {
+// FirstOrCreate indicates an expected call of FirstOrCreate.
+func (mr *MockPlayersRepoMockRecorder) FirstOrCreate(player interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreatePlayer", reflect.TypeOf((*MockPlayersRepo)(nil).FirstOrCreatePlayer), player)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreate", reflect.TypeOf((*MockPlayersRepo)(nil).FirstOrCreate), player)
 }
 
-// FirstOrCreatePlayerStat mocks base method.
-func (m *MockPlayersRepo) FirstOrCreatePlayerStat(playerStat players.GameTeamPlayerStatModel) (players.GameTeamPlayerStatModel, error) {
+// ListByFullName mocks base method.
+func (m *MockPlayersRepo) ListByFullName(fullName string) ([]players.PlayerModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FirstOrCreatePlayerStat", playerStat)
+	ret := m.ctrl.Call(m, "ListByFullName", fullName)
+	ret0, _ := ret[0].([]players.PlayerModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByFullName indicates an expected call of ListByFullName.
+func (mr *MockPlayersRepoMockRecorder) ListByFullName(fullName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByFullName", reflect.TypeOf((*MockPlayersRepo)(nil).ListByFullName), fullName)
+}
+
+// FirstOrCreateStat mocks base method.
+func (m *MockPlayersRepo) FirstOrCreateStat(playerStat players.GameTeamPlayerStatModel) (players.GameTeamPlayerStatModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FirstOrCreateStat", playerStat)
 	ret0, _ := ret[0].(players.GameTeamPlayerStatModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FirstOrCreatePlayerStat indicates an expected call of FirstOrCreatePlayerStat.
-func (mr *MockPlayersRepoMockRecorder) FirstOrCreatePlayerStat(playerStat interface{}) *gomock.Call {
+// FirstOrCreateStat indicates an expected call of FirstOrCreateStat.
+func (mr *MockPlayersRepoMockRecorder) FirstOrCreateStat(playerStat interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreatePlayerStat", reflect.TypeOf((*MockPlayersRepo)(nil).FirstOrCreatePlayerStat), playerStat)
-}
-
-// PlayersByFullName indicates an expected call of PlayersByFullName.
-func (mr *MockPlayersRepoMockRecorder) PlayersByFullName(fullName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PlayersByFullName", reflect.TypeOf((*MockPlayersRepo)(nil).PlayersByFullName), fullName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreateStat", reflect.TypeOf((*MockPlayersRepo)(nil).FirstOrCreateStat), playerStat)
 }
