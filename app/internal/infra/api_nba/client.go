@@ -3,10 +3,11 @@ package api_nba
 import (
 	"IMP/app/pkg/http"
 	"context"
-	"golang.org/x/time/rate"
 	"os"
 	"strconv"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 type ClientInterface interface {
