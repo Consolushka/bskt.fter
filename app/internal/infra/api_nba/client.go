@@ -2,6 +2,9 @@ package api_nba
 
 import (
 	"IMP/app/pkg/http"
+	"context"
+	"golang.org/x/time/rate"
+	"os"
 	"strconv"
 	"time"
 )
@@ -16,9 +19,16 @@ type Client struct {
 	baseUrl     string
 	token       string
 	baseHeaders map[string]string
+	limiter     *rate.Limiter
 }
 
 func NewClient(baseUrl string, token string) ClientInterface {
+	rateLimitStr := os.Getenv("API_NBA_RATE_LIMIT_PER_MINUTE")
+	rateLimit, err := strconv.Atoi(rateLimitStr)
+	if err != nil || rateLimit <= 0 {
+		rateLimit = 10
+	}
+
 	return &Client{
 		baseUrl: baseUrl,
 		token:   token,
@@ -26,10 +36,12 @@ func NewClient(baseUrl string, token string) ClientInterface {
 			"x-rapidapi-host": "v2.nba.api-sports.io",
 			"x-rapidapi-key":  token,
 		},
+		limiter: rate.NewLimiter(rate.Every(time.Minute/time.Duration(rateLimit)), 1),
 	}
 }
 
 func (c Client) Games(id int, date string, leagueId string, season string, teamId string, timezone string) (GamesResponse, error) {
+	_ = c.limiter.Wait(context.Background())
 	return http.Get[GamesResponse](c.baseUrl+"/games?date="+date, &c.baseHeaders)
 }
 
@@ -37,7 +49,7 @@ func (c Client) PlayersStatistics(playerId int, gameId int, teamId int, season s
 	//todo: ignore zero values
 	//
 	// For free plan limit is 10 requests/minute
-	time.Sleep(7 * time.Second)
+	_ = c.limiter.Wait(context.Background())
 	return http.Get[PlayerStatisticResponse](c.baseUrl+"/players/statistics?game="+strconv.Itoa(gameId), &c.baseHeaders)
 }
 
@@ -45,6 +57,6 @@ func (c Client) PlayerInfo(playerId int, name string, teamId int, season int, co
 	//todo: ignore zero values
 	//
 	// For free plan limit is 10 requests/minute
-	time.Sleep(7 * time.Second)
+	_ = c.limiter.Wait(context.Background())
 	return http.Get[PlayersResponse](c.baseUrl+"/players?id="+strconv.Itoa(playerId), &c.baseHeaders)
 }

@@ -1,6 +1,8 @@
 module IMP
 
-go 1.23.4
+go 1.24.0
+
+toolchain go1.24.5
 
 require (
 	github.com/PuerkitoBio/goquery v1.10.1
@@ -30,5 +32,6 @@ require (
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/time v0.14.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
