@@ -48,7 +48,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 
 	for _, gameEntity := range gameEntities {
 		gameEntity.GameModel.TournamentId = t.tournamentId
-		isExists, err := t.gamesRepo.GameExists(gameEntity.GameModel)
+		isExists, err := t.gamesRepo.Exists(gameEntity.GameModel)
 		if err != nil {
 			logger.Error("Failed to check whether game exists", map[string]interface{}{
 				"tournamentId": gameEntity.GameModel.TournamentId,
@@ -56,7 +56,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 				"scheduledAt":  gameEntity.GameModel.ScheduledAt,
 				"error":        err,
 			})
-			return fmt.Errorf("GameExists with %v from %s returned error: %w", gameEntity.GameModel, reflect.TypeOf(t.gamesRepo), err)
+			return fmt.Errorf("Exists with %v from %s returned error: %w", gameEntity.GameModel, reflect.TypeOf(t.gamesRepo), err)
 		}
 		if isExists {
 			logger.Info("Game already exists. Skip game processing", map[string]interface{}{
@@ -89,7 +89,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 		allPlayers = append(allPlayers, gameEntity.AwayTeamStat.PlayerStats...)
 
 		for _, playerStat := range allPlayers {
-			playersByFullName, err := t.playersRepo.PlayersByFullName(playerStat.PlayerModel.FullName)
+			playersByFullName, err := t.playersRepo.ListByFullName(playerStat.PlayerModel.FullName)
 			if err != nil {
 				logger.Error("Failed to search players by full name", map[string]interface{}{
 					"tournamentId":   gameEntity.GameModel.TournamentId,
@@ -98,7 +98,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 					"playerFullName": playerStat.PlayerModel.FullName,
 					"error":          err,
 				})
-				return fmt.Errorf("PlayersByFullName with %s from %s returned error: %w", playerStat.PlayerModel.FullName, reflect.TypeOf(t.playersRepo), err)
+				return fmt.Errorf("ListByFullName with %s from %s returned error: %w", playerStat.PlayerModel.FullName, reflect.TypeOf(t.playersRepo), err)
 			}
 
 			if len(playersByFullName) != 1 {

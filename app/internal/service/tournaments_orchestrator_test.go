@@ -45,19 +45,19 @@ func TestTournamentsOrchestrator_ProcessAll(t *testing.T) {
 	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
 
 	t.Run("returns repo error", func(t *testing.T) {
-		tournamentsRepo.EXPECT().ListActiveTournaments().Return(nil, errors.New("repository error"))
+		tournamentsRepo.EXPECT().ListActive().Return(nil, errors.New("repository error"))
 		err := orchestrator.ProcessAll(from, to)
 		assert.ErrorContains(t, err, "repository error")
 	})
 
 	t.Run("success with empty tournaments", func(t *testing.T) {
-		tournamentsRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{}, nil)
+		tournamentsRepo.EXPECT().ListActive().Return([]tournaments.TournamentModel{}, nil)
 		err := orchestrator.ProcessAll(from, to)
 		assert.NoError(t, err)
 	})
 
 	t.Run("processes non-empty tournaments and enters goroutine loop branches", func(t *testing.T) {
-		tournamentsRepo.EXPECT().ListActiveTournaments().Return([]tournaments.TournamentModel{
+		tournamentsRepo.EXPECT().ListActive().Return([]tournaments.TournamentModel{
 			{
 				Id: 1,
 				Provider: tournaments.TournamentProvider{

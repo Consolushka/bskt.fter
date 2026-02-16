@@ -100,7 +100,7 @@ func main() {
 			return
 		}
 
-		tournament, err := tr.GetTournament(uint(id))
+		tournament, err := tr.Get(uint(id))
 		if err != nil {
 			http.Error(w, fmt.Sprintf("failed to get tournament: %v", err), http.StatusNotFound)
 			return

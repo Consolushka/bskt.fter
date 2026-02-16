@@ -55,7 +55,7 @@ func executePollingCycle(db *gorm.DB) {
 		games_repo.NewGormRepo(db),
 	)
 
-	activeTournaments, err := tournamentsRepo.ListActiveTournaments()
+	activeTournaments, err := tournamentsRepo.ListActive()
 	if err != nil {
 		logger.Error("Couldn't fetch active tournaments", map[string]interface{}{
 			"error": err,

@@ -32,10 +32,10 @@ func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, 
 // ProcessAll
 // Fetches all active tournaments from repository and processes games for the given period
 func (t TournamentsOrchestrator) ProcessAll(from, to time.Time) error {
-	activeTournaments, err := t.tournamentsRepo.ListActiveTournaments()
+	activeTournaments, err := t.tournamentsRepo.ListActive()
 
 	if err != nil {
-		return fmt.Errorf("ListActiveTournaments from %s returned error: %w", reflect.TypeOf(t.tournamentsRepo), err)
+		return fmt.Errorf("ListActive from %s returned error: %w", reflect.TypeOf(t.tournamentsRepo), err)
 	}
 
 	t.processTournamentsByPeriod(activeTournaments, from, to)

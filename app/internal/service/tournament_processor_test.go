@@ -69,7 +69,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		}
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return(gameEntities, nil)
-		mockGames.EXPECT().GameExists(gomock.Any()).Return(true, nil)
+		mockGames.EXPECT().Exists(gomock.Any()).Return(true, nil)
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 99)
 		err := processor.ProcessByPeriod(from, to)
@@ -89,7 +89,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		gameEntity := games.GameStatEntity{GameModel: games.GameModel{Title: "MIA - NYK", ScheduledAt: from}}
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return([]games.GameStatEntity{gameEntity}, nil)
-		mockGames.EXPECT().GameExists(gomock.Any()).Return(false, nil)
+		mockGames.EXPECT().Exists(gomock.Any()).Return(false, nil)
 		mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(gameEntity, nil)
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil)
 
@@ -111,7 +111,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		gameEntity := games.GameStatEntity{GameModel: games.GameModel{Title: "DAL - PHX", ScheduledAt: from}}
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return([]games.GameStatEntity{gameEntity}, nil)
-		mockGames.EXPECT().GameExists(gomock.Any()).Return(false, errors.New("db error"))
+		mockGames.EXPECT().Exists(gomock.Any()).Return(false, errors.New("db error"))
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 11)
 		err := processor.ProcessByPeriod(from, to)
@@ -132,7 +132,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		game2 := games.GameStatEntity{GameModel: games.GameModel{Title: "GAME-2", ScheduledAt: from}}
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return([]games.GameStatEntity{game1, game2}, nil)
-		mockGames.EXPECT().GameExists(gomock.Any()).Return(false, nil).Times(2)
+		mockGames.EXPECT().Exists(gomock.Any()).Return(false, nil).Times(2)
 		gomock.InOrder(
 			mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(games.GameStatEntity{}, errors.New("enrich error")),
 			mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(game2, nil),
@@ -158,7 +158,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		game2 := games.GameStatEntity{GameModel: games.GameModel{Title: "SAVE-2", ScheduledAt: from}}
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return([]games.GameStatEntity{game1, game2}, nil)
-		mockGames.EXPECT().GameExists(gomock.Any()).Return(false, nil).Times(2)
+		mockGames.EXPECT().Exists(gomock.Any()).Return(false, nil).Times(2)
 		mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(game1, nil)
 		mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(game2, nil)
 		gomock.InOrder(
@@ -172,7 +172,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("returns error when PlayersByFullName fails", func(t *testing.T) {
+	t.Run("returns error when ListByFullName fails", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -192,10 +192,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		}
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return([]games.GameStatEntity{game}, nil)
-		mockGames.EXPECT().GameExists(gomock.Any()).Return(false, nil)
+		mockGames.EXPECT().Exists(gomock.Any()).Return(false, nil)
 		mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(enriched, nil)
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil)
-		mockPlayers.EXPECT().PlayersByFullName("John Doe").Return(nil, errors.New("players repo error"))
+		mockPlayers.EXPECT().ListByFullName("John Doe").Return(nil, errors.New("players repo error"))
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 22)
 		err := processor.ProcessByPeriod(from, to)
@@ -226,10 +226,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		}
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return([]games.GameStatEntity{game}, nil)
-		mockGames.EXPECT().GameExists(gomock.Any()).Return(false, nil)
+		mockGames.EXPECT().Exists(gomock.Any()).Return(false, nil)
 		mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(enriched, nil)
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil)
-		mockPlayers.EXPECT().PlayersByFullName("").Return([]players.PlayerModel{}, nil)
+		mockPlayers.EXPECT().ListByFullName("").Return([]players.PlayerModel{}, nil)
 		mockStats.EXPECT().GetPlayerBio("123").Return(players.PlayerBioEntity{}, errors.New("bio error"))
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 23)
@@ -261,10 +261,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		}
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return([]games.GameStatEntity{game}, nil)
-		mockGames.EXPECT().GameExists(gomock.Any()).Return(false, nil)
+		mockGames.EXPECT().Exists(gomock.Any()).Return(false, nil)
 		mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(enriched, nil)
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil)
-		mockPlayers.EXPECT().PlayersByFullName("").Return([]players.PlayerModel{}, nil)
+		mockPlayers.EXPECT().ListByFullName("").Return([]players.PlayerModel{}, nil)
 		mockStats.EXPECT().GetPlayerBio("555").Return(players.PlayerBioEntity{
 			FullName:  "Recovered Player",
 			BirthDate: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
