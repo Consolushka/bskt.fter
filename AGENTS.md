@@ -25,15 +25,15 @@
 Текущая стратегия опроса:
 - цикл с интервалом из `SCHEDULER_POLL_INTERVAL` (в минутах),
 - при невалидном значении `SCHEDULER_POLL_INTERVAL` или значении `<= 0` используется значение по умолчанию `30`,
-- обработка за текущие UTC-сутки,
-- watermark хранится в БД (`poll_watermarks`).
+- опрос выполняется по каждому активному турниру индивидуально,
+- для каждого турнира хранится своя watermark-метка в БД (`poll_watermarks`).
 
 ## 3. Архитектурный стиль
 
 Проект следует гексагональной архитектуре (ports/adapters):
 - `app/internal/core` — доменные модели,
 - `app/internal/ports` — интерфейсы,
-- `app/internal/adapters` — реализации интерфейсов (БД, провайдеры, scheduler-adapters),
+- `app/internal/adapters` — реализации интерфейсов (БД, провайдеры),
 - `app/internal/service` — use-case/оркестрация,
 - `app/internal/infra` — низкоуровневые клиенты внешних API,
 - `app/database/migrations` — SQL-миграции.
@@ -50,7 +50,15 @@
 Для каждого репозитория:
 - интерфейс в `app/internal/ports/*_repo.go`,
 - адаптер в `app/internal/adapters/<name>_repo/gorm.go`,
+- реализация GORM-адаптера использует структуру `Gorm` и ресивер `g`,
 - конструктор `NewGormRepo(...)`.
+
+**Правила именования методов:**
+- Без суффикса сущности в single-entity репозиториях (например, `FirstOrCreate` вместо `FirstOrCreateTeam`).
+- Поиск/создание: `FirstOrCreate`.
+- Проверка существования: `Exists`.
+- Списки: `ListActive`, `ListBy...`.
+- Получение одного объекта: `Get`.
 
 ### 4.2 Модели
 
@@ -65,11 +73,9 @@
 ## 5. Поток обработки данных
 
 Базовый поток:
-1. scheduler запускает задачи,
-2. orchestrator выбирает турниры,
-3. processor запрашивает игры у stats provider,
-4. для новых игр выполняется enrichment (детали/игроки/статы),
-5. persistence сохраняет сущности в БД.
+1. scheduler итерирует по активным турнирам и запускает опрос, используя `poll_watermarks`.
+2. orchestrator и processor запрашивают и обогащают данные через stats provider.
+3. persistence сохраняет данные в БД, после чего обновляется watermark турнира.
 
 Важно для лимитов API:
 - `API_NBA` реализован двухфазно:

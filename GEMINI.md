@@ -51,6 +51,8 @@ The project uses a `Makefile` for common tasks:
 *   **Naming:**
     *   Repositories should have interfaces in `ports` and implementations in `adapters/<name>_repo/gorm.go`.
     *   Constructors should follow the `NewGormRepo(...)` pattern.
+    *   Methods in single-entity repositories should avoid entity suffixes (e.g., `FirstOrCreate` instead of `FirstOrCreateTeam`).
+    *   Receiver names in GORM adapters should be `g`.
 *   **Mocking:** Use `gomock` for testing. Mocks should be updated whenever an interface in `ports` changes.
 *   **Error Handling:** Use standard library `errors`. Avoid `github.com/pkg/errors`.
 *   **Linting:** Adhere to `.golangci.yml` rules. Shadowing is checked, and cyclomatic complexity is limited to 20.
