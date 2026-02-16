@@ -16,8 +16,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// 2.2
-// todo: Ввести единый provider rate limiter слой
 // 2.3
 // todo: gap between every poll. for example betwen every single tournament delay is 30, but betwen different is like 5 minutes.
 // 2.4
