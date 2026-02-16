@@ -16,9 +16,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// 2.1
-// todo: remove tasks. run scheduler for every tournament
-// todo: rename repos names (tournaments at least)
 // 2.2
 // todo: Ввести единый provider rate limiter слой
 // 2.3
