@@ -10,7 +10,7 @@ type Gorm struct {
 	db *gorm.DB
 }
 
-func (g Gorm) GameExists(model games.GameModel) (bool, error) {
+func (g Gorm) Exists(model games.GameModel) (bool, error) {
 	var count int64
 	tx := g.db.Model(&games.GameModel{}).Where(games.GameModel{
 		TournamentId: model.TournamentId,
@@ -21,7 +21,7 @@ func (g Gorm) GameExists(model games.GameModel) (bool, error) {
 	return count > 0, tx.Error
 }
 
-func (g Gorm) FindOrCreateGame(model games.GameModel) (games.GameModel, error) {
+func (g Gorm) FirstOrCreate(model games.GameModel) (games.GameModel, error) {
 	tx := g.db.FirstOrCreate(&model, games.GameModel{
 		TournamentId: model.TournamentId,
 		Title:        model.Title,
