@@ -16,8 +16,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// 2.4
-// todo: test before deploy
 // 2.5
 // todo: db integration tests
 // 2.6
