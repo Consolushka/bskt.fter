@@ -16,8 +16,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// 2.5
-// todo: db integration tests
 // 2.6
 // todo: мб логгер в defer?
 // todo: Разделить pipeline на discovery и ingestion явно
