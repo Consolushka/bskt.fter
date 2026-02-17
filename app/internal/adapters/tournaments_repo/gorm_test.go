@@ -7,47 +7,107 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
 )
 
 type TournamentRepoSuite struct {
 	suite.Suite
+	db   *gorm.DB
+	tx   *gorm.DB
 	repo Gorm
 }
 
-func (s *TournamentRepoSuite) SetupTest() {
-	db := dbtest.Setup(s.T(),
+// SetupSuite выполняется один раз перед всеми тестами в наборе
+func (s *TournamentRepoSuite) SetupSuite() {
+	// Создаем базу и мигрируем модели один раз
+	s.db = dbtest.Setup(s.T(),
 		&leagues.LeagueModel{},
 		&tournaments.TournamentModel{},
 		&tournaments.TournamentProvider{},
 	)
-	s.repo = NewGormRepo(db)
+}
+
+// SetupTest выполняется перед каждым тестом
+func (s *TournamentRepoSuite) SetupTest() {
+	// Начинаем транзакцию
+	s.tx = s.db.Begin()
+	// Инициализируем репозиторий с транзакционным объектом БД
+	s.repo = NewGormRepo(s.tx)
+}
+
+// TearDownTest выполняется после каждого теста
+func (s *TournamentRepoSuite) TearDownTest() {
+	// Откатываем все изменения, сделанные в тесте
+	s.tx.Rollback()
 }
 
 func (s *TournamentRepoSuite) TestListByLeagueAliases() {
-	// Seed
-	league := leagues.LeagueModel{Name: "Test", Alias: "test-alias"}
-	s.repo.db.Create(&league)
+	// Seed (внутри транзакции)
+	targetLeague := leagues.LeagueModel{Name: "Target", Alias: "target"}
+	s.tx.Create(&targetLeague)
 
-	tournament := tournaments.TournamentModel{Name: "Tournament 1", LeagueId: league.Id}
-	s.repo.db.Create(&tournament)
+	otherLeague := leagues.LeagueModel{Name: "Other", Alias: "other"}
+	s.tx.Create(&otherLeague)
+
+	t1 := tournaments.TournamentModel{Name: "T1", LeagueId: targetLeague.Id}
+	t2 := tournaments.TournamentModel{Name: "T2", LeagueId: targetLeague.Id}
+	s.tx.Create(&t1)
+	s.tx.Create(&t2)
+
+	tOther := tournaments.TournamentModel{Name: "Other T", LeagueId: otherLeague.Id}
+	s.tx.Create(&tOther)
+
+	externalId := "123"
+	s.tx.Create(&tournaments.TournamentProvider{
+		TournamentId: t1.Id,
+		ProviderName: "api_nba",
+		ExternalId:   &externalId,
+	})
 
 	// Execute
-	results, err := s.repo.ListByLeagueAliases([]string{"test-alias"})
+	results, err := s.repo.ListByLeagueAliases([]string{"target"})
 
 	// Assert
 	s.Require().NoError(err)
-	s.Len(results, 1)
-	s.Equal("Tournament 1", results[0].Name)
+	s.Len(results, 2)
+
+	var foundT1 bool
+	for _, r := range results {
+		if r.Id == t1.Id {
+			foundT1 = true
+			s.Equal("T1", r.Name)
+			s.NotNil(r.League)
+			s.Equal("target", r.League.Alias)
+			s.Equal("api_nba", r.Provider.ProviderName)
+		}
+	}
+	s.True(foundT1)
 }
 
 func (s *TournamentRepoSuite) TestGet() {
-	tournament := tournaments.TournamentModel{Name: "Target"}
-	s.repo.db.Create(&tournament)
+	// Seed (внутри транзакции)
+	league := leagues.LeagueModel{Name: "Target", Alias: "target"}
+	s.tx.Create(&league)
 
-	res, err := s.repo.Get(tournament.Id)
+	t1 := tournaments.TournamentModel{Name: "Target T", LeagueId: league.Id}
+	s.tx.Create(&t1)
 
+	externalId := "ext-123"
+	s.tx.Create(&tournaments.TournamentProvider{
+		TournamentId: t1.Id,
+		ProviderName: "api_nba",
+		ExternalId:   &externalId,
+	})
+
+	// Execute
+	res, err := s.repo.Get(t1.Id)
+
+	// Assert
 	s.Require().NoError(err)
-	s.Equal(tournament.Id, res.Id)
+	s.Equal(t1.Id, res.Id)
+	s.Equal("Target T", res.Name)
+	s.Equal("target", res.League.Alias)
+	s.Equal("api_nba", res.Provider.ProviderName)
 }
 
 func TestTournamentRepoSuite(t *testing.T) {
