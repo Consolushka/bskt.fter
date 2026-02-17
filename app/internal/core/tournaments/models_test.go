@@ -51,3 +51,8 @@ func TestTournamentModel_TableName(t *testing.T) {
 		})
 	}
 }
+
+func TestTournamentProvider_TableName(t *testing.T) {
+	model := TournamentProvider{}
+	assert.Equal(t, "tournament_providers", model.TableName())
+}
