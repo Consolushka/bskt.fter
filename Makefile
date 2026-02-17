@@ -40,11 +40,8 @@ run-scheduler: ## run scheduler locally
 run-debug: ## run debug server locally
 	@go run ./app/cmd/debug-server
 
-test-with-coverage: ## run tests with coverage locally
-	@go test -v -coverprofile=coverage.out.tmp ./...
-	@cat coverage.out.tmp | grep -v "mock_" > coverage.out
-	@go tool cover -func coverage.out
-	@rm coverage.out.tmp
+test:
+	@go test -v ./...
 
 lint: ## run golangci-lint (includes testifylint)
 	@golangci-lint run
