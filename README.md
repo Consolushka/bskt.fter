@@ -12,7 +12,7 @@
 
 ## Текущие источники данных
 
-- `API_NBA` (с поддержкой Rate Limiting)
+- `API_NBA` (с поддержкой Rate Limiting на базе `golang.org/x/time/rate`)
 - `INFOBASKET`
 - `SPORTOTEKA`
 
@@ -37,7 +37,7 @@
 ## Требования
 
 - Go `1.24.x`
-- Docker + Docker Compose (только для PostgreSQL)
+- Docker + Docker Compose (для PostgreSQL и контейнеризации приложения)
 - GNU Make
 - `golangci-lint` (для `make lint`)
 
@@ -76,6 +76,11 @@ make migrate
 ```bash
 make run-scheduler
 ```
+
+## Развертывание в Docker
+
+Проект содержит `docker/dockhost/Dockerfile`, который собирает приложение и запускает его.
+**Важно:** Скрипт запуска `startup.sh` автоматически прогоняет тесты `go test ./...` перед стартом бинарного файла. Если тесты не проходят, приложение не будет запущено.
 
 ## Планировщик задач
 

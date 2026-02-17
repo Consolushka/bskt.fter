@@ -17,7 +17,7 @@ This project, named **IMP**, is a Go-based service designed to collect basketbal
     *   **Persistence:** Uses GORM to interact with PostgreSQL.
     ## Technologies
 
-*   **Language:** Go 1.23.4
+*   **Language:** Go 1.24.0
 *   **Database:** PostgreSQL
 *   **ORM:** GORM
 *   **Logging:** Logrus (with support for console, file, and Telegram)

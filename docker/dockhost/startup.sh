@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Exit immediately if a command exits with a non-zero status
+set -e
 
 echo "Starting application setup..."
 
@@ -7,4 +9,10 @@ echo "Starting application setup..."
 echo "Running database migrations..."
 goose up
 
-/build
+echo "Running tests..."
+
+go test ./...
+echo "Tests completed successfully"
+
+echo "Starting application..."
+exec /build
