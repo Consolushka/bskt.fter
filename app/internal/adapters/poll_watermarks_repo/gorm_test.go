@@ -30,29 +30,51 @@ func (s *PollWatermarkRepoSuite) TearDownTest() {
 	s.tx.Rollback()
 }
 
-func (s *PollWatermarkRepoSuite) TestFirstOrCreate() {
-	now := time.Now().Round(time.Second)
-	watermark := poll_watermarks.PollWatermarkModel{
-		TournamentId:         1,
-		LastSuccessfulPollAt: now,
-	}
+func (s *PollWatermarkRepoSuite) TestFirstOrCreate_FindExisting() {
+	// 1. Seed two watermarks
+	now := time.Now().UTC().Round(time.Second)
+	w1 := poll_watermarks.PollWatermarkModel{TournamentId: 1, LastSuccessfulPollAt: now}
+	w2 := poll_watermarks.PollWatermarkModel{TournamentId: 2, LastSuccessfulPollAt: now.Add(time.Hour)}
+	s.tx.Create(&w1)
+	s.tx.Create(&w2)
 
-	// 1. Сценарий: Создание новой записи
-	res, err := s.repo.FirstOrCreate(watermark)
+	// 2. Try to find watermark for Tournament 1 with DIFFERENT time
+	input := poll_watermarks.PollWatermarkModel{
+		TournamentId:         1,
+		LastSuccessfulPollAt: now.Add(24 * time.Hour),
+	}
+	res, err := s.repo.FirstOrCreate(input)
+
+	// 3. Assert
 	s.Require().NoError(err)
 	s.Equal(uint(1), res.TournamentId)
-	s.True(now.Equal(res.LastSuccessfulPollAt))
+	s.True(now.Equal(res.LastSuccessfulPollAt), "Should return EXISTING time, not the one from input")
 
-	// 2. Сценарий: Возврат существующей записи
-	newTime := now.Add(time.Hour)
-	watermark2 := poll_watermarks.PollWatermarkModel{
-		TournamentId:         1,
-		LastSuccessfulPollAt: newTime,
+	var count int64
+	s.tx.Model(&poll_watermarks.PollWatermarkModel{}).Count(&count)
+	s.Equal(int64(2), count)
+}
+
+func (s *PollWatermarkRepoSuite) TestFirstOrCreate_CreateNew() {
+	// 1. Seed one watermark
+	now := time.Now().UTC().Round(time.Second)
+	s.tx.Create(&poll_watermarks.PollWatermarkModel{TournamentId: 1, LastSuccessfulPollAt: now})
+
+	// 2. Create watermark for Tournament 2
+	input := poll_watermarks.PollWatermarkModel{
+		TournamentId:         2,
+		LastSuccessfulPollAt: now.Add(time.Hour),
 	}
-	res2, err := s.repo.FirstOrCreate(watermark2)
+	res, err := s.repo.FirstOrCreate(input)
+
+	// 3. Assert
 	s.Require().NoError(err)
-	s.Equal(uint(1), res2.TournamentId)
-	s.True(now.Equal(res2.LastSuccessfulPollAt), "Должен вернуться старый watermark, а не новый")
+	s.Equal(uint(2), res.TournamentId)
+	s.True(now.Add(time.Hour).Equal(res.LastSuccessfulPollAt))
+
+	var count int64
+	s.tx.Model(&poll_watermarks.PollWatermarkModel{}).Count(&count)
+	s.Equal(int64(2), count)
 }
 
 func (s *PollWatermarkRepoSuite) TestUpdate() {
