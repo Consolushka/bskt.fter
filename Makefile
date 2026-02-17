@@ -43,6 +43,12 @@ run-debug: ## run debug server locally
 test:
 	@go test -v ./...
 
+test-with-coverage: ## run tests with coverage locally, excluding mocks
+	@go test -coverprofile=coverage.out ./...
+	@grep -v "mock_" coverage.out > coverage.out.tmp || true
+	@mv coverage.out.tmp coverage.out
+	@go tool cover -func coverage.out
+
 lint: ## run golangci-lint (includes testifylint)
 	@golangci-lint run
 
