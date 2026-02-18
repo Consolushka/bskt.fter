@@ -63,3 +63,7 @@ func (f FileLogger) Warn(message string, context map[string]interface{}) {
 func (f FileLogger) Error(message string, context map[string]interface{}) {
 	f.logrus.WithFields(context).Error(message)
 }
+
+func (f FileLogger) Fatal(message string, context map[string]interface{}) {
+	f.logrus.WithFields(context).Log(logrus.FatalLevel, message)
+}

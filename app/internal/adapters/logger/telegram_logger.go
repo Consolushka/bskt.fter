@@ -73,6 +73,12 @@ func (t TelegramLogger) Error(message string, context map[string]interface{}) {
 	t.send(message, context, level)
 }
 
+func (t TelegramLogger) Fatal(message string, context map[string]interface{}) {
+	level := logrus.FatalLevel
+
+	t.send(message, context, level)
+}
+
 func (t TelegramLogger) send(message string, context map[string]interface{}, level logrus.Level) {
 	if t.level < level {
 		return
@@ -99,6 +105,8 @@ func stringToTelegramMarkdown(message string, context map[string]interface{}, le
 	now := time.Now().Format("[2006-01-02 15:04:05]")
 
 	switch level {
+	case logrus.FatalLevel:
+		emoji = "🚨🚨"
 	case logrus.ErrorLevel:
 		emoji = "‼️‼️"
 	case logrus.WarnLevel:

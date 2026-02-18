@@ -12,14 +12,14 @@ import (
 func main() {
 	time.Local = time.UTC
 
-	logger.Init(logger.BuildLoggers())
-
 	if err := godotenv.Load(); err != nil {
 		logger.Error("Couldn't load .env file", map[string]interface{}{
 			"error": err,
 		})
 		panic(err)
 	}
+
+	logger.Init(logger.BuildLoggers())
 
 	db := database.OpenDbConnection()
 

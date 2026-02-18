@@ -41,3 +41,7 @@ func (c ConsoleLogger) Warn(message string, context map[string]interface{}) {
 func (c ConsoleLogger) Error(message string, context map[string]interface{}) {
 	c.logrus.WithFields(context).Error(message)
 }
+
+func (c ConsoleLogger) Fatal(message string, context map[string]interface{}) {
+	c.logrus.WithFields(context).Log(logrus.FatalLevel, message)
+}
