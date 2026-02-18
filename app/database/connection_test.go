@@ -46,8 +46,13 @@ func TestOpenDbConnection_Panic(t *testing.T) {
 	defer func() { db = oldDb }()
 
 	// Очищаем переменные окружения, чтобы спровоцировать ошибку или панику
-	os.Setenv("DB_HOST", "")
-	os.Setenv("DB_USER", "")
+
+	if err := os.Setenv("DB_HOST", ""); err != nil {
+		t.Error(err)
+	}
+	if err := os.Setenv("DB_USER", ""); err != nil {
+		t.Error(err)
+	}
 
 	assert.Panics(t, func() {
 		OpenDbConnection()

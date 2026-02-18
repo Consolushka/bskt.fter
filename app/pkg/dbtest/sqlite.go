@@ -26,7 +26,9 @@ func Setup(t testing.TB, models ...interface{}) *gorm.DB {
 	sqlDB, err := db.DB()
 	if err == nil {
 		t.Cleanup(func() {
-			sqlDB.Close()
+			if err = sqlDB.Close(); err != nil {
+				t.Error(err)
+			}
 		})
 	}
 
