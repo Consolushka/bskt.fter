@@ -48,6 +48,10 @@ func Handle(db *gorm.DB) {
 }
 
 func runTournamentWorker(db *gorm.DB, tournament tournaments.TournamentModel, interval time.Duration) {
+	defer logger.Recover(map[string]interface{}{
+		"tournamentId": tournament.Id,
+	})
+
 	logger.Info("Worker started", map[string]interface{}{
 		"tournamentId": tournament.Id,
 		"interval":     interval.String(),
