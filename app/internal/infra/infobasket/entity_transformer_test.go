@@ -183,4 +183,41 @@ func TestPlayersTrans(t *testing.T) {
 			t.Fatal("expected error for invalid birth date")
 		}
 	})
+
+	t.Run("field_goals_percentage_zero_attempts", func(t *testing.T) {
+		player := PlayerBoxScoreDto{
+			PersonID:    4,
+			PersonBirth: "01.01.2000",
+			Shot2:       0,
+			Shot3:       0,
+		}
+
+		result, err := playersTrans(player)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if result.GameTeamPlayerStatModel.FieldGoalsPercentage != 0 {
+			t.Fatalf("expected 0 percentage for 0 attempts, got %f", result.GameTeamPlayerStatModel.FieldGoalsPercentage)
+		}
+	})
+
+	t.Run("field_goals_percentage_with_attempts", func(t *testing.T) {
+		player := PlayerBoxScoreDto{
+			PersonID:    5,
+			PersonBirth: "01.01.2000",
+			Goal2:       1,
+			Shot2:       2,
+			Goal3:       1,
+			Shot3:       2,
+		}
+
+		result, err := playersTrans(player)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		expected := float32(0.5)
+		if result.GameTeamPlayerStatModel.FieldGoalsPercentage != expected {
+			t.Errorf("expected %f percentage, got %f", expected, result.GameTeamPlayerStatModel.FieldGoalsPercentage)
+		}
+	})
 }

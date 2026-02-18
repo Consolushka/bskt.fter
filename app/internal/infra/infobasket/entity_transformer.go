@@ -83,7 +83,7 @@ func playersTrans(playerStat PlayerBoxScoreDto) (players.PlayerStatisticEntity, 
 	if playerAttempts == 0 {
 		percentage = 0
 	} else {
-		percentage = float32((playerStat.Goal2 + playerStat.Goal3) / playerAttempts)
+		percentage = float32(playerStat.Goal2+playerStat.Goal3) / float32(playerAttempts)
 	}
 	return players.PlayerStatisticEntity{
 		PlayerExternalId: strconv.Itoa(playerStat.PersonID),
