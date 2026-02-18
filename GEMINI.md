@@ -41,7 +41,8 @@ The project uses a `Makefile` for common tasks:
     *   `make migrate`: Apply database migrations.
     *   `make create-migration name=<name>`: Create a new migration file.
 *   **Quality:**
-    *   `make test-with-coverage`: Run tests and generate coverage report.
+    *   `make test`: Run all tests quickly.
+    *   `make test-with-coverage`: Run tests and generate coverage report (mocks excluded).
     *   `make lint`: Run `golangci-lint`.
     *   `make lint-fix`: Run `golangci-lint` with auto-fix.
 
@@ -53,6 +54,9 @@ The project uses a `Makefile` for common tasks:
     *   Constructors should follow the `NewGormRepo(...)` pattern.
     *   Methods in single-entity repositories should avoid entity suffixes (e.g., `FirstOrCreate` instead of `FirstOrCreateTeam`).
     *   Receiver names in GORM adapters should be `g`.
+*   **Testing Strategy:** 
+    *   Use SQLite in-memory for repository testing.
+    *   Follow transactional pattern (`Begin`/`Rollback`) in `testify/suite` for isolation and speed.
 *   **Mocking:** Use `gomock` for testing. Mocks should be updated whenever an interface in `ports` changes.
 *   **Error Handling:** Use standard library `errors`. Avoid `github.com/pkg/errors`.
 *   **Linting:** Adhere to `.golangci.yml` rules. Shadowing is checked, and cyclomatic complexity is limited to 20.
