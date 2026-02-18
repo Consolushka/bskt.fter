@@ -74,6 +74,13 @@ func TestEntityTransformer_Transform(t *testing.T) {
 							Team:      TeamEntity{Id: 1},
 							Min:       "35:24",
 							PlusMinus: "12",
+							Points:    27,
+							TotReb:    8,
+							Assists:   10,
+							Steals:    2,
+							Blocks:    1,
+							Fgp:       "50.5",
+							Turnovers: 3,
 						},
 						{
 							Player: PlayerStatisticsPlayerGeneralDataEntity{
@@ -84,6 +91,13 @@ func TestEntityTransformer_Transform(t *testing.T) {
 							Team:      TeamEntity{Id: 2},
 							Min:       "38:15",
 							PlusMinus: "-7",
+							Points:    32,
+							TotReb:    12,
+							Assists:   5,
+							Steals:    1,
+							Blocks:    0,
+							Fgp:       "45.2",
+							Turnovers: 4,
 						},
 					},
 				}, nil)
@@ -130,8 +144,15 @@ func TestEntityTransformer_Transform(t *testing.T) {
 								BirthDate: time.Date(1984, 12, 30, 0, 0, 0, 0, time.UTC),
 							},
 							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-								PlayedSeconds: 35*60 + 24, // 2124 seconds
-								PlsMin:        12,
+								PlayedSeconds:        35*60 + 24, // 2124 seconds
+								PlsMin:               12,
+								Points:               27,
+								Rebounds:             8,
+								Assists:              10,
+								Steals:               2,
+								Blocks:               1,
+								FieldGoalsPercentage: 50.5,
+								Turnovers:            3,
 							},
 						},
 					},
@@ -153,8 +174,15 @@ func TestEntityTransformer_Transform(t *testing.T) {
 								BirthDate: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
 							},
 							GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-								PlayedSeconds: 38*60 + 15, // 2295 seconds
-								PlsMin:        -7,
+								PlayedSeconds:        38*60 + 15, // 2295 seconds
+								PlsMin:               -7,
+								Points:               32,
+								Rebounds:             12,
+								Assists:              5,
+								Steals:               1,
+								Blocks:               0,
+								FieldGoalsPercentage: 45.2,
+								Turnovers:            4,
 							},
 						},
 					},
@@ -375,6 +403,13 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							Team:      TeamEntity{Id: 1}, // Home team
 							Min:       "35:24",
 							PlusMinus: "12",
+							Points:    27,
+							TotReb:    8,
+							Assists:   10,
+							Steals:    2,
+							Blocks:    1,
+							Fgp:       "50.5",
+							Turnovers: 3,
 						},
 						{
 							Player: PlayerStatisticsPlayerGeneralDataEntity{
@@ -385,6 +420,13 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							Team:      TeamEntity{Id: 2}, // Away team
 							Min:       "38:15",
 							PlusMinus: "-7",
+							Points:    32,
+							TotReb:    12,
+							Assists:   5,
+							Steals:    1,
+							Blocks:    0,
+							Fgp:       "45.2",
+							Turnovers: 4,
 						},
 						{
 							Player: PlayerStatisticsPlayerGeneralDataEntity{
@@ -395,6 +437,13 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							Team:      TeamEntity{Id: 1}, // Home team
 							Min:       "32:45",
 							PlusMinus: "8",
+							Points:    24,
+							TotReb:    14,
+							Assists:   3,
+							Steals:    1,
+							Blocks:    4,
+							Fgp:       "55.0",
+							Turnovers: 2,
 						},
 					},
 				}, nil)
@@ -433,8 +482,15 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							BirthDate: time.Date(1984, 12, 30, 0, 0, 0, 0, time.UTC),
 						},
 						GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-							PlayedSeconds: 35*60 + 24, // 2124 seconds
-							PlsMin:        12,
+							PlayedSeconds:        35*60 + 24, // 2124 seconds
+							PlsMin:               12,
+							Points:               27,
+							Rebounds:             8,
+							Assists:              10,
+							Steals:               2,
+							Blocks:               1,
+							FieldGoalsPercentage: 50.5,
+							Turnovers:            3,
 						},
 					},
 					{
@@ -444,8 +500,15 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							BirthDate: time.Date(1993, 3, 11, 0, 0, 0, 0, time.UTC),
 						},
 						GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-							PlayedSeconds: 32*60 + 45, // 1965 seconds
-							PlsMin:        8,
+							PlayedSeconds:        32*60 + 45, // 1965 seconds
+							PlsMin:               8,
+							Points:               24,
+							Rebounds:             14,
+							Assists:              3,
+							Steals:               1,
+							Blocks:               4,
+							FieldGoalsPercentage: 55.0,
+							Turnovers:            2,
 						},
 					},
 				},
@@ -457,8 +520,15 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							BirthDate: time.Date(1998, 3, 3, 0, 0, 0, 0, time.UTC),
 						},
 						GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-							PlayedSeconds: 38*60 + 15, // 2295 seconds
-							PlsMin:        -7,
+							PlayedSeconds:        38*60 + 15, // 2295 seconds
+							PlsMin:               -7,
+							Points:               32,
+							Rebounds:             12,
+							Assists:              5,
+							Steals:               1,
+							Blocks:               0,
+							FieldGoalsPercentage: 45.2,
+							Turnovers:            4,
 						},
 					},
 				},
@@ -524,6 +594,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							Team:      TeamEntity{Id: 7},
 							Min:       "30:00",
 							PlusMinus: "5",
+							Fgp:       "40.0",
 						},
 						{
 							Player: PlayerStatisticsPlayerGeneralDataEntity{
@@ -556,8 +627,9 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							BirthDate: time.Date(1995, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
 						GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-							PlayedSeconds: 30 * 60, // 1800 seconds
-							PlsMin:        5,
+							PlayedSeconds:        1800,
+							PlsMin:               5,
+							FieldGoalsPercentage: 40.0,
 						},
 					},
 				},
@@ -586,6 +658,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							Team:      TeamEntity{Id: 10}, // Home team
 							Min:       "25:30",
 							PlusMinus: "2",
+							Fgp:       "45.0",
 						},
 						{
 							Player: PlayerStatisticsPlayerGeneralDataEntity{
@@ -596,6 +669,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							Team:      TeamEntity{Id: 20}, // Away team
 							Min:       "28:45",
 							PlusMinus: "-3",
+							Fgp:       "42.0",
 						},
 						{
 							Player: PlayerStatisticsPlayerGeneralDataEntity{
@@ -606,6 +680,7 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							Team:      TeamEntity{Id: 99}, // Different team (should be ignored)
 							Min:       "30:00",
 							PlusMinus: "10",
+							Fgp:       "50.0",
 						},
 					},
 				}, nil)
@@ -643,8 +718,9 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							BirthDate: time.Date(1990, 5, 15, 0, 0, 0, 0, time.UTC),
 						},
 						GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-							PlayedSeconds: 25*60 + 30, // 1530 seconds
-							PlsMin:        2,
+							PlayedSeconds:        1530,
+							PlsMin:               2,
+							FieldGoalsPercentage: 45.0,
 						},
 					},
 				},
@@ -656,8 +732,9 @@ func TestEntityTransformer_enrichGamePlayers(t *testing.T) {
 							BirthDate: time.Date(1992, 8, 20, 0, 0, 0, 0, time.UTC),
 						},
 						GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-							PlayedSeconds: 28*60 + 45, // 1725 seconds
-							PlsMin:        -3,
+							PlayedSeconds:        1725,
+							PlsMin:               -3,
+							FieldGoalsPercentage: 42.0,
 						},
 					},
 				},
@@ -728,6 +805,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				},
 				Min:       "36:45",
 				PlusMinus: "15",
+				Fgp:       "45.5",
 			},
 			setupMockClient: func(mock *MockClientInterface) {
 				mock.EXPECT().PlayerInfo(123, "", 0, 0, "", "").Return(PlayersResponse{
@@ -748,8 +826,9 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 						BirthDate: time.Date(1988, 3, 14, 0, 0, 0, 0, time.UTC),
 					},
 					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-						PlayedSeconds: 36*60 + 45, // 2205 seconds
-						PlsMin:        15,
+						PlayedSeconds:        36*60 + 45, // 2205 seconds
+						PlsMin:               15,
+						FieldGoalsPercentage: 45.5,
 					},
 				},
 				expectError: nil,
@@ -765,6 +844,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				},
 				Min:       "28:12",
 				PlusMinus: "-8",
+				Fgp:       "45.5",
 			},
 			setupMockClient: func(mock *MockClientInterface) {
 				mock.EXPECT().PlayerInfo(456, "", 0, 0, "", "").Return(PlayersResponse{
@@ -785,8 +865,9 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 						BirthDate: time.Date(1988, 11, 12, 0, 0, 0, 0, time.UTC),
 					},
 					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-						PlayedSeconds: 28*60 + 12, // 1692 seconds
-						PlsMin:        -8,
+						PlayedSeconds:        28*60 + 12, // 1692 seconds
+						PlsMin:               -8,
+						FieldGoalsPercentage: 45.5,
 					},
 				},
 				expectError: nil,
@@ -802,6 +883,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				},
 				Min:       "0:00",
 				PlusMinus: "0",
+				Fgp:       "0.0",
 			},
 			setupMockClient: func(mock *MockClientInterface) {
 				mock.EXPECT().PlayerInfo(789, "", 0, 0, "", "").Return(PlayersResponse{
@@ -822,8 +904,9 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 						BirthDate: time.Date(1995, 6, 25, 0, 0, 0, 0, time.UTC),
 					},
 					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-						PlayedSeconds: 0,
-						PlsMin:        0,
+						PlayedSeconds:        0,
+						PlsMin:               0,
+						FieldGoalsPercentage: 0.0,
 					},
 				},
 				expectError: nil,
@@ -839,6 +922,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				},
 				Min:       "25",
 				PlusMinus: "4",
+				Fgp:       "45.5",
 			},
 			setupMockClient: func(mock *MockClientInterface) {
 				mock.EXPECT().PlayerInfo(333, "", 0, 0, "", "").Return(PlayersResponse{
@@ -859,8 +943,9 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 						BirthDate: time.Date(1994, 1, 10, 0, 0, 0, 0, time.UTC),
 					},
 					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-						PlayedSeconds: 25 * 60,
-						PlsMin:        4,
+						PlayedSeconds:        25 * 60,
+						PlsMin:               4,
+						FieldGoalsPercentage: 45.5,
 					},
 				},
 				expectError: nil,
@@ -924,6 +1009,26 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 			},
 		},
 		{
+			name: "Returns error when Fgp format is invalid",
+			inputPlayer: PlayerStatisticEntity{
+				Player: PlayerStatisticsPlayerGeneralDataEntity{
+					Id:        988,
+					Firstname: "Invalid",
+					Lastname:  "Fgp",
+				},
+				Min:       "30:15",
+				PlusMinus: "5",
+				Fgp:       "not_a_float",
+			},
+			setupMockClient: func(mock *MockClientInterface) {
+				// No PlayerInfo call expected since parsing should fail first
+			},
+			expectedResult: expectedResult{
+				playerStatisticEntity: players.PlayerStatisticEntity{},
+				expectError:           errors.New(`strconv.ParseFloat: parsing "not_a_float": invalid syntax`),
+			},
+		},
+		{
 			name: "Returns error when PlayerInfo API fails",
 			inputPlayer: PlayerStatisticEntity{
 				Player: PlayerStatisticsPlayerGeneralDataEntity{
@@ -933,6 +1038,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				},
 				Min:       "25:30",
 				PlusMinus: "7",
+				Fgp:       "45.5",
 			},
 			setupMockClient: func(mock *MockClientInterface) {
 				mock.EXPECT().PlayerInfo(555, "", 0, 0, "", "").Return(PlayersResponse{}, errors.New("API connection failed"))
@@ -952,6 +1058,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				},
 				Min:       "20:00",
 				PlusMinus: "2",
+				Fgp:       "45.5",
 			},
 			setupMockClient: func(mock *MockClientInterface) {
 				mock.EXPECT().PlayerInfo(777, "", 0, 0, "", "").Return(PlayersResponse{
@@ -979,6 +1086,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				},
 				Min:       "5:09",
 				PlusMinus: "1",
+				Fgp:       "45.5",
 			},
 			setupMockClient: func(mock *MockClientInterface) {
 				mock.EXPECT().PlayerInfo(111, "", 0, 0, "", "").Return(PlayersResponse{
@@ -999,8 +1107,9 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 						BirthDate: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 					},
 					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-						PlayedSeconds: 5*60 + 9, // 309 seconds
-						PlsMin:        1,
+						PlayedSeconds:        5*60 + 9, // 309 seconds
+						PlsMin:               1,
+						FieldGoalsPercentage: 45.5,
 					},
 				},
 				expectError: nil,
@@ -1016,6 +1125,7 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 				},
 				Min:       "42:30",
 				PlusMinus: "127", // Max int8 value
+				Fgp:       "45.5",
 			},
 			setupMockClient: func(mock *MockClientInterface) {
 				mock.EXPECT().PlayerInfo(222, "", 0, 0, "", "").Return(PlayersResponse{
@@ -1036,8 +1146,9 @@ func TestEntityTransformer_enrichPlayerStatistic(t *testing.T) {
 						BirthDate: time.Date(1985, 12, 25, 0, 0, 0, 0, time.UTC),
 					},
 					GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-						PlayedSeconds: 42*60 + 30, // 2550 seconds
-						PlsMin:        127,
+						PlayedSeconds:        42*60 + 30, // 2550 seconds
+						PlsMin:               127,
+						FieldGoalsPercentage: 45.5,
 					},
 				},
 				expectError: nil,
