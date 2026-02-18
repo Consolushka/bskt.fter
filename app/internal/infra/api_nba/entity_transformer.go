@@ -134,14 +134,26 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 		return errors.New(err.Error())
 	}
 
+	fgp, err := strconv.ParseFloat(player.Fgp, 32)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
 	*playerBusinessEntity = players.PlayerStatisticEntity{
 		PlayerExternalId: strconv.Itoa(player.Player.Id),
 		PlayerModel: players.PlayerModel{
 			FullName: player.Player.Firstname + " " + player.Player.Lastname,
 		},
 		GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{
-			PlayedSeconds: secondsPlayed,
-			PlsMin:        int8(plsMin),
+			PlayedSeconds:        secondsPlayed,
+			PlsMin:               int8(plsMin),
+			Points:               uint8(player.Points),
+			Rebounds:             uint8(player.TotReb),
+			Assists:              uint8(player.Assists),
+			Steals:               uint8(player.Steals),
+			Blocks:               uint8(player.Blocks),
+			FieldGoalsPercentage: float32(fgp),
+			Turnovers:            uint8(player.Turnovers),
 		},
 	}
 
