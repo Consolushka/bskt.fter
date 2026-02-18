@@ -37,6 +37,7 @@ type fakeLogger struct {
 	infoCalls  []logCall
 	warnCalls  []logCall
 	errorCalls []logCall
+	fatalCalls []logCall
 }
 
 func (f *fakeLogger) IsEnabled() bool {
@@ -53,6 +54,10 @@ func (f *fakeLogger) Warn(message string, context map[string]interface{}) {
 
 func (f *fakeLogger) Error(message string, context map[string]interface{}) {
 	f.errorCalls = append(f.errorCalls, logCall{message: message, context: context})
+}
+
+func (f *fakeLogger) Fatal(message string, context map[string]interface{}) {
+	f.fatalCalls = append(f.fatalCalls, logCall{message: message, context: context})
 }
 
 func TestInfo_FanOutAndPrefix(t *testing.T) {
@@ -102,6 +107,37 @@ func TestError_AddsFallbackStackTraceAndDoesNotMutateInputContext(t *testing.T) 
 
 	_, hasStackInOriginal := inputCtx["stackTrace"]
 	assert.False(t, hasStackInOriginal, "original context must not be mutated")
+}
+
+func TestFatal_FanOutAndPrefix(t *testing.T) {
+	l1 := &fakeLogger{}
+	l2 := &fakeLogger{}
+	Init([]ports.Logger{l1, l2})
+
+	ctx := map[string]interface{}{"service": "scheduler"}
+	Fatal("critical failure", ctx)
+
+	require.Len(t, l1.fatalCalls, 1)
+	require.Len(t, l2.fatalCalls, 1)
+	assert.Equal(t, "[FATAL] critical failure", l1.fatalCalls[0].message)
+	assert.Equal(t, "scheduler", l1.fatalCalls[0].context["service"])
+	assert.Contains(t, l1.fatalCalls[0].context, "stackTrace")
+}
+
+func TestRecover_LogsPanicAsFatal(t *testing.T) {
+	l := &fakeLogger{}
+	Init([]ports.Logger{l})
+
+	func() {
+		defer Recover(map[string]interface{}{"component": "test"})
+		panic("something went wrong")
+	}()
+
+	require.Len(t, l.fatalCalls, 1)
+	assert.Equal(t, "[FATAL] Panic recovered", l.fatalCalls[0].message)
+	assert.Equal(t, "something went wrong", l.fatalCalls[0].context["panic"])
+	assert.Equal(t, "test", l.fatalCalls[0].context["ctx"].(map[string]interface{})["component"])
+	assert.Contains(t, l.fatalCalls[0].context, "stackTrace")
 }
 
 func TestError_UsesExistingStackTraceFromContext(t *testing.T) {
