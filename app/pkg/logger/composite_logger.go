@@ -39,6 +39,23 @@ func Error(msg string, ctx map[string]interface{}) {
 	}
 }
 
+func Fatal(msg string, ctx map[string]interface{}) {
+	ctx = buildErrorContextWithStackTrace(ctx)
+
+	for _, logger := range instance.loggers {
+		logger.Fatal("[FATAL] "+msg, ctx)
+	}
+}
+
+func Recover(ctx map[string]interface{}) {
+	if r := recover(); r != nil {
+		Fatal("Panic recovered", map[string]interface{}{
+			"panic": r,
+			"ctx":   ctx,
+		})
+	}
+}
+
 func buildErrorContextWithStackTrace(ctx map[string]interface{}) map[string]interface{} {
 	context := cloneContext(ctx)
 
