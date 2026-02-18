@@ -41,6 +41,9 @@ run-debug: ## run debug server locally
 	@go run ./app/cmd/debug-server
 
 test:
+	@go test ./...
+
+test-verbose:
 	@go test -v ./...
 
 test-with-coverage: ## run tests with coverage locally, excluding mocks

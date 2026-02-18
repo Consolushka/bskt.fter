@@ -89,7 +89,7 @@ func (e *EntityTransformer) playerTransform(player TeamBoxScoreStartEntity) (pla
 	if playerAttempts == 0 {
 		percentage = 0
 	} else {
-		percentage = float32((player.Stats.Goal2 + player.Stats.Goal3) / playerAttempts)
+		percentage = float32(player.Stats.Goal2+player.Stats.Goal3) / float32(playerAttempts)
 	}
 	return players.PlayerStatisticEntity{
 		PlayerExternalId: strconv.Itoa(*player.PersonId),

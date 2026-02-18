@@ -181,4 +181,45 @@ func TestEntityTransformer_PlayerTransform(t *testing.T) {
 			t.Fatal("expected error for invalid birthday")
 		}
 	})
+
+	t.Run("field_goals_percentage_zero_attempts", func(t *testing.T) {
+		player := TeamBoxScoreStartEntity{
+			PersonId: intPtr(4),
+			Birthday: "2000-01-01T00:00:00",
+			Stats: PlayerBoxScoreStatsEntity{
+				Shot2: 0,
+				Shot3: 0,
+			},
+		}
+
+		result, err := transformer.playerTransform(player)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if result.GameTeamPlayerStatModel.FieldGoalsPercentage != 0 {
+			t.Fatalf("expected 0 percentage for 0 attempts, got %f", result.GameTeamPlayerStatModel.FieldGoalsPercentage)
+		}
+	})
+
+	t.Run("field_goals_percentage_with_attempts", func(t *testing.T) {
+		player := TeamBoxScoreStartEntity{
+			PersonId: intPtr(5),
+			Birthday: "2000-01-01T00:00:00",
+			Stats: PlayerBoxScoreStatsEntity{
+				Goal2: 1,
+				Shot2: 2, // 1/2 = 0.5
+				Goal3: 1,
+				Shot3: 2, // (1+1)/(2+2) = 2/4 = 0.5
+			},
+		}
+
+		result, err := transformer.playerTransform(player)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		expected := float32(0.5)
+		if result.GameTeamPlayerStatModel.FieldGoalsPercentage != expected {
+			t.Errorf("expected %f percentage, got %f", expected, result.GameTeamPlayerStatModel.FieldGoalsPercentage)
+		}
+	})
 }
