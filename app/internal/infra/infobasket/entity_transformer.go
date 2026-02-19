@@ -12,6 +12,10 @@ import (
 
 type EntityTransformer struct{}
 
+func NewEntityTransformer() EntityTransformer {
+	return EntityTransformer{}
+}
+
 func (e *EntityTransformer) Transform(game GameBoxScoreResponse) (games.GameStatEntity, error) {
 	parse, err := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTimeMsk)
 	if err != nil {
@@ -25,6 +29,10 @@ func (e *EntityTransformer) Transform(game GameBoxScoreResponse) (games.GameStat
 		} else {
 			duration += 5
 		}
+	}
+
+	if len(game.GameTeams) < 2 {
+		return games.GameStatEntity{}, fmt.Errorf("not enough teams in game: %d", len(game.GameTeams))
 	}
 
 	return games.GameStatEntity{
