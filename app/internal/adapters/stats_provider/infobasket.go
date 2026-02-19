@@ -19,8 +19,9 @@ type InfobasketStatsProviderAdapter struct {
 }
 
 func (i InfobasketStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
-	//TODO implement me
-	panic("implement me")
+	// Infobasket doesn't provide detailed player bio by ID in current client
+	// Return empty bio for now to satisfy interface and avoid panics
+	return players.PlayerBioEntity{}, nil
 }
 
 func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
@@ -46,7 +47,7 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 			})
 			continue
 		}
-		if gameDate.After(from) && gameDate.Before(to) {
+		if (gameDate.After(from) || gameDate.Equal(from)) && (gameDate.Before(to) || gameDate.Equal(to)) {
 			gameBoxScore, err := i.client.BoxScore(strconv.Itoa(game.GameID))
 			if err != nil {
 				logger.Error("There was an error while fetching game box score", map[string]interface{}{
@@ -66,6 +67,7 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 					"gameBoxScore": gameBoxScore,
 					"error":        err,
 				})
+				continue
 			}
 
 			gamesEntities = append(gamesEntities, transform)
@@ -80,7 +82,8 @@ func (i InfobasketStatsProviderAdapter) EnrichGameStats(game games.GameStatEntit
 
 func NewInfobasketStatsProviderAdapter(client infobasket.ClientInterface, compId int) InfobasketStatsProviderAdapter {
 	return InfobasketStatsProviderAdapter{
-		client: client,
-		compId: compId,
+		client:      client,
+		transformer: infobasket.NewEntityTransformer(),
+		compId:      compId,
 	}
 }
