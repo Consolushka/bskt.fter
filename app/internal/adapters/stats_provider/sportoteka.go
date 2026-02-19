@@ -4,8 +4,7 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/sportoteka"
-	"fmt"
-	"reflect"
+	"IMP/app/pkg/logger"
 	"strconv"
 	"time"
 )
@@ -19,8 +18,8 @@ type SportotekaStatsProviderAdapter struct {
 }
 
 func (s SportotekaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
-	//TODO implement me
-	panic("implement me")
+	// Sportoteka doesn't provide detailed player bio by ID in current client
+	return players.PlayerBioEntity{}, nil
 }
 
 func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
@@ -32,12 +31,16 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 	gamesEntities := make([]games.GameStatEntity, 0, calendar.TotalCount)
 
 	for _, calendarGame := range calendar.Items {
-		if calendarGame.Game.GameStatus != "Result" {
+		if calendarGame.Game.GameStatus != "Result" && calendarGame.Game.GameStatus != "ResultConfirmed" {
 			continue
 		}
 		gameBoxScore, err := s.client.BoxScore(strconv.Itoa(calendarGame.Game.Id))
 		if err != nil {
-			return []games.GameStatEntity{}, fmt.Errorf("BoxScore with %v from %s returned error: %w", strconv.Itoa(calendarGame.Game.Id), reflect.TypeOf(s.client), err)
+			logger.Error("There was an error while fetching game box score", map[string]interface{}{
+				"gameId": calendarGame.Game.Id,
+				"error":  err,
+			})
+			continue
 		}
 
 		if gameBoxScore.Result.Game.GameStatus != "ResultConfirmed" && gameBoxScore.Result.Game.GameStatus != "Result" {
@@ -46,7 +49,11 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 
 		entity, err := s.transformer.Transform(gameBoxScore.Result)
 		if err != nil {
-			return make([]games.GameStatEntity, 0), err
+			logger.Error("There was an error while transforming game box score", map[string]interface{}{
+				"gameId": calendarGame.Game.Id,
+				"error":  err,
+			})
+			continue
 		}
 
 		entity.GameModel.Title = calendarGame.Team1.AbcName + " - " + calendarGame.Team2.AbcName
@@ -68,6 +75,6 @@ func NewSportotekaStatsProvider(client sportoteka.ClientInterface, tag string, y
 		tag:         tag,
 		year:        year,
 		client:      client,
-		transformer: sportoteka.EntityTransformer{},
+		transformer: sportoteka.NewEntityTransformer(),
 	}
 }
