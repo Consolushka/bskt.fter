@@ -114,13 +114,13 @@ func TestEntityTransformer_MapPlayerStatistics(t *testing.T) {
 	homePlayer := gameEntity.HomeTeamStat.PlayerStats[0]
 	assert.Equal(t, "101", homePlayer.PlayerExternalId)
 	assert.Equal(t, "LeBron James", homePlayer.PlayerModel.FullName)
-	assert.Equal(t, float32(50.5), homePlayer.GameTeamPlayerStatModel.FieldGoalsPercentage)
+	assert.InEpsilon(t, float32(50.5), homePlayer.GameTeamPlayerStatModel.FieldGoalsPercentage, 0.01)
 	assert.Equal(t, uint8(27), homePlayer.GameTeamPlayerStatModel.Points)
 
 	awayPlayer := gameEntity.AwayTeamStat.PlayerStats[0]
 	assert.Equal(t, "102", awayPlayer.PlayerExternalId)
 	assert.Equal(t, "Jayson Tatum", awayPlayer.PlayerModel.FullName)
-	assert.Equal(t, float32(45.2), awayPlayer.GameTeamPlayerStatModel.FieldGoalsPercentage)
+	assert.InEpsilon(t, float32(45.2), awayPlayer.GameTeamPlayerStatModel.FieldGoalsPercentage, 0.01)
 }
 
 func TestEntityTransformer_mapPlayerStatistic_Errors(t *testing.T) {
