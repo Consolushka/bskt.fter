@@ -4,8 +4,8 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
-	"IMP/app/pkg/logger"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -65,12 +65,7 @@ func (e *EntityTransformer) MapPlayerStatistics(response PlayerStatisticResponse
 
 		playerStatsErr := e.mapPlayerStatistic(playerStat, &playerStatEntity)
 		if playerStatsErr != nil {
-			logger.Warn("There was an error with player statistics mapping", map[string]interface{}{
-				"playerStat":       playerStat,
-				"playerStatEntity": playerStatEntity,
-				"error":            playerStatsErr,
-			})
-			continue
+			return fmt.Errorf("error mapping player statistic for player %d: %w", playerStat.Player.Id, playerStatsErr)
 		}
 
 		if playerStat.Team.Id == homeTeamId {
