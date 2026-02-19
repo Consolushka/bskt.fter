@@ -6,26 +6,11 @@ import (
 	"IMP/app/internal/core/teams"
 	"IMP/app/pkg/logger"
 	"errors"
-	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type EntityTransformer struct {
-	client ClientInterface
-}
-
-func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, error) {
-	businessEntity := e.TransformWithoutPlayers(game)
-
-	err := e.EnrichGamePlayers(game.Id, game.Teams.Home.Id, game.Teams.Visitors.Id, &businessEntity)
-	if err != nil {
-		return games.GameStatEntity{}, err
-	}
-
-	return businessEntity, nil
 }
 
 func (e *EntityTransformer) TransformWithoutPlayers(game GameEntity) games.GameStatEntity {
@@ -71,22 +56,16 @@ func (e *EntityTransformer) TransformWithoutPlayers(game GameEntity) games.GameS
 	return businessEntity
 }
 
-func (e *EntityTransformer) EnrichGamePlayers(gameId int, homeTeamId int, awayTeamId int, gameBusinessEntity *games.GameStatEntity) error {
+func (e *EntityTransformer) MapPlayerStatistics(response PlayerStatisticResponse, homeTeamId int, awayTeamId int, gameBusinessEntity *games.GameStatEntity) error {
 	homeTeamPlayers := make([]players.PlayerStatisticEntity, 0)
-
 	awayTeamPlayers := make([]players.PlayerStatisticEntity, 0)
 
-	gameStat, err := e.client.PlayersStatistics(0, gameId, 0, "")
-	if err != nil {
-		return fmt.Errorf("e.client.PlayersStatistics with %v, %v, %v, %v from %s returned error: %w", 0, gameId, 0, "", reflect.TypeOf(e.client), err)
-	}
-
-	for _, playerStat := range gameStat.Response {
+	for _, playerStat := range response.Response {
 		playerStatEntity := players.PlayerStatisticEntity{}
 
-		playerStatsErr := e.enrichPlayerStatistic(playerStat, &playerStatEntity)
+		playerStatsErr := e.mapPlayerStatistic(playerStat, &playerStatEntity)
 		if playerStatsErr != nil {
-			logger.Warn("There was an error with player statistics", map[string]interface{}{
+			logger.Warn("There was an error with player statistics mapping", map[string]interface{}{
 				"playerStat":       playerStat,
 				"playerStatEntity": playerStatEntity,
 				"error":            playerStatsErr,
@@ -107,11 +86,7 @@ func (e *EntityTransformer) EnrichGamePlayers(gameId int, homeTeamId int, awayTe
 	return nil
 }
 
-func (e *EntityTransformer) enrichGamePlayers(game GameEntity, gameBusinessEntity *games.GameStatEntity) error {
-	return e.EnrichGamePlayers(game.Id, game.Teams.Home.Id, game.Teams.Visitors.Id, gameBusinessEntity)
-}
-
-func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, playerBusinessEntity *players.PlayerStatisticEntity) error {
+func (e *EntityTransformer) mapPlayerStatistic(player PlayerStatisticEntity, playerBusinessEntity *players.PlayerStatisticEntity) error {
 	splittedGameTime := strings.Split(player.Min, ":")
 	minutesPlayed, err := strconv.Atoi(splittedGameTime[0])
 	if err != nil {
@@ -157,35 +132,9 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 		},
 	}
 
-	err = e.enrichPlayerBio(player.Player.Id, playerBusinessEntity)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
-func (e *EntityTransformer) enrichPlayerBio(playerId int, playerBusinessEntity *players.PlayerStatisticEntity) error {
-	playerResponse, err := e.client.PlayerInfo(playerId, "", 0, 0, "", "")
-	if err != nil {
-		return fmt.Errorf("e.client.PlayerInfo with %v, %v, %v, %v, %v, %v from %s returned error: %w", playerId, "", 0, 0, "", "", reflect.TypeOf(e.client), err)
-	}
-
-	if len(playerResponse.Response) == 0 {
-		return errors.New("empty player info response")
-	}
-
-	birthDate, err := time.Parse("2006-01-02", playerResponse.Response[0].Birth.Date)
-	if err != nil {
-		return fmt.Errorf("time.Parse with %s, %v returned error: %w", "2006-01-02", playerResponse.Response[0].Birth.Date, err)
-	}
-
-	playerBusinessEntity.PlayerModel.BirthDate = birthDate
-	return nil
-}
-
-func NewEntityTransformer(client ClientInterface) EntityTransformer {
-	return EntityTransformer{
-		client: client,
-	}
+func NewEntityTransformer() EntityTransformer {
+	return EntityTransformer{}
 }
