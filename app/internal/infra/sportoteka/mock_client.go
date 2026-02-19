@@ -1,9 +1,10 @@
 package sportoteka
 
 import (
-	"github.com/golang/mock/gomock"
 	"reflect"
 	"time"
+
+	"github.com/golang/mock/gomock"
 )
 
 type MockClientInterface struct {

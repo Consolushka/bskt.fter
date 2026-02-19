@@ -44,7 +44,7 @@ func TestCdnNbaStatsProviderAdapter_GetPlayerBio(t *testing.T) {
 	adapter := CdnNbaStatsProviderAdapter{}
 	bio, err := adapter.GetPlayerBio("any-id")
 
-	assert.ErrorContains(t, err, "CDN_NBA GetPlayerBio not implemented")
+	require.ErrorContains(t, err, "CDN_NBA GetPlayerBio not implemented")
 	assert.Empty(t, bio.FullName)
 }
 

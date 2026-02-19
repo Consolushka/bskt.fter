@@ -56,7 +56,7 @@ func TestApiNbaStatsProviderAdapter_GetPlayerBio(t *testing.T) {
 			Return(api_nba.PlayersResponse{}, errors.New("network error"))
 
 		_, err := adapter.GetPlayerBio("123")
-		assert.ErrorContains(t, err, "playerInfo")
+		require.ErrorContains(t, err, "playerInfo")
 		assert.ErrorContains(t, err, "network error")
 	})
 

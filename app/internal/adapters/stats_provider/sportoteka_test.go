@@ -16,7 +16,7 @@ func TestSportotekaStatsProviderAdapter_GetPlayerBio(t *testing.T) {
 	adapter := SportotekaStatsProviderAdapter{}
 	bio, err := adapter.GetPlayerBio("any-id")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Empty(t, bio.FullName)
 }
 
@@ -75,7 +75,7 @@ func TestSportotekaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Empty(t, games)
 	})
 
@@ -99,7 +99,7 @@ func TestSportotekaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 
@@ -124,7 +124,7 @@ func TestSportotekaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 
@@ -153,7 +153,7 @@ func TestSportotekaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 
@@ -175,19 +175,19 @@ func TestSportotekaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		mockClient.EXPECT().Calendar(tag, year, from, to).Return(calendar, nil)
 		// In current implementation, Transform might return an error if teams are missing or date is invalid.
-		// Since we don't have explicit error conditions in Transform yet, we can't easily trigger it without 
+		// Since we don't have explicit error conditions in Transform yet, we can't easily trigger it without
 		// knowing the internal logic of Transform. But we've already added a check for len(GameTeams) in Infobasket.
 		// Let's assume Transform fails if Teams are nil.
 		mockClient.EXPECT().BoxScore("1").Return(sportoteka.GameBoxScoreResponse{
 			Result: sportoteka.GameBoxScoreEntity{
 				Game:  sportoteka.GameInfoEntity{GameStatus: "Result"},
-				Teams: nil, 
+				Teams: nil,
 			},
 		}, nil)
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 }
@@ -198,6 +198,6 @@ func TestSportotekaStatsProviderAdapter_EnrichGameStats(t *testing.T) {
 
 	enriched, err := adapter.EnrichGameStats(game)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, game, enriched)
 }

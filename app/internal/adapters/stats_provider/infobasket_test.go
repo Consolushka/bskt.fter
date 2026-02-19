@@ -1,8 +1,8 @@
 package stats_provider
 
 import (
-	"IMP/app/internal/infra/infobasket"
 	"IMP/app/internal/core/games"
+	"IMP/app/internal/infra/infobasket"
 	"errors"
 	"os"
 	"testing"
@@ -17,7 +17,7 @@ func TestInfobasketStatsProviderAdapter_GetPlayerBio(t *testing.T) {
 	adapter := InfobasketStatsProviderAdapter{}
 	bio, err := adapter.GetPlayerBio("any-id")
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Empty(t, bio.FullName)
 }
 
@@ -82,7 +82,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, games)
 	})
 
@@ -103,7 +103,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 
@@ -126,7 +126,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 
@@ -146,7 +146,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 
@@ -173,7 +173,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 }
@@ -184,6 +184,6 @@ func TestInfobasketStatsProviderAdapter_EnrichGameStats(t *testing.T) {
 
 	enriched, err := adapter.EnrichGameStats(game)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, game, enriched)
 }

@@ -1,8 +1,9 @@
 package infobasket
 
 import (
-	"github.com/golang/mock/gomock"
 	"reflect"
+
+	"github.com/golang/mock/gomock"
 )
 
 type MockClientInterface struct {
