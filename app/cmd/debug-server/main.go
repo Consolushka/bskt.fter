@@ -16,8 +16,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// 2.6
-// todo: Разделить pipeline на discovery и ingestion явно
 // 3.0
 // todo: Добавить provider health/state в БД
 // todo: Сделать observability минимально production-ready

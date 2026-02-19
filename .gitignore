@@ -3,7 +3,7 @@
 #
 # Binaries for programs and plugins
 /.idea
-/tmp
+tmp/
 *.exe
 *.exe~
 *.dll
