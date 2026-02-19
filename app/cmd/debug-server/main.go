@@ -17,7 +17,6 @@ import (
 )
 
 // 2.6
-// todo: мб логгер в defer?
 // todo: Разделить pipeline на discovery и ingestion явно
 // 3.0
 // todo: Добавить provider health/state в БД
