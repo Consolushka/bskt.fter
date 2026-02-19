@@ -74,6 +74,9 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 			continue
 		}
 
+		// DISCOVERY & INGESTION for players
+		t.discoverAndIngestPlayers(&gameEntity)
+
 		err = t.persistenceService.SaveGame(gameEntity)
 		if err != nil {
 			logger.Error("t.persistenceService.SaveGame returned error", map[string]interface{}{
@@ -83,38 +86,6 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 			continue
 		}
 
-		var allPlayers []players.PlayerStatisticEntity
-
-		allPlayers = append(allPlayers, gameEntity.HomeTeamStat.PlayerStats...)
-		allPlayers = append(allPlayers, gameEntity.AwayTeamStat.PlayerStats...)
-
-		for _, playerStat := range allPlayers {
-			playersByFullName, err := t.playersRepo.ListByFullName(playerStat.PlayerModel.FullName)
-			if err != nil {
-				logger.Error("Failed to search players by full name", map[string]interface{}{
-					"tournamentId":   gameEntity.GameModel.TournamentId,
-					"title":          gameEntity.GameModel.Title,
-					"scheduledAt":    gameEntity.GameModel.ScheduledAt,
-					"playerFullName": playerStat.PlayerModel.FullName,
-					"error":          err,
-				})
-				return fmt.Errorf("ListByFullName with %s from %s returned error: %w", playerStat.PlayerModel.FullName, reflect.TypeOf(t.playersRepo), err)
-			}
-
-			if len(playersByFullName) != 1 {
-				if playerStat.PlayerModel.FullName == "" || time.Time.IsZero(playerStat.PlayerModel.BirthDate) {
-					playerBio, err := t.statsProvider.GetPlayerBio(playerStat.PlayerExternalId)
-					if err != nil {
-						logger.Warn("error while fetching player bio", map[string]interface{}{
-							"err": err,
-						})
-					} else {
-						playerStat.PlayerModel.FullName = playerBio.FullName
-						playerStat.PlayerModel.BirthDate = playerBio.BirthDate
-					}
-				}
-			}
-		}
 		savedGames = append(savedGames, formatSavedGameLog(gameEntity))
 	}
 
@@ -127,6 +98,50 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 	}
 
 	return nil
+}
+
+func (t TournamentProcessor) discoverAndIngestPlayers(gameEntity *games.GameStatEntity) {
+	homePlayers := gameEntity.HomeTeamStat.PlayerStats
+	awayPlayers := gameEntity.AwayTeamStat.PlayerStats
+
+	for i := range homePlayers {
+		t.ensurePlayerBio(&homePlayers[i])
+	}
+
+	for i := range awayPlayers {
+		t.ensurePlayerBio(&awayPlayers[i])
+	}
+}
+
+func (t TournamentProcessor) ensurePlayerBio(playerStat *players.PlayerStatisticEntity) {
+	// DISCOVERY: Check if player exists in our DB
+	playersByFullName, err := t.playersRepo.ListByFullName(playerStat.PlayerModel.FullName)
+	if err != nil {
+		logger.Error("Failed to search players by full name", map[string]interface{}{
+			"playerFullName": playerStat.PlayerModel.FullName,
+			"error":          err,
+		})
+		return
+	}
+
+	// If player exists, we already have their bio (likely)
+	if len(playersByFullName) == 1 {
+		return
+	}
+
+	// INGESTION: If player is unknown or missing critical data, fetch from provider
+	if playerStat.PlayerModel.FullName == "" || time.Time.IsZero(playerStat.PlayerModel.BirthDate) {
+		playerBio, err := t.statsProvider.GetPlayerBio(playerStat.PlayerExternalId)
+		if err != nil {
+			logger.Warn("error while fetching player bio", map[string]interface{}{
+				"playerId": playerStat.PlayerExternalId,
+				"err":      err,
+			})
+		} else {
+			playerStat.PlayerModel.FullName = playerBio.FullName
+			playerStat.PlayerModel.BirthDate = playerBio.BirthDate
+		}
+	}
 }
 
 func formatSavedGameLog(gameEntity games.GameStatEntity) string {
