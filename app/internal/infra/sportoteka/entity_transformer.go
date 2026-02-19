@@ -13,7 +13,15 @@ import (
 type EntityTransformer struct {
 }
 
+func NewEntityTransformer() EntityTransformer {
+	return EntityTransformer{}
+}
+
 func (e *EntityTransformer) Transform(game GameBoxScoreEntity) (games.GameStatEntity, error) {
+	if len(game.Teams) < 2 {
+		return games.GameStatEntity{}, fmt.Errorf("not enough teams in game")
+	}
+
 	var homeTeamStats, awayTeamStats TeamBoxScoreEntity
 	for _, team := range game.Teams {
 		if team.TeamNumber == 1 {
