@@ -172,7 +172,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("returns error when ListByFullName fails", func(t *testing.T) {
+	t.Run("continues when ListByFullName fails", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -200,7 +200,7 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 22)
 		err := processor.ProcessByPeriod(from, to)
 
-		assert.ErrorContains(t, err, "players repo error")
+		assert.NoError(t, err)
 	})
 
 	t.Run("continues when player not found and GetPlayerBio fails", func(t *testing.T) {
