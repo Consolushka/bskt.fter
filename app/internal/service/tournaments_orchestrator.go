@@ -1,6 +1,7 @@
 package service
 
 import (
+	"IMP/app/internal/core/poll_watermarks"
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service/providers"
@@ -19,14 +20,22 @@ type TournamentsOrchestrator struct {
 	tournamentsRepo    ports.TournamentsRepo
 	playersRepo        ports.PlayersRepo
 	gamesRepo          ports.GamesRepo
+	pollLogRepo        ports.PollLogRepo
 }
 
-func NewTournamentsOrchestrator(persistenceService PersistenceServiceInterface, tournamentsRepo ports.TournamentsRepo, playersRepo ports.PlayersRepo, gamesRepo ports.GamesRepo) *TournamentsOrchestrator {
+func NewTournamentsOrchestrator(
+	persistenceService PersistenceServiceInterface,
+	tournamentsRepo ports.TournamentsRepo,
+	playersRepo ports.PlayersRepo,
+	gamesRepo ports.GamesRepo,
+	pollLogRepo ports.PollLogRepo,
+) *TournamentsOrchestrator {
 	return &TournamentsOrchestrator{
 		persistenceService: persistenceService,
 		tournamentsRepo:    tournamentsRepo,
 		playersRepo:        playersRepo,
 		gamesRepo:          gamesRepo,
+		pollLogRepo:        pollLogRepo,
 	}
 }
 
@@ -45,10 +54,11 @@ func (t TournamentsOrchestrator) ProcessAll(from, to time.Time) error {
 }
 
 // ProcessTournament
-// Processes a single tournament for a given period
+// Processes a single tournament for a given period and records the result in poll logs
 func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.TournamentModel, from, to time.Time) error {
-	var params *map[string]interface{}
+	pollStartAt := time.Now()
 
+	var params *map[string]interface{}
 	if len(tournament.Provider.Params) == 0 {
 		params = nil
 	} else {
@@ -65,12 +75,37 @@ func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.Tourna
 
 	processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, t.gamesRepo, tournament.Id)
 
-	err = processor.ProcessByPeriod(from, to)
-	if err != nil {
-		return fmt.Errorf("error while processing tournament %d games: %w", tournament.Id, err)
+	savedGamesCount, processErr := processor.ProcessByPeriod(from, to)
+
+	// LOGGING: Record results to database
+	pollEndAt := time.Now()
+	status := poll_watermarks.StatusSuccess
+	var errMsg *string
+	if processErr != nil {
+		status = poll_watermarks.StatusError
+		s := processErr.Error()
+		errMsg = &s
 	}
 
-	return nil
+	_, logErr := t.pollLogRepo.Create(poll_watermarks.TournamentPollLogModel{
+		TournamentId:    tournament.Id,
+		PollStartAt:     pollStartAt,
+		PollEndAt:       &pollEndAt,
+		IntervalStart:   from,
+		IntervalEnd:     to,
+		SavedGamesCount: savedGamesCount,
+		Status:          status,
+		ErrorMessage:    errMsg,
+	})
+
+	if logErr != nil {
+		compositelogger.Error("Couldn't create tournament poll log", map[string]interface{}{
+			"tournamentId": tournament.Id,
+			"error":        logErr,
+		})
+	}
+
+	return processErr
 }
 
 func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []tournaments.TournamentModel, from, to time.Time) {
