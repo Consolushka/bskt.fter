@@ -2,28 +2,29 @@ package remote_cache_loader
 
 import (
 	"IMP/app/internal/ports"
-	"IMP/app/pkg/logger"
 	"encoding/json"
 	"fmt"
 	"os"
 	"time"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 const localCacheStorageDir = "tmp/cache/"
 
 func LoadLocalFile[T any](resource ports.CachedRemoteResource) (T, error) {
 	if isNeedToBeDownload(localCacheStorageDir+resource.LocalFileName(), resource.GetLifeTime()) {
-		logger.Info("Need to download resource from remote", map[string]interface{}{
+		compositelogger.Info("Need to download resource from remote", map[string]interface{}{
 			"resource": resource.LocalFileName(),
 		})
 		err := saveToLocalCacheStorage(resource)
 		if err != nil {
-			logger.Error("Could not save resource to local cache", map[string]interface{}{
+			compositelogger.Error("Could not save resource to local cache", map[string]interface{}{
 				"resource": resource.LocalFileName(),
 				"error":    err,
 			})
 		} else {
-			logger.Info("Resource was successfully downloaded", map[string]interface{}{
+			compositelogger.Info("Resource was successfully downloaded", map[string]interface{}{
 				"resource": resource.LocalFileName(),
 			})
 		}

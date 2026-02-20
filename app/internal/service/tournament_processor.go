@@ -4,11 +4,12 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/ports"
-	"IMP/app/pkg/logger"
 	"fmt"
 	"reflect"
 	"strconv"
 	"time"
+
+	compositeLogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type TournamentProcessorInterface interface {
@@ -41,7 +42,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 	savedGames := make([]string, 0, len(gameEntities))
 
 	if len(gameEntities) > 0 {
-		logger.Info("Start processing tournament games", map[string]interface{}{
+		compositeLogger.Info("Start processing tournament games", map[string]interface{}{
 			"tournamentId": t.tournamentId,
 		})
 	}
@@ -50,7 +51,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 		gameEntity.GameModel.TournamentId = t.tournamentId
 		isExists, err := t.gamesRepo.Exists(gameEntity.GameModel)
 		if err != nil {
-			logger.Error("Failed to check whether game exists", map[string]interface{}{
+			compositeLogger.Error("Failed to check whether game exists", map[string]interface{}{
 				"tournamentId": gameEntity.GameModel.TournamentId,
 				"title":        gameEntity.GameModel.Title,
 				"scheduledAt":  gameEntity.GameModel.ScheduledAt,
@@ -59,7 +60,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 			return fmt.Errorf("Exists with %v from %s returned error: %w", gameEntity.GameModel, reflect.TypeOf(t.gamesRepo), err)
 		}
 		if isExists {
-			logger.Info("Game already exists. Skip game processing", map[string]interface{}{
+			compositeLogger.Info("Game already exists. Skip game processing", map[string]interface{}{
 				"gameModel": gameEntity.GameModel,
 			})
 			continue
@@ -67,7 +68,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 
 		gameEntity, err = t.statsProvider.EnrichGameStats(gameEntity)
 		if err != nil {
-			logger.Warn("Couldn't enrich game stats", map[string]interface{}{
+			compositeLogger.Warn("Couldn't enrich game stats", map[string]interface{}{
 				"gameModel": gameEntity.GameModel,
 				"error":     err,
 			})
@@ -79,7 +80,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 
 		err = t.persistenceService.SaveGame(gameEntity)
 		if err != nil {
-			logger.Error("t.persistenceService.SaveGame returned error", map[string]interface{}{
+			compositeLogger.Error("t.persistenceService.SaveGame returned error", map[string]interface{}{
 				"error":      err,
 				"gameEntity": gameEntity,
 			})
@@ -90,7 +91,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) error {
 	}
 
 	if len(gameEntities) > 0 {
-		logger.Info("Finished processing tournament games", map[string]interface{}{
+		compositeLogger.Info("Finished processing tournament games", map[string]interface{}{
 			"tournamentId": t.tournamentId,
 			"savedCount":   len(savedGames),
 			"savedGames":   savedGames,
@@ -117,7 +118,7 @@ func (t TournamentProcessor) ensurePlayerBio(playerStat *players.PlayerStatistic
 	// DISCOVERY: Check if player exists in our DB
 	playersByFullName, err := t.playersRepo.ListByFullName(playerStat.PlayerModel.FullName)
 	if err != nil {
-		logger.Error("Failed to search players by full name", map[string]interface{}{
+		compositeLogger.Error("Failed to search players by full name", map[string]interface{}{
 			"playerFullName": playerStat.PlayerModel.FullName,
 			"error":          err,
 		})
@@ -133,7 +134,7 @@ func (t TournamentProcessor) ensurePlayerBio(playerStat *players.PlayerStatistic
 	if playerStat.PlayerModel.FullName == "" || time.Time.IsZero(playerStat.PlayerModel.BirthDate) {
 		playerBio, err := t.statsProvider.GetPlayerBio(playerStat.PlayerExternalId)
 		if err != nil {
-			logger.Warn("error while fetching player bio", map[string]interface{}{
+			compositeLogger.Warn("error while fetching player bio", map[string]interface{}{
 				"playerId": playerStat.PlayerExternalId,
 				"err":      err,
 			})

@@ -5,9 +5,10 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"IMP/app/internal/ports"
-	"IMP/app/pkg/logger"
 	"fmt"
 	"reflect"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type PersistenceServiceInterface interface {
@@ -78,7 +79,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	for _, playerStats := range game.HomeTeamStat.PlayerStats {
 		err = s.savePlayerModel(&playerStats)
 		if err != nil {
-			logger.Warn("savePlayerModel returned error", map[string]interface{}{
+			compositelogger.Warn("savePlayerModel returned error", map[string]interface{}{
 				"playerStats": playerStats,
 				"error":       err,
 			})
@@ -87,7 +88,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 
 		err = s.savePlayerStatModel(&playerStats)
 		if err != nil {
-			logger.Warn("savePlayerStatModel returned error", map[string]interface{}{
+			compositelogger.Warn("savePlayerStatModel returned error", map[string]interface{}{
 				"playerStats": playerStats,
 				"error":       err,
 			})
@@ -98,7 +99,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	for _, playerStats := range game.AwayTeamStat.PlayerStats {
 		err = s.savePlayerModel(&playerStats)
 		if err != nil {
-			logger.Warn("savePlayerModel returned error", map[string]interface{}{
+			compositelogger.Warn("savePlayerModel returned error", map[string]interface{}{
 				"playerStats": playerStats,
 				"error":       err,
 			})
@@ -107,7 +108,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 
 		err = s.savePlayerStatModel(&playerStats)
 		if err != nil {
-			logger.Warn("savePlayerStatModel returned error", map[string]interface{}{
+			compositelogger.Warn("savePlayerStatModel returned error", map[string]interface{}{
 				"playerStats": playerStats,
 				"error":       err,
 			})

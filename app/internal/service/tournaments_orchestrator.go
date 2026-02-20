@@ -4,13 +4,14 @@ import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service/providers"
-	"IMP/app/pkg/logger"
 	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
 	"sync"
 	"time"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type TournamentsOrchestrator struct {
@@ -76,7 +77,7 @@ func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []
 	var tournamentsGroup sync.WaitGroup
 	tournamentsGroup.Add(len(activeTournaments))
 
-	logger.Info("Start processing tournaments", map[string]interface{}{
+	compositelogger.Info("Start processing tournaments", map[string]interface{}{
 		"count":   len(activeTournaments),
 		"aliases": getTournamentsAliases(activeTournaments),
 	})
@@ -87,7 +88,7 @@ func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []
 
 			err := t.ProcessTournament(tournament, from, to)
 			if err != nil {
-				logger.Error("Error while processing tournament", map[string]interface{}{
+				compositelogger.Error("Error while processing tournament", map[string]interface{}{
 					"error":      err,
 					"tournament": tournament,
 				})

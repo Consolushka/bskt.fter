@@ -10,11 +10,11 @@ import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service"
-	"IMP/app/pkg/logger"
 	"os"
 	"strconv"
 	"time"
 
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +22,7 @@ func Handle(db *gorm.DB) {
 	pollIntervalInMinutes := getEnvInt("SCHEDULER_POLL_INTERVAL", 30)
 	staggerIntervalInMinutes := getEnvInt("SCHEDULER_STAGGER_INTERVAL_MINUTES", 5)
 
-	logger.Info("Scheduler starting staggered workers", map[string]interface{}{
+	compositelogger.Info("Scheduler starting staggered workers", map[string]interface{}{
 		"pollIntervalInMinutes":    pollIntervalInMinutes,
 		"staggerIntervalInMinutes": staggerIntervalInMinutes,
 	})
@@ -30,7 +30,7 @@ func Handle(db *gorm.DB) {
 	tournamentsRepo := tournaments_repo.NewGormRepo(db)
 	activeTournaments, err := tournamentsRepo.ListActive()
 	if err != nil {
-		logger.Error("Couldn't fetch active tournaments", map[string]interface{}{
+		compositelogger.Error("Couldn't fetch active tournaments", map[string]interface{}{
 			"error": err,
 		})
 		return
@@ -48,11 +48,11 @@ func Handle(db *gorm.DB) {
 }
 
 func runTournamentWorker(db *gorm.DB, tournament tournaments.TournamentModel, interval time.Duration) {
-	defer logger.Recover(map[string]interface{}{
+	defer compositelogger.Recover(map[string]interface{}{
 		"tournamentId": tournament.Id,
 	})
 
-	logger.Info("Worker started", map[string]interface{}{
+	compositelogger.Info("Worker started", map[string]interface{}{
 		"tournamentId": tournament.Id,
 		"interval":     interval.String(),
 	})
@@ -88,7 +88,7 @@ func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
 		LastSuccessfulPollAt: startOfDay,
 	})
 	if err != nil {
-		logger.Error("Couldn't read or create tournament watermark", map[string]interface{}{
+		compositelogger.Error("Couldn't read or create tournament watermark", map[string]interface{}{
 			"tournamentId": tournament.Id,
 			"error":        err,
 		})
@@ -97,7 +97,7 @@ func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
 
 	oldPollAt := watermarkModel.LastSuccessfulPollAt
 	if err = orchestrator.ProcessTournament(tournament, oldPollAt, now); err != nil {
-		logger.Error("Error while processing tournament games", map[string]interface{}{
+		compositelogger.Error("Error while processing tournament games", map[string]interface{}{
 			"tournamentId": tournament.Id,
 			"error":        err,
 		})
@@ -107,14 +107,14 @@ func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
 	watermarkModel.LastSuccessfulPollAt = now
 	_, err = watermarkRepo.Update(watermarkModel)
 	if err != nil {
-		logger.Warn("Couldn't update tournament watermark", map[string]interface{}{
+		compositelogger.Warn("Couldn't update tournament watermark", map[string]interface{}{
 			"tournamentId": tournament.Id,
 			"error":        err,
 		})
 		return
 	}
 
-	logger.Info("Tournament processed successfully", map[string]interface{}{
+	compositelogger.Info("Tournament processed successfully", map[string]interface{}{
 		"tournamentId": tournament.Id,
 		"from":         oldPollAt,
 		"to":           now,

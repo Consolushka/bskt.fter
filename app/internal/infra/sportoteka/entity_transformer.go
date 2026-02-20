@@ -4,10 +4,11 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
-	"IMP/app/pkg/logger"
 	"fmt"
 	"strconv"
 	"time"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type EntityTransformer struct {
@@ -63,7 +64,7 @@ func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore 
 
 		playerStat, err := e.playerTransform(player)
 		if err != nil {
-			logger.Warn("There was an error with player statistics", map[string]interface{}{
+			compositelogger.Warn("There was an error with player statistics", map[string]interface{}{
 				"player": player,
 				"error":  err,
 			})

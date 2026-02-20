@@ -6,9 +6,10 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/infobasket"
 	"IMP/app/internal/service/remote_cache_loader"
-	"IMP/app/pkg/logger"
 	"strconv"
 	"time"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type InfobasketStatsProviderAdapter struct {
@@ -41,7 +42,7 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 
 		gameDate, err := time.Parse("02.01.2006 15:04", game.GameDate+" "+game.GameTime)
 		if err != nil {
-			logger.Error("There was an error while parsing game gameDate", map[string]interface{}{
+			compositelogger.Error("There was an error while parsing game gameDate", map[string]interface{}{
 				"gameDate": game.GameDate,
 				"error":    err,
 			})
@@ -50,7 +51,7 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 		if (gameDate.After(from) || gameDate.Equal(from)) && (gameDate.Before(to) || gameDate.Equal(to)) {
 			gameBoxScore, err := i.client.BoxScore(strconv.Itoa(game.GameID))
 			if err != nil {
-				logger.Error("There was an error while fetching game box score", map[string]interface{}{
+				compositelogger.Error("There was an error while fetching game box score", map[string]interface{}{
 					"gameId": game.GameID,
 					"error":  err,
 				})
@@ -62,7 +63,7 @@ func (i InfobasketStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 
 			transform, err := i.transformer.Transform(gameBoxScore)
 			if err != nil {
-				logger.Error("There was an error while transforming game box score", map[string]interface{}{
+				compositelogger.Error("There was an error while transforming game box score", map[string]interface{}{
 					"gameId":       game.GameID,
 					"gameBoxScore": gameBoxScore,
 					"error":        err,

@@ -4,9 +4,10 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/sportoteka"
-	"IMP/app/pkg/logger"
 	"strconv"
 	"time"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type SportotekaStatsProviderAdapter struct {
@@ -36,7 +37,7 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 		}
 		gameBoxScore, err := s.client.BoxScore(strconv.Itoa(calendarGame.Game.Id))
 		if err != nil {
-			logger.Error("There was an error while fetching game box score", map[string]interface{}{
+			compositelogger.Error("There was an error while fetching game box score", map[string]interface{}{
 				"gameId": calendarGame.Game.Id,
 				"error":  err,
 			})
@@ -49,7 +50,7 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 
 		entity, err := s.transformer.Transform(gameBoxScore.Result)
 		if err != nil {
-			logger.Error("There was an error while transforming game box score", map[string]interface{}{
+			compositelogger.Error("There was an error while transforming game box score", map[string]interface{}{
 				"gameId": calendarGame.Game.Id,
 				"error":  err,
 			})
