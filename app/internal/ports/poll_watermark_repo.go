@@ -1,10 +1,10 @@
 package ports
 
 import (
-	"IMP/app/internal/core/poll_watermarks"
+	"IMP/app/internal/core/tournament_poll_logs"
 )
 
 type PollLogRepo interface {
-	Create(log poll_watermarks.TournamentPollLogModel) (poll_watermarks.TournamentPollLogModel, error)
-	GetLatestSuccess(tournamentId uint) (poll_watermarks.TournamentPollLogModel, error)
+	Create(log tournament_poll_logs.TournamentPollLogModel) (tournament_poll_logs.TournamentPollLogModel, error)
+	GetLatestSuccess(tournamentId uint) (tournament_poll_logs.TournamentPollLogModel, error)
 }

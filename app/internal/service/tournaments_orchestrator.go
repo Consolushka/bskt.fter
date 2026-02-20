@@ -1,7 +1,7 @@
 package service
 
 import (
-	"IMP/app/internal/core/poll_watermarks"
+	"IMP/app/internal/core/tournament_poll_logs"
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service/providers"
@@ -79,15 +79,15 @@ func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.Tourna
 
 	// LOGGING: Record results to database
 	pollEndAt := time.Now()
-	status := poll_watermarks.StatusSuccess
+	status := tournament_poll_logs.StatusSuccess
 	var errMsg *string
 	if processErr != nil {
-		status = poll_watermarks.StatusError
+		status = tournament_poll_logs.StatusError
 		s := processErr.Error()
 		errMsg = &s
 	}
 
-	_, logErr := t.pollLogRepo.Create(poll_watermarks.TournamentPollLogModel{
+	_, logErr := t.pollLogRepo.Create(tournament_poll_logs.TournamentPollLogModel{
 		TournamentId:    tournament.Id,
 		PollStartAt:     pollStartAt,
 		PollEndAt:       &pollEndAt,

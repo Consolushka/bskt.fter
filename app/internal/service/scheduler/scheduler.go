@@ -3,8 +3,8 @@ package scheduler
 import (
 	"IMP/app/internal/adapters/games_repo"
 	"IMP/app/internal/adapters/players_repo"
-	"IMP/app/internal/adapters/poll_watermarks_repo"
 	"IMP/app/internal/adapters/teams_repo"
+	"IMP/app/internal/adapters/tournament_poll_logs_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
@@ -69,7 +69,7 @@ func runTournamentWorker(db *gorm.DB, tournament tournaments.TournamentModel, in
 }
 
 func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
-	var pollLogRepo ports.PollLogRepo = poll_watermarks_repo.NewGormRepo(db)
+	var pollLogRepo ports.PollLogRepo = tournament_poll_logs_repo.NewGormRepo(db)
 	var tournamentsRepo ports.TournamentsRepo = tournaments_repo.NewGormRepo(db)
 
 	orchestrator := service.NewTournamentsOrchestrator(

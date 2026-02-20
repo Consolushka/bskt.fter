@@ -1,4 +1,4 @@
-package poll_watermarks
+package tournament_poll_logs
 
 import (
 	"testing"
