@@ -6,13 +6,14 @@ import (
 	"IMP/app/internal/adapters/players_repo"
 	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
+	"IMP/app/internal/infra/logger"
 	"IMP/app/internal/service"
-	"IMP/app/pkg/logger"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 	"github.com/joho/godotenv"
 )
 
@@ -26,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	logger.Init(logger.BuildLoggers())
+	compositelogger.Init(logger.BuildSettingsFromEnv()...)
 
 	database.OpenDbConnection()
 	db := database.GetDB()
@@ -47,7 +48,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("ok"))
 		if err != nil {
-			logger.Warn("Failed to write health check response", map[string]interface{}{"error": err})
+			compositelogger.Warn("Failed to write health check response", map[string]interface{}{"error": err})
 			return
 		}
 	})
@@ -67,7 +68,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte(fmt.Sprintf("ok all from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
 		if err != nil {
-			logger.Warn("Failed to write all response", map[string]interface{}{"error": err})
+			compositelogger.Warn("Failed to write all response", map[string]interface{}{"error": err})
 			return
 		}
 	})
@@ -100,11 +101,11 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		_, err = w.Write([]byte(fmt.Sprintf("ok tournament=%d from=%s to=%s", id, from.Format(time.RFC3339), to.Format(time.RFC3339))))
 		if err != nil {
-			logger.Warn("Failed to write tournament response", map[string]interface{}{"error": err})
+			compositelogger.Warn("Failed to write tournament response", map[string]interface{}{"error": err})
 		}
 	})
 
-	logger.Info("Debug server started", map[string]interface{}{"port": 8080})
+	compositelogger.Info("Debug server started", map[string]interface{}{"port": 8080})
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}
