@@ -4,6 +4,7 @@ import (
 	"IMP/app/database"
 	"IMP/app/internal/adapters/games_repo"
 	"IMP/app/internal/adapters/players_repo"
+	"IMP/app/internal/adapters/poll_watermarks_repo"
 	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/infra/logger"
@@ -42,6 +43,7 @@ func main() {
 		tr,
 		players_repo.NewGormRepo(db),
 		games_repo.NewGormRepo(db),
+		poll_watermarks_repo.NewGormRepo(db),
 	)
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
