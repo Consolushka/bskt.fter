@@ -2,9 +2,6 @@ package poll_watermarks_repo
 
 import (
 	"IMP/app/internal/core/poll_watermarks"
-	"IMP/app/internal/ports"
-	"errors"
-
 	"gorm.io/gorm"
 )
 
@@ -12,31 +9,19 @@ type Gorm struct {
 	db *gorm.DB
 }
 
-func (g Gorm) FirstOrCreate(model poll_watermarks.PollWatermarkModel) (poll_watermarks.PollWatermarkModel, error) {
-	var foundModel poll_watermarks.PollWatermarkModel
-
-	tx := g.db.Where("tournament_id = ?", model.TournamentId).First(&foundModel)
-	if tx.Error == nil {
-		return foundModel, nil
-	}
-	if !errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-		return poll_watermarks.PollWatermarkModel{}, tx.Error
-	}
-
-	model.LastSuccessfulPollAt = model.LastSuccessfulPollAt.UTC()
-
-	tx = g.db.Create(&model)
-	return model, tx.Error
+func (g Gorm) Create(log poll_watermarks.TournamentPollLogModel) (poll_watermarks.TournamentPollLogModel, error) {
+	err := g.db.Create(&log).Error
+	return log, err
 }
 
-func (g Gorm) Update(model poll_watermarks.PollWatermarkModel) (poll_watermarks.PollWatermarkModel, error) {
-	model.LastSuccessfulPollAt = model.LastSuccessfulPollAt.UTC()
-
-	tx := g.db.Save(&model)
-
-	return model, tx.Error
+func (g Gorm) GetLatestSuccess(tournamentId uint) (poll_watermarks.TournamentPollLogModel, error) {
+	var log poll_watermarks.TournamentPollLogModel
+	err := g.db.Where("tournament_id = ? AND status = ?", tournamentId, poll_watermarks.StatusSuccess).
+		Order("interval_end DESC").
+		First(&log).Error
+	return log, err
 }
 
-func NewGormRepo(db *gorm.DB) ports.PollWatermarkRepo {
+func NewGormRepo(db *gorm.DB) Gorm {
 	return Gorm{db: db}
 }

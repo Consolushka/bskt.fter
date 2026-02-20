@@ -10,95 +10,87 @@ import (
 	"gorm.io/gorm"
 )
 
-type PollWatermarkRepoSuite struct {
+type PollLogRepoSuite struct {
 	suite.Suite
 	db   *gorm.DB
 	tx   *gorm.DB
 	repo Gorm
 }
 
-func (s *PollWatermarkRepoSuite) SetupSuite() {
-	s.db = dbtest.Setup(s.T(), &poll_watermarks.PollWatermarkModel{})
+func (s *PollLogRepoSuite) SetupSuite() {
+	s.db = dbtest.Setup(s.T(), &poll_watermarks.TournamentPollLogModel{})
 }
 
-func (s *PollWatermarkRepoSuite) SetupTest() {
+func (s *PollLogRepoSuite) SetupTest() {
 	s.tx = s.db.Begin()
 	s.repo = Gorm{db: s.tx}
 }
 
-func (s *PollWatermarkRepoSuite) TearDownTest() {
+func (s *PollLogRepoSuite) TearDownTest() {
 	s.tx.Rollback()
 }
 
-func (s *PollWatermarkRepoSuite) TestFirstOrCreate_FindExisting() {
-	// 1. Seed two watermarks
+func (s *PollLogRepoSuite) TestCreate() {
 	now := time.Now().UTC().Round(time.Second)
-	w1 := poll_watermarks.PollWatermarkModel{TournamentId: 1, LastSuccessfulPollAt: now}
-	w2 := poll_watermarks.PollWatermarkModel{TournamentId: 2, LastSuccessfulPollAt: now.Add(time.Hour)}
-	s.tx.Create(&w1)
-	s.tx.Create(&w2)
-
-	// 2. Try to find watermark for Tournament 1 with DIFFERENT time
-	input := poll_watermarks.PollWatermarkModel{
-		TournamentId:         1,
-		LastSuccessfulPollAt: now.Add(24 * time.Hour),
+	log := poll_watermarks.TournamentPollLogModel{
+		TournamentId:    1,
+		PollStartAt:     now.Add(-time.Minute),
+		IntervalStart:   now.Add(-time.Hour),
+		IntervalEnd:     now,
+		SavedGamesCount: 5,
+		Status:          poll_watermarks.StatusSuccess,
 	}
-	res, err := s.repo.FirstOrCreate(input)
 
-	// 3. Assert
+	res, err := s.repo.Create(log)
+
 	s.Require().NoError(err)
+	s.NotZero(res.Id)
 	s.Equal(uint(1), res.TournamentId)
-	s.True(now.Equal(res.LastSuccessfulPollAt), "Should return EXISTING time, not the one from input")
+	s.Equal(5, res.SavedGamesCount)
 
-	var count int64
-	s.tx.Model(&poll_watermarks.PollWatermarkModel{}).Count(&count)
-	s.Equal(int64(2), count)
+	var dbLog poll_watermarks.TournamentPollLogModel
+	s.tx.First(&dbLog, res.Id)
+	s.Equal(poll_watermarks.StatusSuccess, dbLog.Status)
 }
 
-func (s *PollWatermarkRepoSuite) TestFirstOrCreate_CreateNew() {
-	// 1. Seed one watermark
+func (s *PollLogRepoSuite) TestGetLatestSuccess() {
 	now := time.Now().UTC().Round(time.Second)
-	s.tx.Create(&poll_watermarks.PollWatermarkModel{TournamentId: 1, LastSuccessfulPollAt: now})
+	
+	// Seed some logs
+	s.tx.Create(&poll_watermarks.TournamentPollLogModel{
+		TournamentId: 1,
+		Status:       poll_watermarks.StatusSuccess,
+		IntervalEnd:  now.Add(-time.Hour),
+	})
+	s.tx.Create(&poll_watermarks.TournamentPollLogModel{
+		TournamentId: 1,
+		Status:       poll_watermarks.StatusSuccess,
+		IntervalEnd:  now, // This should be the latest
+	})
+	s.tx.Create(&poll_watermarks.TournamentPollLogModel{
+		TournamentId: 1,
+		Status:       poll_watermarks.StatusError,
+		IntervalEnd:  now.Add(time.Hour), // Error, should be ignored
+	})
+	s.tx.Create(&poll_watermarks.TournamentPollLogModel{
+		TournamentId: 2, // Different tournament
+		Status:       poll_watermarks.StatusSuccess,
+		IntervalEnd:  now.Add(2 * time.Hour),
+	})
 
-	// 2. Create watermark for Tournament 2
-	input := poll_watermarks.PollWatermarkModel{
-		TournamentId:         2,
-		LastSuccessfulPollAt: now.Add(time.Hour),
-	}
-	res, err := s.repo.FirstOrCreate(input)
-
-	// 3. Assert
-	s.Require().NoError(err)
-	s.Equal(uint(2), res.TournamentId)
-	s.True(now.Add(time.Hour).Equal(res.LastSuccessfulPollAt))
-
-	var count int64
-	s.tx.Model(&poll_watermarks.PollWatermarkModel{}).Count(&count)
-	s.Equal(int64(2), count)
-}
-
-func (s *PollWatermarkRepoSuite) TestUpdate() {
-	now := time.Now().UTC().Round(time.Second)
-	watermark := poll_watermarks.PollWatermarkModel{
-		TournamentId:         1,
-		LastSuccessfulPollAt: now.Add(-time.Hour),
-	}
-	s.tx.Create(&watermark)
-
-	// Update
-	updatedTime := now
-	watermark.LastSuccessfulPollAt = updatedTime
-	res, err := s.repo.Update(watermark)
+	latest, err := s.repo.GetLatestSuccess(1)
 
 	s.Require().NoError(err)
-	s.True(updatedTime.Equal(res.LastSuccessfulPollAt))
-
-	// Verify in DB
-	var dbModel poll_watermarks.PollWatermarkModel
-	s.tx.First(&dbModel, 1)
-	s.True(updatedTime.Equal(dbModel.LastSuccessfulPollAt))
+	s.Equal(uint(1), latest.TournamentId)
+	s.True(now.Equal(latest.IntervalEnd), "Should return log with latest interval_end")
 }
 
-func TestPollWatermarkRepoSuite(t *testing.T) {
-	suite.Run(t, new(PollWatermarkRepoSuite))
+func (s *PollLogRepoSuite) TestGetLatestSuccess_NotFound() {
+	_, err := s.repo.GetLatestSuccess(999)
+	s.Error(err)
+	s.Equal(gorm.ErrRecordNotFound, err)
+}
+
+func TestPollLogRepoSuite(t *testing.T) {
+	suite.Run(t, new(PollLogRepoSuite))
 }

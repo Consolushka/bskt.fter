@@ -4,7 +4,7 @@ import (
 	"IMP/app/internal/core/poll_watermarks"
 )
 
-type PollWatermarkRepo interface {
-	FirstOrCreate(model poll_watermarks.PollWatermarkModel) (poll_watermarks.PollWatermarkModel, error)
-	Update(model poll_watermarks.PollWatermarkModel) (poll_watermarks.PollWatermarkModel, error)
+type PollLogRepo interface {
+	Create(log poll_watermarks.TournamentPollLogModel) (poll_watermarks.TournamentPollLogModel, error)
+	GetLatestSuccess(tournamentId uint) (poll_watermarks.TournamentPollLogModel, error)
 }
