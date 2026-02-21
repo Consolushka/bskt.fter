@@ -7,7 +7,6 @@ WORKDIR /imp
 
 # Copy the app contents preserving the module structure
 COPY ../../app /imp/app
-COPY ../../.env /imp/
 COPY ../../go.mod /imp/
 COPY ../../go.sum /imp/
 COPY docker/dockhost/startup.sh /
