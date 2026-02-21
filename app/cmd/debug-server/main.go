@@ -18,15 +18,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// 3.0
-// todo: Добавить provider health/state в БД
-// todo: Сделать observability минимально production-ready
 func main() {
 	time.Local = time.UTC
 
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
+	//nolint:errcheck
+	godotenv.Load()
 
 	compositelogger.Init(logger.BuildSettingsFromEnv()...)
 

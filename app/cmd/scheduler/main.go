@@ -13,12 +13,8 @@ import (
 func main() {
 	time.Local = time.UTC
 
-	if err := godotenv.Load(); err != nil {
-		composite_logger.Error("Couldn't load .env file", map[string]interface{}{
-			"error": err,
-		})
-		panic(err)
-	}
+	//nolint:errcheck
+	godotenv.Load()
 
 	composite_logger.Init(logger.BuildSettingsFromEnv()...)
 
