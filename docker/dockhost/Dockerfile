@@ -1,4 +1,4 @@
-FROM golang:1.24.0-alpine3.21
+FROM golang:1.25-alpine3.21
 
 RUN apk update && apk add --no-cache git && apk add --no-cache bash && apk add build-base &&  apk add cronie
 
