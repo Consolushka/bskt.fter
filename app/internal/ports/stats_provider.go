@@ -8,5 +8,6 @@ import (
 
 type StatsProvider interface {
 	GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error)
+	EnrichGameStats(game games.GameStatEntity) (games.GameStatEntity, error)
 	GetPlayerBio(id string) (players.PlayerBioEntity, error)
 }

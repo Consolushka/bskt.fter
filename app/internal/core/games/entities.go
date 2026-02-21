@@ -3,7 +3,10 @@ package games
 import "IMP/app/internal/core/teams"
 
 type GameStatEntity struct {
-	GameModel    GameModel
-	HomeTeamStat teams.TeamStatEntity
-	AwayTeamStat teams.TeamStatEntity
+	GameModel          GameModel
+	ExternalGameId     string
+	HomeTeamExternalId int
+	AwayTeamExternalId int
+	HomeTeamStat       teams.TeamStatEntity
+	AwayTeamStat       teams.TeamStatEntity
 }

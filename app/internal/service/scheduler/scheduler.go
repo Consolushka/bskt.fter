@@ -1,107 +1,126 @@
 package scheduler
 
 import (
-	"IMP/app/internal/adapters/executable_by_scheduler"
-	"IMP/app/internal/adapters/scheduler_repo"
-	"IMP/app/internal/core/scheduler"
+	"IMP/app/internal/adapters/games_repo"
+	"IMP/app/internal/adapters/players_repo"
+	"IMP/app/internal/adapters/teams_repo"
+	"IMP/app/internal/adapters/tournament_poll_logs_repo"
+	"IMP/app/internal/adapters/tournaments_repo"
+	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
-	"IMP/app/pkg/logger"
-	"context"
-	"errors"
-	"sync"
+	"IMP/app/internal/service"
+	"os"
+	"strconv"
 	"time"
 
+	composite_logger "github.com/Consolushka/golang.composite_logger/pkg"
 	"gorm.io/gorm"
 )
 
 func Handle(db *gorm.DB) {
-	schedulerRepo := scheduler_repo.NewGormRepo(db)
+	pollIntervalInMinutes := getEnvInt("SCHEDULER_POLL_INTERVAL", 30)
+	staggerIntervalInMinutes := getEnvInt("SCHEDULER_STAGGER_INTERVAL_MINUTES", 5)
 
-	tasks, err := schedulerRepo.TasksList()
+	composite_logger.Info("Scheduler starting staggered workers", map[string]interface{}{
+		"pollIntervalInMinutes":    pollIntervalInMinutes,
+		"staggerIntervalInMinutes": staggerIntervalInMinutes,
+	})
+
+	tournamentsRepo := tournaments_repo.NewGormRepo(db)
+	activeTournaments, err := tournamentsRepo.ListActive()
 	if err != nil {
-		panic(err)
-	}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	var wg sync.WaitGroup
-	wg.Add(len(tasks))
-
-	for _, task := range tasks {
-		go func() {
-			err = handleTask(task, db, ctx)
-			if err != nil {
-				logger.Error("Error executing task", map[string]interface{}{
-					"task":  task,
-					"error": err,
-				})
-			}
-
-			wg.Done()
-		}()
+		composite_logger.Error("Couldn't fetch active tournaments", map[string]interface{}{
+			"error": err,
+		})
+		return
 	}
 
-	wg.Wait()
+	for _, tournament := range activeTournaments {
+		go runTournamentWorker(db, tournament, time.Duration(pollIntervalInMinutes)*time.Minute)
+
+		// Wait before starting the next worker to distribute the load
+		time.Sleep(time.Duration(staggerIntervalInMinutes) * time.Minute)
+	}
+
+	// Keep the main goroutine alive
+	select {}
 }
 
-func handleTask(taskModel scheduler.ScheduledTaskModel, db *gorm.DB, ctx context.Context) error {
-	schedulerRepo := scheduler_repo.NewGormRepo(db)
+func runTournamentWorker(db *gorm.DB, tournament tournaments.TournamentModel, interval time.Duration) {
+	defer composite_logger.Recover(map[string]interface{}{
+		"tournamentId": tournament.Id,
+	})
 
-	for {
-		task := matchExecutableAdapterByTaskType(taskModel.Type, db)
-		if task == nil {
-			return errors.New("Couldn't find executable adapter for task type: " + taskModel.Type)
-		}
+	composite_logger.Info("Worker started", map[string]interface{}{
+		"tournamentId": tournament.Id,
+		"interval":     interval.String(),
+	})
 
-		now := time.Now()
+	// Immediate first run
+	processTournament(db, tournament)
 
-		var sleepDuration time.Duration
+	// Periodic runs
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
 
-		if now.Before(taskModel.NextExecutionAt) {
-			sleepDuration = taskModel.NextExecutionAt.Sub(now)
-
-			logger.Info(task.GetName()+" will be executed at "+taskModel.NextExecutionAt.Format("02-01-2006 15:04"), map[string]interface{}{
-				"taskModel": taskModel,
-			})
-		} else {
-			logger.Info(task.GetName()+" should been executed at "+taskModel.NextExecutionAt.Format("02-01-2006 15:04")+". Executing...", map[string]interface{}{})
-
-			sleepDuration = taskModel.NextExecutionAt.Sub(now)
-		}
-
-		timer := time.NewTimer(sleepDuration)
-
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-timer.C:
-			err := task.Execute(taskModel.LastExecutedAt)
-
-			if err != nil {
-				logger.Error("Error while processing tournament games", map[string]interface{}{
-					"error": err,
-				})
-			}
-
-			taskModel, err = schedulerRepo.RescheduleTask(taskModel.Id, taskModel.NextExecutionAt.Add(task.GetPeriodicity()))
-			if err != nil {
-				logger.Warn("Couldn't reschedule taskModel", map[string]interface{}{
-					"error": err,
-				})
-			}
-		}
+	for range ticker.C {
+		processTournament(db, tournament)
 	}
 }
 
-func matchExecutableAdapterByTaskType(taskType string, db *gorm.DB) ports.ExecutableByScheduler {
-	switch taskType {
-	case ProcessAmericanTournamentsTaskType:
-		return executable_by_scheduler.NewProcessAmericanTournaments(db)
-	case ProcessNotUrgentEuropeanTournamentsTaskType:
-		return executable_by_scheduler.NewProcessNotUrgentEuropeanTournaments(db)
-	case ProcessUrgentEuropeanTournamentsTaskType:
-		return executable_by_scheduler.NewProcessUrgentEuropeanTournaments(db)
-	default:
-		return nil
+func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
+	var pollLogRepo ports.TournamentPollLogsRepo = tournament_poll_logs_repo.NewGormRepo(db)
+	var tournamentsRepo ports.TournamentsRepo = tournaments_repo.NewGormRepo(db)
+
+	orchestrator := service.NewTournamentsOrchestrator(
+		*service.NewPersistenceService(games_repo.NewGormRepo(db), teams_repo.NewGormRepo(db), players_repo.NewGormRepo(db)),
+		tournamentsRepo,
+		players_repo.NewGormRepo(db),
+		games_repo.NewGormRepo(db),
+		pollLogRepo,
+	)
+
+	now := time.Now().UTC()
+
+	// 1. DISCOVERY: Get latest successful poll interval end
+	latestLog, err := pollLogRepo.GetLatestSuccess(tournament.Id)
+	var intervalStart time.Time
+	if err != nil {
+		// If no logs found, start from today
+		intervalStart = toStartOfUTCDay(now)
+	} else {
+		intervalStart = latestLog.IntervalEnd
 	}
+
+	// 2. INGESTION: Run orchestration (it will handle internal poll logging)
+	if err = orchestrator.ProcessTournament(tournament, intervalStart, now); err != nil {
+		composite_logger.Error("Error while processing tournament games", map[string]interface{}{
+			"tournamentId": tournament.Id,
+			"error":        err,
+		})
+		return
+	}
+
+	composite_logger.Info("Tournament worker cycle finished", map[string]interface{}{
+		"tournamentId": tournament.Id,
+		"from":         intervalStart,
+		"to":           now,
+	})
+}
+
+func toStartOfUTCDay(value time.Time) time.Time {
+	value = value.UTC()
+	return time.Date(value.Year(), value.Month(), value.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func getEnvInt(key string, defaultVal int) int {
+	valStr := os.Getenv(key)
+	if valStr == "" {
+		return defaultVal
+	}
+	val, err := strconv.Atoi(valStr)
+	if err != nil {
+		return defaultVal
+	}
+	return val
 }

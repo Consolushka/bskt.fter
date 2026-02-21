@@ -34,17 +34,47 @@ func (m *MockTournamentsRepo) EXPECT() *MockTournamentsRepoMockRecorder {
 	return m.recorder
 }
 
-// ListActiveTournaments mocks base method.
-func (m *MockTournamentsRepo) ListActiveTournaments() ([]tournaments.TournamentModel, error) {
+// Get mocks base method.
+func (m *MockTournamentsRepo) Get(id uint) (tournaments.TournamentModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListActiveTournaments")
+	ret := m.ctrl.Call(m, "Get", id)
+	ret0, _ := ret[0].(tournaments.TournamentModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockTournamentsRepoMockRecorder) Get(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTournamentsRepo)(nil).Get), id)
+}
+
+// ListActive mocks base method.
+func (m *MockTournamentsRepo) ListActive() ([]tournaments.TournamentModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListActive")
 	ret0, _ := ret[0].([]tournaments.TournamentModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListActiveTournaments indicates an expected call of ListActiveTournaments.
-func (mr *MockTournamentsRepoMockRecorder) ListActiveTournaments() *gomock.Call {
+// ListActive indicates an expected call of ListActive.
+func (mr *MockTournamentsRepoMockRecorder) ListActive() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListActiveTournaments", reflect.TypeOf((*MockTournamentsRepo)(nil).ListActiveTournaments))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListActive", reflect.TypeOf((*MockTournamentsRepo)(nil).ListActive))
+}
+
+// ListByLeagueAliases mocks base method.
+func (m *MockTournamentsRepo) ListByLeagueAliases(aliases []string) ([]tournaments.TournamentModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByLeagueAliases", aliases)
+	ret0, _ := ret[0].([]tournaments.TournamentModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByLeagueAliases indicates an expected call of ListByLeagueAliases.
+func (mr *MockTournamentsRepoMockRecorder) ListByLeagueAliases(aliases interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByLeagueAliases", reflect.TypeOf((*MockTournamentsRepo)(nil).ListByLeagueAliases), aliases)
 }

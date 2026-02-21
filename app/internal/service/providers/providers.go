@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/infra/sportoteka"
 	"IMP/app/internal/ports"
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -37,7 +38,7 @@ func NewProvider(providerName string, externalId *string, params *map[string]int
 
 		intExternalId, err := strconv.Atoi(*externalId)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("atoi %v returned error: %w", *externalId, err)
 		}
 
 		if params == nil {

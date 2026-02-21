@@ -5,107 +5,146 @@ import (
 	"IMP/app/internal/adapters/games_repo"
 	"IMP/app/internal/adapters/players_repo"
 	"IMP/app/internal/adapters/teams_repo"
+	"IMP/app/internal/adapters/tournament_poll_logs_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
+	"IMP/app/internal/infra/logger"
 	"IMP/app/internal/service"
-	"IMP/app/pkg/logger"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 	"github.com/joho/godotenv"
 )
 
+// 3.0
+// todo: Добавить provider health/state в БД
+// todo: Сделать observability минимально production-ready
 func main() {
 	time.Local = time.UTC
-	godotenv.Load()
-	logger.Init(logger.BuildLoggers())
+
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
+	compositelogger.Init(logger.BuildSettingsFromEnv()...)
+
 	database.OpenDbConnection()
 	db := database.GetDB()
 
-	// Инициализируем оркестратор, как в твоем старом локальном main.go
+	tr := tournaments_repo.NewGormRepo(db)
 	orchestrator := service.NewTournamentsOrchestrator(
 		*service.NewPersistenceService(
 			games_repo.NewGormRepo(db),
 			teams_repo.NewGormRepo(db),
 			players_repo.NewGormRepo(db),
 		),
-		tournaments_repo.NewGormRepo(db),
+		tr,
 		players_repo.NewGormRepo(db),
+		games_repo.NewGormRepo(db),
+		tournament_poll_logs_repo.NewGormRepo(db),
 	)
 
-	// Вспомогательная функция для обработки дат
-	parseDates := func(r *http.Request) (time.Time, time.Time, error) {
-		layout := "2006-01-02"
-		fromStr := r.URL.Query().Get("from")
-		toStr := r.URL.Query().Get("to")
-
-		if fromStr == "" || toStr == "" {
-			return time.Time{}, time.Time{}, fmt.Errorf("missing 'from' or 'to' parameters (format: YYYY-MM-DD)")
-		}
-
-		from, err := time.Parse(layout, fromStr)
+	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("ok"))
 		if err != nil {
-			return time.Time{}, time.Time{}, fmt.Errorf("invalid 'from' date")
+			compositelogger.Warn("Failed to write health check response", map[string]interface{}{"error": err})
+			return
 		}
+	})
 
-		to, err := time.Parse(layout, toStr)
-		if err != nil {
-			return time.Time{}, time.Time{}, fmt.Errorf("invalid 'to' date")
-		}
-
-		// Устанавливаем время для захвата всего дня, аналогично твоему коду
-		return from.UTC(), to.UTC().Add(24*time.Hour - time.Nanosecond), nil
-	}
-
-	// Эндпоинты
-	http.HandleFunc("/process/american", func(w http.ResponseWriter, r *http.Request) {
-		from, to, err := parseDates(r)
+	http.HandleFunc("/process/all", func(w http.ResponseWriter, r *http.Request) {
+		from, to, err := parsePeriod(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		logger.Info(fmt.Sprintf("Manual trigger: American Tournaments from %s to %s", from, to), nil)
-		err = orchestrator.ProcessAmericanTournaments(from, to)
-		if err != nil {
+		if err = orchestrator.ProcessAll(from, to); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Write([]byte("OK: American tournaments processed"))
+
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write([]byte(fmt.Sprintf("ok all from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		if err != nil {
+			compositelogger.Warn("Failed to write all response", map[string]interface{}{"error": err})
+			return
+		}
 	})
 
-	http.HandleFunc("/process/european-urgent", func(w http.ResponseWriter, r *http.Request) {
-		from, to, err := parseDates(r)
+	http.HandleFunc("/process/tournament", func(w http.ResponseWriter, r *http.Request) {
+		from, to, err := parsePeriod(r)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		err = orchestrator.ProcessUrgentEuropeanTournaments(from, to)
+		idStr := r.URL.Query().Get("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil || id <= 0 {
+			http.Error(w, "invalid tournament id", http.StatusBadRequest)
+			return
+		}
+
+		tournament, err := tr.Get(uint(id))
 		if err != nil {
+			http.Error(w, fmt.Sprintf("failed to get tournament: %v", err), http.StatusNotFound)
+			return
+		}
+
+		if err = orchestrator.ProcessTournament(tournament, from, to); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Write([]byte("OK: Urgent European tournaments processed"))
+
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write([]byte(fmt.Sprintf("ok tournament=%d from=%s to=%s", id, from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		if err != nil {
+			compositelogger.Warn("Failed to write tournament response", map[string]interface{}{"error": err})
+		}
 	})
 
-	http.HandleFunc("/process/european-not-urgent", func(w http.ResponseWriter, r *http.Request) {
-		from, to, err := parseDates(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		err = orchestrator.ProcessNotUrgentEuropeanTournaments(from, to)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Write([]byte("OK: Not urgent European tournaments processed"))
-	})
-
-	logger.Info("Debug API server started on :8080", nil)
+	compositelogger.Info("Debug server started", map[string]interface{}{"port": 8080})
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}
+}
+
+func parsePeriod(r *http.Request) (time.Time, time.Time, error) {
+	const layout = "2006-01-02"
+	fromRaw := r.URL.Query().Get("from")
+	toRaw := r.URL.Query().Get("to")
+
+	now := time.Now().UTC()
+	defaultFrom := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	defaultTo := now
+
+	if fromRaw == "" && toRaw == "" {
+		return defaultFrom, defaultTo, nil
+	}
+
+	if fromRaw == "" || toRaw == "" {
+		return time.Time{}, time.Time{}, fmt.Errorf("both from and to are required in format YYYY-MM-DD")
+	}
+
+	from, err := time.Parse(layout, fromRaw)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid from date")
+	}
+
+	to, err := time.Parse(layout, toRaw)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid to date")
+	}
+
+	from = from.UTC()
+	to = to.UTC().Add(24*time.Hour - time.Nanosecond)
+	if to.Before(from) {
+		return time.Time{}, time.Time{}, fmt.Errorf("to must be greater or equal to from")
+	}
+
+	return from, to, nil
 }

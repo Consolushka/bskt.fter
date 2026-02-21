@@ -11,10 +11,13 @@ type CdnNbaStatsProviderAdapter struct {
 }
 
 func (c CdnNbaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
-	//TODO implement me
-	panic("implement me")
+	return players.PlayerBioEntity{}, errors.New("CDN_NBA GetPlayerBio not implemented")
 }
 
 func (c CdnNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
 	return nil, errors.New("CDN_NBA GetGamesStatsByPeriod")
+}
+
+func (c CdnNbaStatsProviderAdapter) EnrichGameStats(game games.GameStatEntity) (games.GameStatEntity, error) {
+	return game, nil
 }

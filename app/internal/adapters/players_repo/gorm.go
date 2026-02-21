@@ -10,7 +10,7 @@ type Gorm struct {
 	db *gorm.DB
 }
 
-func (g Gorm) FirstOrCreatePlayer(player players.PlayerModel) (players.PlayerModel, error) {
+func (g Gorm) FirstOrCreate(player players.PlayerModel) (players.PlayerModel, error) {
 	tx := g.db.FirstOrCreate(&player, players.PlayerModel{
 		FullName:  player.FullName,
 		BirthDate: player.BirthDate,
@@ -19,7 +19,7 @@ func (g Gorm) FirstOrCreatePlayer(player players.PlayerModel) (players.PlayerMod
 	return player, tx.Error
 }
 
-func (g Gorm) PlayersByFullName(fullName string) ([]players.PlayerModel, error) {
+func (g Gorm) ListByFullName(fullName string) ([]players.PlayerModel, error) {
 	var playerModels []players.PlayerModel
 
 	tx := g.db.Model(&players.PlayerModel{}).Where(&playerModels, players.PlayerModel{
@@ -29,7 +29,7 @@ func (g Gorm) PlayersByFullName(fullName string) ([]players.PlayerModel, error) 
 	return playerModels, tx.Error
 }
 
-func (g Gorm) FirstOrCreatePlayerStat(playerStat players.GameTeamPlayerStatModel) (players.GameTeamPlayerStatModel, error) {
+func (g Gorm) FirstOrCreateStat(playerStat players.GameTeamPlayerStatModel) (players.GameTeamPlayerStatModel, error) {
 	tx := g.db.FirstOrCreate(&playerStat, players.GameTeamPlayerStatModel{
 		GameId:   playerStat.GameId,
 		TeamId:   playerStat.TeamId,

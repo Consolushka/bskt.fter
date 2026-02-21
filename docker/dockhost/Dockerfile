@@ -1,4 +1,4 @@
-FROM golang:1.23.5-alpine3.21
+FROM golang:1.24.0-alpine3.21
 
 RUN apk update && apk add --no-cache git && apk add --no-cache bash && apk add build-base &&  apk add cronie
 
@@ -7,6 +7,7 @@ WORKDIR /imp
 
 # Copy the app contents preserving the module structure
 COPY ../../app /imp/app
+COPY ../../.env /imp/
 COPY ../../go.mod /imp/
 COPY ../../go.sum /imp/
 COPY docker/dockhost/startup.sh /

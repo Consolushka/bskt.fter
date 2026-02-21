@@ -1,17 +1,28 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 )
 
 func Get[T any](url string, headers *map[string]string) (T, error) {
+	return GetWithContext[T](context.Background(), url, headers)
+}
+
+func GetWithContext[T any](ctx context.Context, url string, headers *map[string]string) (T, error) {
 	var result T
 
-	req, err := http.NewRequest("GET", url, nil)
+	if ctx == nil {
+		return result, errors.New("nil context")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return result, err
+		return result, fmt.Errorf("http.NewRequest with %s, %s, nil returned error: %w", "GET", url, err)
 	}
 
 	if headers != nil {
@@ -22,18 +33,24 @@ func Get[T any](url string, headers *map[string]string) (T, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return result, err
+		return result, fmt.Errorf("http.DefaultClient.Do with %v returned error: %w", req, err)
+	}
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return result, fmt.Errorf("io.ReadAll with %s returned error: %w", url, err)
+	}
+	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusMultipleChoices {
+		return result, fmt.Errorf("http request to %s returned status %d: %s", url, res.StatusCode, string(body))
 	}
 
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			panic(err)
-		}
-	}(res.Body)
-	body, _ := io.ReadAll(res.Body)
-
 	err = json.Unmarshal(body, &result)
+	if err != nil {
+		return result, fmt.Errorf("json.Unmarshal with %v returned error: %w", body, err)
+	}
 
-	return result, err
+	return result, nil
 }

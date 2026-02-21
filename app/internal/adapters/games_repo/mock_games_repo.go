@@ -34,17 +34,32 @@ func (m *MockGamesRepo) EXPECT() *MockGamesRepoMockRecorder {
 	return m.recorder
 }
 
-// FindOrCreateGame mocks base method.
-func (m *MockGamesRepo) FindOrCreateGame(model games.GameModel) (games.GameModel, error) {
+// FirstOrCreate mocks base method.
+func (m *MockGamesRepo) FirstOrCreate(model games.GameModel) (games.GameModel, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindOrCreateGame", model)
+	ret := m.ctrl.Call(m, "FirstOrCreate", model)
 	ret0, _ := ret[0].(games.GameModel)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindOrCreateGame indicates an expected call of FindOrCreateGame.
-func (mr *MockGamesRepoMockRecorder) FindOrCreateGame(model interface{}) *gomock.Call {
+// FirstOrCreate indicates an expected call of FirstOrCreate.
+func (mr *MockGamesRepoMockRecorder) FirstOrCreate(model interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOrCreateGame", reflect.TypeOf((*MockGamesRepo)(nil).FindOrCreateGame), model)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreate", reflect.TypeOf((*MockGamesRepo)(nil).FirstOrCreate), model)
+}
+
+// Exists mocks base method.
+func (m *MockGamesRepo) Exists(model games.GameModel) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Exists", model)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Exists indicates an expected call of Exists.
+func (mr *MockGamesRepoMockRecorder) Exists(model interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockGamesRepo)(nil).Exists), model)
 }

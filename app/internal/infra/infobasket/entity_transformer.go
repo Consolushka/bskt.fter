@@ -4,17 +4,23 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
-	"IMP/app/pkg/logger"
+	"fmt"
 	"strconv"
 	"time"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type EntityTransformer struct{}
 
+func NewEntityTransformer() EntityTransformer {
+	return EntityTransformer{}
+}
+
 func (e *EntityTransformer) Transform(game GameBoxScoreResponse) (games.GameStatEntity, error) {
 	parse, err := time.Parse("02.01.2006 15.04", game.GameDate+" "+game.GameTimeMsk)
 	if err != nil {
-		return games.GameStatEntity{}, err
+		return games.GameStatEntity{}, fmt.Errorf("time.Parse with %s, %v,  returned error: %w", "02.01.2006 15.04", game.GameDate+" "+game.GameTimeMsk, err)
 	}
 
 	duration := 0
@@ -24,6 +30,10 @@ func (e *EntityTransformer) Transform(game GameBoxScoreResponse) (games.GameStat
 		} else {
 			duration += 5
 		}
+	}
+
+	if len(game.GameTeams) < 2 {
+		return games.GameStatEntity{}, fmt.Errorf("not enough teams in game: %d", len(game.GameTeams))
 	}
 
 	return games.GameStatEntity{
@@ -43,7 +53,7 @@ func (e *EntityTransformer) transformTeam(team TeamBoxScoreDto, opponentScore in
 	for i, player := range team.Players {
 		playerStat, err := playersTrans(player)
 		if err != nil {
-			logger.Warn("There was an error with player statistics", map[string]interface{}{
+			compositelogger.Warn("There was an error with player statistics", map[string]interface{}{
 				"player": player,
 				"error":  err,
 			})
@@ -69,7 +79,7 @@ func (e *EntityTransformer) transformTeam(team TeamBoxScoreDto, opponentScore in
 func playersTrans(playerStat PlayerBoxScoreDto) (players.PlayerStatisticEntity, error) {
 	parsedBirth, err := time.Parse("02.01.2006", playerStat.PersonBirth)
 	if err != nil {
-		return players.PlayerStatisticEntity{}, err
+		return players.PlayerStatisticEntity{}, fmt.Errorf("time.Parse with %s, %v,  returned error: %w", "02.01.2006", playerStat.PersonBirth, err)
 	}
 
 	playerName := playerStat.PersonNameEn
@@ -82,7 +92,7 @@ func playersTrans(playerStat PlayerBoxScoreDto) (players.PlayerStatisticEntity, 
 	if playerAttempts == 0 {
 		percentage = 0
 	} else {
-		percentage = float32((playerStat.Goal2 + playerStat.Goal3) / playerAttempts)
+		percentage = float32(playerStat.Goal2+playerStat.Goal3) / float32(playerAttempts)
 	}
 	return players.PlayerStatisticEntity{
 		PlayerExternalId: strconv.Itoa(playerStat.PersonID),

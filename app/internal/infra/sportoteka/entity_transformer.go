@@ -4,15 +4,25 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
-	"IMP/app/pkg/logger"
+	"fmt"
 	"strconv"
 	"time"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type EntityTransformer struct {
 }
 
+func NewEntityTransformer() EntityTransformer {
+	return EntityTransformer{}
+}
+
 func (e *EntityTransformer) Transform(game GameBoxScoreEntity) (games.GameStatEntity, error) {
+	if len(game.Teams) < 2 {
+		return games.GameStatEntity{}, fmt.Errorf("not enough teams in game")
+	}
+
 	var homeTeamStats, awayTeamStats TeamBoxScoreEntity
 	for _, team := range game.Teams {
 		if team.TeamNumber == 1 {
@@ -54,7 +64,7 @@ func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore 
 
 		playerStat, err := e.playerTransform(player)
 		if err != nil {
-			logger.Warn("There was an error with player statistics", map[string]interface{}{
+			compositelogger.Warn("There was an error with player statistics", map[string]interface{}{
 				"player": player,
 				"error":  err,
 			})
@@ -80,7 +90,7 @@ func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore 
 func (e *EntityTransformer) playerTransform(player TeamBoxScoreStartEntity) (players.PlayerStatisticEntity, error) {
 	parsedBirth, err := time.Parse(time.RFC3339, player.Birthday+"+03:00")
 	if err != nil {
-		return players.PlayerStatisticEntity{}, err
+		return players.PlayerStatisticEntity{}, fmt.Errorf("time.Parse with %s, %s returned error: %w", time.RFC3339, player.Birthday+"+03:00", err)
 	}
 
 	playerAttempts := player.Stats.Shot2 + player.Stats.Shot3
@@ -88,7 +98,7 @@ func (e *EntityTransformer) playerTransform(player TeamBoxScoreStartEntity) (pla
 	if playerAttempts == 0 {
 		percentage = 0
 	} else {
-		percentage = float32((player.Stats.Goal2 + player.Stats.Goal3) / playerAttempts)
+		percentage = float32(player.Stats.Goal2+player.Stats.Goal3) / float32(playerAttempts)
 	}
 	return players.PlayerStatisticEntity{
 		PlayerExternalId: strconv.Itoa(*player.PersonId),

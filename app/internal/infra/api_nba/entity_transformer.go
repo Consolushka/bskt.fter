@@ -4,17 +4,16 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
-	"IMP/app/pkg/logger"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
 
 type EntityTransformer struct {
-	client ClientInterface
 }
 
-func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, error) {
+func (e *EntityTransformer) TransformWithoutPlayers(game GameEntity) games.GameStatEntity {
 	duration := 0
 	for i := 0; i < game.Periods.Total; i++ {
 		if i <= 4 {
@@ -54,36 +53,19 @@ func (e *EntityTransformer) Transform(game GameEntity) (games.GameStatEntity, er
 		},
 	}
 
-	err := e.enrichGamePlayers(game, &businessEntity)
-	if err != nil {
-		return games.GameStatEntity{}, err
-	}
-
-	return businessEntity, nil
+	return businessEntity
 }
 
-func (e *EntityTransformer) enrichGamePlayers(game GameEntity, gameBusinessEntity *games.GameStatEntity) error {
-	homeTeamId := game.Teams.Home.Id
+func (e *EntityTransformer) MapPlayerStatistics(response PlayerStatisticResponse, homeTeamId int, awayTeamId int, gameBusinessEntity *games.GameStatEntity) error {
 	homeTeamPlayers := make([]players.PlayerStatisticEntity, 0)
-
-	awayTeamId := game.Teams.Visitors.Id
 	awayTeamPlayers := make([]players.PlayerStatisticEntity, 0)
 
-	gameStat, err := e.client.PlayersStatistics(0, game.Id, 0, "")
-	if err != nil {
-		return err
-	}
-
-	for _, playerStat := range gameStat.Response {
+	for _, playerStat := range response.Response {
 		playerStatEntity := players.PlayerStatisticEntity{}
 
-		playerStatsErr := e.enrichPlayerStatistic(playerStat, &playerStatEntity)
+		playerStatsErr := e.mapPlayerStatistic(playerStat, &playerStatEntity)
 		if playerStatsErr != nil {
-			logger.Warn("There was an error with player statistics", map[string]interface{}{
-				"playerStat":       playerStat,
-				"playerStatEntity": playerStatEntity,
-				"error":            playerStatsErr,
-			})
+			return fmt.Errorf("error mapping player statistic for player %d: %w", playerStat.Player.Id, playerStatsErr)
 		}
 
 		if playerStat.Team.Id == homeTeamId {
@@ -99,7 +81,7 @@ func (e *EntityTransformer) enrichGamePlayers(game GameEntity, gameBusinessEntit
 	return nil
 }
 
-func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, playerBusinessEntity *players.PlayerStatisticEntity) error {
+func (e *EntityTransformer) mapPlayerStatistic(player PlayerStatisticEntity, playerBusinessEntity *players.PlayerStatisticEntity) error {
 	splittedGameTime := strings.Split(player.Min, ":")
 	minutesPlayed, err := strconv.Atoi(splittedGameTime[0])
 	if err != nil {
@@ -148,8 +130,6 @@ func (e *EntityTransformer) enrichPlayerStatistic(player PlayerStatisticEntity, 
 	return nil
 }
 
-func NewEntityTransformer(client ClientInterface) EntityTransformer {
-	return EntityTransformer{
-		client: client,
-	}
+func NewEntityTransformer() EntityTransformer {
+	return EntityTransformer{}
 }

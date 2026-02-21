@@ -6,6 +6,8 @@ import (
 	"IMP/app/internal/infra/sportoteka"
 	"strconv"
 	"time"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type SportotekaStatsProviderAdapter struct {
@@ -17,8 +19,8 @@ type SportotekaStatsProviderAdapter struct {
 }
 
 func (s SportotekaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
-	//TODO implement me
-	panic("implement me")
+	// Sportoteka doesn't provide detailed player bio by ID in current client
+	return players.PlayerBioEntity{}, nil
 }
 
 func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
@@ -27,12 +29,19 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 		return make([]games.GameStatEntity, 0), err
 	}
 
-	gamesEntities := make([]games.GameStatEntity, calendar.TotalCount)
+	gamesEntities := make([]games.GameStatEntity, 0, calendar.TotalCount)
 
-	for i, calendarGame := range calendar.Items {
+	for _, calendarGame := range calendar.Items {
+		if calendarGame.Game.GameStatus != "Result" && calendarGame.Game.GameStatus != "ResultConfirmed" {
+			continue
+		}
 		gameBoxScore, err := s.client.BoxScore(strconv.Itoa(calendarGame.Game.Id))
 		if err != nil {
-			return []games.GameStatEntity{}, err
+			compositelogger.Error("There was an error while fetching game box score", map[string]interface{}{
+				"gameId": calendarGame.Game.Id,
+				"error":  err,
+			})
+			continue
 		}
 
 		if gameBoxScore.Result.Game.GameStatus != "ResultConfirmed" && gameBoxScore.Result.Game.GameStatus != "Result" {
@@ -41,17 +50,25 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 
 		entity, err := s.transformer.Transform(gameBoxScore.Result)
 		if err != nil {
-			return make([]games.GameStatEntity, 0), err
+			compositelogger.Error("There was an error while transforming game box score", map[string]interface{}{
+				"gameId": calendarGame.Game.Id,
+				"error":  err,
+			})
+			continue
 		}
 
 		entity.GameModel.Title = calendarGame.Team1.AbcName + " - " + calendarGame.Team2.AbcName
 		entity.HomeTeamStat.TeamModel.Name = calendarGame.Team1.Name
 		entity.AwayTeamStat.TeamModel.Name = calendarGame.Team2.Name
 
-		gamesEntities[i] = entity
+		gamesEntities = append(gamesEntities, entity)
 	}
 
 	return gamesEntities, nil
+}
+
+func (s SportotekaStatsProviderAdapter) EnrichGameStats(game games.GameStatEntity) (games.GameStatEntity, error) {
+	return game, nil
 }
 
 func NewSportotekaStatsProvider(client sportoteka.ClientInterface, tag string, year int) SportotekaStatsProviderAdapter {
@@ -59,6 +76,6 @@ func NewSportotekaStatsProvider(client sportoteka.ClientInterface, tag string, y
 		tag:         tag,
 		year:        year,
 		client:      client,
-		transformer: sportoteka.EntityTransformer{},
+		transformer: sportoteka.NewEntityTransformer(),
 	}
 }

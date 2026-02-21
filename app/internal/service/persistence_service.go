@@ -5,7 +5,10 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"IMP/app/internal/ports"
-	"IMP/app/pkg/logger"
+	"fmt"
+	"reflect"
+
+	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type PersistenceServiceInterface interface {
@@ -29,9 +32,26 @@ func NewPersistenceService(gamesRepo ports.GamesRepo, teamsRepo ports.TeamsRepo,
 func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	var err error
 
-	game.GameModel, err = s.gamesRepo.FindOrCreateGame(game.GameModel)
+	isExists, err := s.gamesRepo.Exists(game.GameModel)
+
 	if err != nil {
-		return err
+
+		return fmt.Errorf("Exists with %v from %s returned error: %w", game.GameModel, reflect.TypeOf(s.gamesRepo), err)
+
+	}
+
+	if isExists {
+
+		return nil
+
+	}
+
+	game.GameModel, err = s.gamesRepo.FirstOrCreate(game.GameModel)
+
+	if err != nil {
+
+		return fmt.Errorf("FirstOrCreate with %v from %s returned error: %w", game.GameModel, reflect.TypeOf(s.gamesRepo), err)
+
 	}
 	game.HomeTeamStat.GameTeamStatModel.GameId = game.GameModel.Id
 	game.AwayTeamStat.GameTeamStatModel.GameId = game.GameModel.Id
@@ -59,7 +79,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	for _, playerStats := range game.HomeTeamStat.PlayerStats {
 		err = s.savePlayerModel(&playerStats)
 		if err != nil {
-			logger.Warn("savePlayerModel returned error", map[string]interface{}{
+			compositelogger.Warn("savePlayerModel returned error", map[string]interface{}{
 				"playerStats": playerStats,
 				"error":       err,
 			})
@@ -68,7 +88,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 
 		err = s.savePlayerStatModel(&playerStats)
 		if err != nil {
-			logger.Warn("savePlayerStatModel returned error", map[string]interface{}{
+			compositelogger.Warn("savePlayerStatModel returned error", map[string]interface{}{
 				"playerStats": playerStats,
 				"error":       err,
 			})
@@ -79,7 +99,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	for _, playerStats := range game.AwayTeamStat.PlayerStats {
 		err = s.savePlayerModel(&playerStats)
 		if err != nil {
-			logger.Warn("savePlayerModel returned error", map[string]interface{}{
+			compositelogger.Warn("savePlayerModel returned error", map[string]interface{}{
 				"playerStats": playerStats,
 				"error":       err,
 			})
@@ -88,7 +108,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 
 		err = s.savePlayerStatModel(&playerStats)
 		if err != nil {
-			logger.Warn("savePlayerStatModel returned error", map[string]interface{}{
+			compositelogger.Warn("savePlayerStatModel returned error", map[string]interface{}{
 				"playerStats": playerStats,
 				"error":       err,
 			})
@@ -102,9 +122,9 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 func (s PersistenceService) saveTeamModel(teamStats *teams.TeamStatEntity) error {
 	var err error
 
-	teamStats.TeamModel, err = s.teamsRepo.FirstOrCreateTeam(teamStats.TeamModel)
+	teamStats.TeamModel, err = s.teamsRepo.FirstOrCreate(teamStats.TeamModel)
 	if err != nil {
-		return err
+		return fmt.Errorf("FirstOrCreate with %v from %s returned error: %w", teamStats.TeamModel, reflect.TypeOf(s.teamsRepo), err)
 	}
 	teamStats.GameTeamStatModel.TeamId = teamStats.TeamModel.Id
 
@@ -114,12 +134,12 @@ func (s PersistenceService) saveTeamModel(teamStats *teams.TeamStatEntity) error
 func (s PersistenceService) saveTeamStatModel(entity *teams.TeamStatEntity) error {
 	var err error
 
-	entity.GameTeamStatModel, err = s.teamsRepo.FirstOrCreateTeamStats(entity.GameTeamStatModel)
+	entity.GameTeamStatModel, err = s.teamsRepo.FirstOrCreateStats(entity.GameTeamStatModel)
 	if err != nil {
-		return err
+		return fmt.Errorf("FirstOrCreateStats with %v from %s returned error: %w", entity.GameTeamStatModel, reflect.TypeOf(s.teamsRepo), err)
 	}
 
-	for index, _ := range entity.PlayerStats {
+	for index := range entity.PlayerStats {
 		entity.PlayerStats[index].GameTeamPlayerStatModel.GameId = entity.GameTeamStatModel.GameId
 		entity.PlayerStats[index].GameTeamPlayerStatModel.TeamId = entity.GameTeamStatModel.TeamId
 	}
@@ -130,9 +150,9 @@ func (s PersistenceService) saveTeamStatModel(entity *teams.TeamStatEntity) erro
 func (s PersistenceService) savePlayerModel(entity *players.PlayerStatisticEntity) error {
 	var err error
 
-	entity.PlayerModel, err = s.playersRepo.FirstOrCreatePlayer(entity.PlayerModel)
+	entity.PlayerModel, err = s.playersRepo.FirstOrCreate(entity.PlayerModel)
 	if err != nil {
-		return err
+		return fmt.Errorf("FirstOrCreate with %v from %s returned error: %w", entity.PlayerModel, reflect.TypeOf(s.playersRepo), err)
 	}
 	entity.GameTeamPlayerStatModel.PlayerId = entity.PlayerModel.Id
 
@@ -142,9 +162,9 @@ func (s PersistenceService) savePlayerModel(entity *players.PlayerStatisticEntit
 func (s PersistenceService) savePlayerStatModel(entity *players.PlayerStatisticEntity) error {
 	var err error
 
-	entity.GameTeamPlayerStatModel, err = s.playersRepo.FirstOrCreatePlayerStat(entity.GameTeamPlayerStatModel)
+	entity.GameTeamPlayerStatModel, err = s.playersRepo.FirstOrCreateStat(entity.GameTeamPlayerStatModel)
 	if err != nil {
-		return err
+		return fmt.Errorf("FirstOrCreateStat with %v from %s returned error: %w", entity.GameTeamPlayerStatModel, reflect.TypeOf(s.playersRepo), err)
 	}
 
 	return nil
