@@ -1,5 +1,6 @@
 package service
 
+// todo: tests
 import (
 	"IMP/app/internal/core/tournament_poll_logs"
 	"IMP/app/internal/core/tournaments"
@@ -20,7 +21,7 @@ type TournamentsOrchestrator struct {
 	tournamentsRepo    ports.TournamentsRepo
 	playersRepo        ports.PlayersRepo
 	gamesRepo          ports.GamesRepo
-	pollLogRepo        ports.PollLogRepo
+	pollLogRepo        ports.TournamentPollLogsRepo
 }
 
 func NewTournamentsOrchestrator(
@@ -28,7 +29,7 @@ func NewTournamentsOrchestrator(
 	tournamentsRepo ports.TournamentsRepo,
 	playersRepo ports.PlayersRepo,
 	gamesRepo ports.GamesRepo,
-	pollLogRepo ports.PollLogRepo,
+	pollLogRepo ports.TournamentPollLogsRepo,
 ) *TournamentsOrchestrator {
 	return &TournamentsOrchestrator{
 		persistenceService: persistenceService,

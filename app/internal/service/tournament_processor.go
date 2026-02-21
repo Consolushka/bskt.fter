@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Consolushka/golang.composite_logger/pkg"
+	composite_logger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
 type TournamentProcessorInterface interface {
