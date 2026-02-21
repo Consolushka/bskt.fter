@@ -6,21 +6,23 @@ This project, named **IMP**, is a Go-based service designed to collect basketbal
 
 *   **Purpose:** Collects games, team stats, and player stats from providers like `API_NBA`, `INFOBASKET`, and `SPORTOTEKA`.
 *   **Architecture:** Follows **Hexagonal Architecture (Ports and Adapters)**:
-    *   `app/internal/core`: Domain entities and models.
+    *   `app/internal/core`: Domain entities and models (e.g., `games`, `players`, `tournament_poll_logs`).
     *   `app/internal/ports`: Interfaces (contracts) for repositories and providers.
     *   `app/internal/adapters`: Implementations of ports (GORM for DB, specific provider logic).
     *   `app/internal/service`: Business logic, orchestration (scheduler, processor, persistence).
-    *   `app/internal/infra`: Low-level HTTP clients and transformers for external APIs.
+    *   `app/internal/infra`: Low-level HTTP clients, transformers for external APIs, and infrastructure factories.
 *   **Main Components:**
     *   **Scheduler:** A background worker (`app/cmd/scheduler`) that manages distributed workers for each tournament with staggered start times.
     *   **Debug Server:** A small HTTP server (`app/cmd/debug-server`) for manual triggers and debugging.
     *   **Persistence:** Uses GORM to interact with PostgreSQL.
-    ## Technologies
+    *   **Poll Logging:** Every poll cycle is recorded in `tournament_poll_logs` for audit and determining the next poll interval.
 
-*   **Language:** Go 1.24.0
+## Technologies
+
+*   **Language:** Go 1.25
 *   **Database:** PostgreSQL
 *   **ORM:** GORM
-*   **Logging:** Logrus (with support for console, file, and Telegram)
+*   **Logging:** [composite_logger](https://github.com/Consolushka/golang.composite_logger) (Supports Console, File, and Telegram)
 *   **Testing:** Testify, GoMock
 *   **Rate Limiting:** golang.org/x/time/rate
 *   **Migrations:** Goose
@@ -44,30 +46,33 @@ The project uses a `Makefile` for common tasks:
     *   `make test`: Run all tests quickly.
     *   `make test-with-coverage`: Run tests and generate coverage report (mocks excluded).
     *   `make lint`: Run `golangci-lint`.
-    *   `make lint-fix`: Run `golangci-lint` with auto-fix.
 
 ## Development Conventions
 
 *   **Strict Layering:** Never import `adapters` or `infra` directly into `core` or `service`. Use `ports` (interfaces).
+*   **Pure Transformers:** Transformers in `app/internal/infra/<provider>` MUST be pure functions. They only map data and NEVER make network calls.
+*   **Player Processing (Discovery & Ingestion):**
+    *   **Discovery**: Check if player exists in local DB.
+    *   **Ingestion**: Fetch bio from provider only if missing or player is new.
 *   **Naming:**
     *   Repositories should have interfaces in `ports` and implementations in `adapters/<name>_repo/gorm.go`.
     *   Constructors should follow the `NewGormRepo(...)` pattern.
-    *   Methods in single-entity repositories should avoid entity suffixes (e.g., `FirstOrCreate` instead of `FirstOrCreateTeam`).
     *   Receiver names in GORM adapters should be `g`.
+*   **Resilience:** All long-running goroutines (scheduler workers) MUST use `defer composite_logger.Recover(ctx)` to handle panics.
 *   **Testing Strategy:** 
-    *   Use SQLite in-memory for repository testing.
+    *   Use SQLite in-memory for repository testing (`app/pkg/dbtest`).
     *   Follow transactional pattern (`Begin`/`Rollback`) in `testify/suite` for isolation and speed.
+    *   All Stats Providers MUST be covered by unit tests using `MockClientInterface`.
 *   **Mocking:** Use `gomock` for testing. Mocks should be updated whenever an interface in `ports` changes.
-*   **Error Handling:** Use standard library `errors`. Avoid `github.com/pkg/errors`.
-*   **Linting:** Adhere to `.golangci.yml` rules. Shadowing is checked, and cyclomatic complexity is limited to 20.
 *   **Documentation:** Always update `AGENTS.md` when architectural or significant logic changes are made.
-*   **Environment:** Use `.env` for configuration. Mandatory variables include `DB_*` settings, provider API keys (e.g., `API_SPORT_API_KEY`), rate limits (`*_RATE_LIMIT_PER_MINUTE`), and scheduler settings (`SCHEDULER_POLL_INTERVAL`, `SCHEDULER_STAGGER_INTERVAL_MINUTES`).
+*   **Environment:** Use `.env` for configuration. Mandatory variables include `DB_*` settings, provider API keys, rate limits, and logger settings.
 
 ## Directory Structure Highlights
 
 *   `app/cmd/`: Entry points for the application.
 *   `app/database/migrations/`: SQL migration files managed by Goose.
 *   `app/internal/adapters/`: Database and external provider implementations.
-*   `app/internal/core/`: Domain models (e.g., `games`, `players`, `teams`).
+*   `app/internal/core/`: Domain models.
 *   `app/internal/ports/`: Interface definitions.
 *   `app/internal/service/`: Core business logic and orchestrators.
+*   `app/internal/infra/logger/`: Factory for configuring the external `composite_logger`.
