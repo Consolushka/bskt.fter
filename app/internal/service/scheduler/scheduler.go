@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Consolushka/golang.composite_logger/pkg"
+	composite_logger "github.com/Consolushka/golang.composite_logger/pkg"
 	"gorm.io/gorm"
 )
 
@@ -69,7 +69,7 @@ func runTournamentWorker(db *gorm.DB, tournament tournaments.TournamentModel, in
 }
 
 func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
-	var pollLogRepo ports.PollLogRepo = tournament_poll_logs_repo.NewGormRepo(db)
+	var pollLogRepo ports.TournamentPollLogsRepo = tournament_poll_logs_repo.NewGormRepo(db)
 	var tournamentsRepo ports.TournamentsRepo = tournaments_repo.NewGormRepo(db)
 
 	orchestrator := service.NewTournamentsOrchestrator(
