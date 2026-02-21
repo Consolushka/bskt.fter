@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPollWatermarkModel_TableName(t *testing.T) {
-	model := PollWatermarkModel{}
-	assert.Equal(t, "poll_watermarks", model.TableName())
+func TestTournamentPollLogModel_TableName(t *testing.T) {
+	model := TournamentPollLogModel{}
+	assert.Equal(t, "tournament_poll_logs", model.TableName())
 }

@@ -87,7 +87,7 @@ func (s *PollLogRepoSuite) TestGetLatestSuccess() {
 
 func (s *PollLogRepoSuite) TestGetLatestSuccess_NotFound() {
 	_, err := s.repo.GetLatestSuccess(999)
-	s.Error(err)
+	s.Require().Error(err)
 	s.Equal(gorm.ErrRecordNotFound, err)
 }
 

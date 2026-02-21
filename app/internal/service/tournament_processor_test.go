@@ -13,6 +13,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewTournamentProcessor(t *testing.T) {
@@ -50,9 +51,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return(nil, errors.New("stats provider error"))
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 1)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.ErrorContains(t, err, "stats provider error")
+		require.ErrorContains(t, err, "stats provider error")
+		assert.Equal(t, 0, count)
 	})
 
 	t.Run("skips existing games without enrichment and saving", func(t *testing.T) {
@@ -72,9 +74,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockGames.EXPECT().Exists(gomock.Any()).Return(true, nil)
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 99)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, 0, count)
 	})
 
 	t.Run("enriches and saves new game", func(t *testing.T) {
@@ -94,9 +97,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil)
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 77)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
 	})
 
 	t.Run("returns error when game existence check fails", func(t *testing.T) {
@@ -114,9 +118,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockGames.EXPECT().Exists(gomock.Any()).Return(false, errors.New("db error"))
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 11)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.ErrorContains(t, err, "db error")
+		require.ErrorContains(t, err, "db error")
+		assert.Equal(t, 0, count)
 	})
 
 	t.Run("continues when enrich game stats fails", func(t *testing.T) {
@@ -140,9 +145,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil).Times(1)
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 20)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
 	})
 
 	t.Run("continues when save game fails", func(t *testing.T) {
@@ -167,9 +173,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		)
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 21)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
 	})
 
 	t.Run("continues when ListByFullName fails", func(t *testing.T) {
@@ -198,9 +205,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockPlayers.EXPECT().ListByFullName("John Doe").Return(nil, errors.New("players repo error"))
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 22)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
 	})
 
 	t.Run("continues when player not found and GetPlayerBio fails", func(t *testing.T) {
@@ -233,9 +241,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockStats.EXPECT().GetPlayerBio("123").Return(players.PlayerBioEntity{}, errors.New("bio error"))
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 23)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
 	})
 
 	t.Run("continues when player not found and GetPlayerBio succeeds", func(t *testing.T) {
@@ -271,8 +280,9 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		}, nil)
 
 		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 24)
-		err := processor.ProcessByPeriod(from, to)
+		count, err := processor.ProcessByPeriod(from, to)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
+		assert.Equal(t, 1, count)
 	})
 }
