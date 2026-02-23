@@ -47,7 +47,6 @@ func (a ApiNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([
 	var passedGames []api_nba.GameEntity
 
 	if from.Truncate(24*time.Hour) != to.Truncate(24*time.Hour) {
-		// todo: test api_nba
 		fromResponse, err := a.client.Games(0, from.Format("2006-01-02"), "1", "", "", "")
 		if err != nil {
 			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, from.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)

@@ -1,6 +1,5 @@
 package service
 
-// todo: tests
 import (
 	"IMP/app/internal/core/tournament_poll_logs"
 	"IMP/app/internal/core/tournaments"
@@ -83,6 +82,13 @@ func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.Tourna
 	status := tournament_poll_logs.StatusSuccess
 	var errMsg *string
 	if processErr != nil {
+		compositelogger.Error("Error while processing tournament by Period", map[string]interface{}{
+			"tournamentId": tournament.Id,
+			"from":         from,
+			"to":           to,
+			"error":        processErr,
+		})
+
 		status = tournament_poll_logs.StatusError
 		s := processErr.Error()
 		errMsg = &s
