@@ -51,6 +51,7 @@ The project uses a `Makefile` for common tasks:
 
 *   **Strict Layering:** Never import `adapters` or `infra` directly into `core` or `service`. Use `ports` (interfaces).
 *   **Pure Transformers:** Transformers in `app/internal/infra/<provider>` MUST be pure functions. They only map data and NEVER make network calls.
+    *   **Data Normalization:** All percentage-based statistics (e.g., Field Goals Percentage) MUST be normalized to the `0.0 - 1.0` range (where 1.0 represents 100%) before being mapped to core entities, ensuring consistency across different providers.
 *   **Player Processing (Discovery & Ingestion):**
     *   **Discovery**: Check if player exists in local DB.
     *   **Ingestion**: Fetch bio from provider only if missing or player is new.

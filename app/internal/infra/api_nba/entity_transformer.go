@@ -122,7 +122,7 @@ func (e *EntityTransformer) mapPlayerStatistic(player PlayerStatisticEntity, pla
 			Assists:              uint8(player.Assists),
 			Steals:               uint8(player.Steals),
 			Blocks:               uint8(player.Blocks),
-			FieldGoalsPercentage: float32(fgp),
+			FieldGoalsPercentage: float32(fgp) / 100,
 			Turnovers:            uint8(player.Turnovers),
 		},
 	}
