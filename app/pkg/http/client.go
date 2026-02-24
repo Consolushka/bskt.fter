@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 )
 
 func Get[T any](url string, headers *map[string]string) (T, error) {
@@ -49,7 +50,7 @@ func GetWithContext[T any](ctx context.Context, url string, headers *map[string]
 
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		return result, fmt.Errorf("json.Unmarshal with %v returned error: %w", body, err)
+		return result, fmt.Errorf("json.Unmarshal with %v, %v returned error: %w", string(body), reflect.TypeOf(result), err)
 	}
 
 	return result, nil
