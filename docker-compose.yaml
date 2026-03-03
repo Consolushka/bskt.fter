@@ -19,3 +19,11 @@ services:
       - '5432:5432'
     volumes:
       - ./_db/pg_data:/var/lib/postgresql/data
+    networks:
+      - imp
+
+
+# Networks to be created to facilitate communication between containers
+networks:
+  imp:
+    external: true
