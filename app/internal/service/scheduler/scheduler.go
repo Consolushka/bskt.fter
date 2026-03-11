@@ -27,6 +27,20 @@ func Handle(db *gorm.DB) {
 	})
 
 	tournamentsRepo := tournaments_repo.NewGormRepo(db)
+	gamesRepo := games_repo.NewGormRepo(db)
+	teamsRepo := teams_repo.NewGormRepo(db)
+	playersRepo := players_repo.NewGormRepo(db)
+	pollLogRepo := tournament_poll_logs_repo.NewGormRepo(db)
+
+	persistenceService := service.NewPersistenceService(gamesRepo, teamsRepo, playersRepo)
+	orchestrator := service.NewTournamentsOrchestrator(
+		persistenceService,
+		tournamentsRepo,
+		playersRepo,
+		gamesRepo,
+		pollLogRepo,
+	)
+
 	activeTournaments, err := tournamentsRepo.ListActive()
 	if err != nil {
 		composite_logger.Error("Couldn't fetch active tournaments", map[string]interface{}{
@@ -36,7 +50,7 @@ func Handle(db *gorm.DB) {
 	}
 
 	for _, tournament := range activeTournaments {
-		go runTournamentWorker(db, tournament, time.Duration(pollIntervalInMinutes)*time.Minute)
+		go runTournamentWorker(orchestrator, pollLogRepo, tournament, time.Duration(pollIntervalInMinutes)*time.Minute)
 
 		// Wait before starting the next worker to distribute the load
 		time.Sleep(time.Duration(staggerIntervalInMinutes) * time.Minute)
@@ -46,7 +60,12 @@ func Handle(db *gorm.DB) {
 	select {}
 }
 
-func runTournamentWorker(db *gorm.DB, tournament tournaments.TournamentModel, interval time.Duration) {
+func runTournamentWorker(
+	orchestrator *service.TournamentsOrchestrator,
+	pollLogRepo ports.TournamentPollLogsRepo,
+	tournament tournaments.TournamentModel,
+	interval time.Duration,
+) {
 	defer composite_logger.Recover(map[string]interface{}{
 		"tournamentId": tournament.Id,
 	})
@@ -57,29 +76,22 @@ func runTournamentWorker(db *gorm.DB, tournament tournaments.TournamentModel, in
 	})
 
 	// Immediate first run
-	processTournament(db, tournament)
+	processTournament(orchestrator, pollLogRepo, tournament)
 
 	// Periodic runs
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		processTournament(db, tournament)
+		processTournament(orchestrator, pollLogRepo, tournament)
 	}
 }
 
-func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
-	var pollLogRepo ports.TournamentPollLogsRepo = tournament_poll_logs_repo.NewGormRepo(db)
-	var tournamentsRepo ports.TournamentsRepo = tournaments_repo.NewGormRepo(db)
-
-	orchestrator := service.NewTournamentsOrchestrator(
-		*service.NewPersistenceService(games_repo.NewGormRepo(db), teams_repo.NewGormRepo(db), players_repo.NewGormRepo(db)),
-		tournamentsRepo,
-		players_repo.NewGormRepo(db),
-		games_repo.NewGormRepo(db),
-		pollLogRepo,
-	)
-
+func processTournament(
+	orchestrator *service.TournamentsOrchestrator,
+	pollLogRepo ports.TournamentPollLogsRepo,
+	tournament tournaments.TournamentModel,
+) {
 	now := time.Now().UTC()
 
 	// 1. DISCOVERY: Get latest successful poll interval end
@@ -93,7 +105,7 @@ func processTournament(db *gorm.DB, tournament tournaments.TournamentModel) {
 	}
 
 	// 2. INGESTION: Run orchestration (it will handle internal poll logging)
-	if err = orchestrator.ProcessTournament(tournament, intervalStart, now); err != nil {
+	if err := orchestrator.ProcessTournament(tournament, intervalStart, now); err != nil {
 		composite_logger.Error("Error while processing tournament games", map[string]interface{}{
 			"tournamentId": tournament.Id,
 			"error":        err,
