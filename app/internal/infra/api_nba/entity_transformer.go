@@ -4,6 +4,7 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
+	"IMP/app/pkg/statsutil"
 	"errors"
 	"fmt"
 	"strconv"
@@ -122,7 +123,7 @@ func (e *EntityTransformer) mapPlayerStatistic(player PlayerStatisticEntity, pla
 			Assists:              uint8(player.Assists),
 			Steals:               uint8(player.Steals),
 			Blocks:               uint8(player.Blocks),
-			FieldGoalsPercentage: float32(fgp) / 100,
+			FieldGoalsPercentage: statsutil.FromPercentage100(fgp),
 			Turnovers:            uint8(player.Turnovers),
 		},
 	}
