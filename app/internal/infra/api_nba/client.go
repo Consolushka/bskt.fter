@@ -4,7 +4,6 @@ import (
 	"IMP/app/pkg/http"
 	"context"
 	"net/url"
-	"os"
 	"strconv"
 	"time"
 
@@ -24,13 +23,7 @@ type Client struct {
 	limiter     *rate.Limiter
 }
 
-func NewClient(baseUrl string, token string) ClientInterface {
-	rateLimitStr := os.Getenv("API_NBA_RATE_LIMIT_PER_MINUTE")
-	rateLimit, err := strconv.Atoi(rateLimitStr)
-	if err != nil || rateLimit <= 0 {
-		rateLimit = 10
-	}
-
+func NewClient(baseUrl string, token string, rateLimit int) ClientInterface {
 	return &Client{
 		baseUrl: baseUrl,
 		token:   token,

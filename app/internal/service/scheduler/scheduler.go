@@ -7,11 +7,10 @@ import (
 	"IMP/app/internal/adapters/tournament_poll_logs_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/core/tournaments"
+	"IMP/app/internal/infra/config"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service"
 	"context"
-	"os"
-	"strconv"
 	"sync"
 	"time"
 
@@ -32,11 +31,7 @@ type Scheduler struct {
 	tournamentsRepo ports.TournamentsRepo
 }
 
-func NewScheduler(db *gorm.DB) *Scheduler {
-	pollIntervalInMinutes := getEnvInt("SCHEDULER_POLL_INTERVAL", 30)
-	staggerIntervalInMinutes := getEnvInt("SCHEDULER_STAGGER_INTERVAL_MINUTES", 5)
-	refreshIntervalInMinutes := getEnvInt("SCHEDULER_REFRESH_INTERVAL_MINUTES", 5)
-
+func NewScheduler(db *gorm.DB, cfg *config.Config) *Scheduler {
 	tournamentsRepo := tournaments_repo.NewGormRepo(db)
 	gamesRepo := games_repo.NewGormRepo(db)
 	teamsRepo := teams_repo.NewGormRepo(db)
@@ -50,12 +45,13 @@ func NewScheduler(db *gorm.DB) *Scheduler {
 		playersRepo,
 		gamesRepo,
 		pollLogRepo,
+		cfg.Providers,
 	)
 
 	return &Scheduler{
-		pollInterval:    time.Duration(pollIntervalInMinutes) * time.Minute,
-		staggerInterval: time.Duration(staggerIntervalInMinutes) * time.Minute,
-		refreshInterval: time.Duration(refreshIntervalInMinutes) * time.Minute,
+		pollInterval:    time.Duration(cfg.Scheduler.PollInterval) * time.Minute,
+		staggerInterval: time.Duration(cfg.Scheduler.StaggerInterval) * time.Minute,
+		refreshInterval: time.Duration(cfg.Scheduler.RefreshInterval) * time.Minute,
 		workers:         make(map[uint]context.CancelFunc),
 		orchestrator:    orchestrator,
 		pollLogRepo:     pollLogRepo,
@@ -63,8 +59,8 @@ func NewScheduler(db *gorm.DB) *Scheduler {
 	}
 }
 
-func Handle(db *gorm.DB) {
-	s := NewScheduler(db)
+func Handle(db *gorm.DB, cfg *config.Config) {
+	s := NewScheduler(db, cfg)
 	s.Run()
 }
 
@@ -203,16 +199,4 @@ func (s *Scheduler) processTournament(tournament tournaments.TournamentModel) {
 func toStartOfUTCDay(value time.Time) time.Time {
 	value = value.UTC()
 	return time.Date(value.Year(), value.Month(), value.Day(), 0, 0, 0, 0, time.UTC)
-}
-
-func getEnvInt(key string, defaultVal int) int {
-	valStr := os.Getenv(key)
-	if valStr == "" {
-		return defaultVal
-	}
-	val, err := strconv.Atoi(valStr)
-	if err != nil {
-		return defaultVal
-	}
-	return val
 }

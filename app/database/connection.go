@@ -1,8 +1,8 @@
 package database
 
 import (
+	"IMP/app/internal/infra/config"
 	"fmt"
-	"os"
 
 	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 	"gorm.io/driver/postgres"
@@ -11,24 +11,18 @@ import (
 
 var db *gorm.DB
 
-func OpenDbConnection() *gorm.DB {
+func OpenDbConnection(cfg config.DatabaseConfig) *gorm.DB {
 	if db != nil {
 		return db
 	}
 
-	host := os.Getenv("DB_HOST")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-	port := os.Getenv("DB_PORT")
-
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", host, user, password, dbName, port)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", cfg.Host, cfg.User, cfg.Password, cfg.Name, cfg.Port)
 	connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		compositelogger.Error("failed to connect database", map[string]interface{}{
-			"host":   host,
-			"dbName": dbName,
-			"port":   port,
+			"host":   cfg.Host,
+			"dbName": cfg.Name,
+			"port":   cfg.Port,
 			"error":  err,
 		})
 		panic("failed to connect database")

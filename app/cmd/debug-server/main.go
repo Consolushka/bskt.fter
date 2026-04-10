@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournament_poll_logs_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
+	"IMP/app/internal/infra/config"
 	"IMP/app/internal/infra/logger"
 	"IMP/app/internal/service"
 	"fmt"
@@ -24,10 +25,14 @@ func main() {
 	//nolint:errcheck
 	godotenv.Load()
 
-	compositelogger.Init(logger.BuildSettingsFromEnv()...)
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
 
-	database.OpenDbConnection()
-	db := database.GetDB()
+	compositelogger.Init(logger.BuildSettings(cfg.Logger)...)
+
+	db := database.OpenDbConnection(cfg.Database)
 
 	tr := tournaments_repo.NewGormRepo(db)
 	orchestrator := service.NewTournamentsOrchestrator(
@@ -40,6 +45,7 @@ func main() {
 		players_repo.NewGormRepo(db),
 		games_repo.NewGormRepo(db),
 		tournament_poll_logs_repo.NewGormRepo(db),
+		cfg.Providers,
 	)
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {

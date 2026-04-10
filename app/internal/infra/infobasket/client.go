@@ -4,8 +4,6 @@ import (
 	"IMP/app/pkg/http"
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -37,13 +35,7 @@ func (c *Client) ScheduledGames(compId int) ([]GameScheduleDto, error) {
 	return http.Get[[]GameScheduleDto](c.baseUrl+fmt.Sprintf(scheduleEndpointPattern, compId), nil)
 }
 
-func NewInfobasketClient(leadHost string) ClientInterface {
-	rateLimitStr := os.Getenv("INFOBASKET_RATE_LIMIT_PER_MINUTE")
-	rateLimit, err := strconv.Atoi(rateLimitStr)
-	if err != nil || rateLimit <= 0 {
-		rateLimit = 25
-	}
-
+func NewInfobasketClient(leadHost string, rateLimit int) ClientInterface {
 	return &Client{
 		baseUrl: "https://" + leadHost + ".infobasket.su",
 		limiter: rate.NewLimiter(rate.Every(time.Minute/time.Duration(rateLimit)), 1),

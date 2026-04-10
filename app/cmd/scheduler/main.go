@@ -2,6 +2,7 @@ package main
 
 import (
 	"IMP/app/database"
+	"IMP/app/internal/infra/config"
 	"IMP/app/internal/infra/logger"
 	"IMP/app/internal/service/scheduler"
 	"time"
@@ -16,9 +17,14 @@ func main() {
 	//nolint:errcheck
 	godotenv.Load()
 
-	composite_logger.Init(logger.BuildSettingsFromEnv()...)
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		panic(err)
+	}
 
-	db := database.OpenDbConnection()
+	composite_logger.Init(logger.BuildSettings(cfg.Logger)...)
 
-	scheduler.Handle(db)
+	db := database.OpenDbConnection(cfg.Database)
+
+	scheduler.Handle(db, cfg)
 }

@@ -3,12 +3,12 @@ package providers
 import (
 	"IMP/app/internal/adapters/stats_provider"
 	"IMP/app/internal/infra/api_nba"
+	"IMP/app/internal/infra/config"
 	"IMP/app/internal/infra/infobasket"
 	"IMP/app/internal/infra/sportoteka"
 	"IMP/app/internal/ports"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 )
 
@@ -21,13 +21,11 @@ const (
 	Sportoteka = "SPORTOTEKA"
 )
 
-func NewProvider(providerName string, externalId *string, params *map[string]interface{}) (ports.StatsProvider, error) {
+func NewProvider(providerName string, externalId *string, params *map[string]interface{}, cfg config.ProvidersConfig) (ports.StatsProvider, error) {
 	switch providerName {
 	case ApiNba:
-		apiNbaToken := os.Getenv("API_SPORT_API_KEY")
-
 		return stats_provider.NewApiNbaStatsProviderAdapter(
-			api_nba.NewClient("https://v2.nba.api-sports.io", apiNbaToken),
+			api_nba.NewClient("https://v2.nba.api-sports.io", cfg.ApiSportApiKey, cfg.ApiNbaRateLimit),
 		), nil
 	case CdnNba:
 		return nil, errors.New("not implemented")
@@ -50,7 +48,7 @@ func NewProvider(providerName string, externalId *string, params *map[string]int
 		}
 
 		return stats_provider.NewInfobasketStatsProviderAdapter(
-			infobasket.NewInfobasketClient(leadHost.(string)),
+			infobasket.NewInfobasketClient(leadHost.(string), cfg.InfobasketRateLimit),
 			intExternalId,
 		), nil
 	case Sportoteka:
@@ -67,7 +65,7 @@ func NewProvider(providerName string, externalId *string, params *map[string]int
 		}
 
 		return stats_provider.NewSportotekaStatsProvider(
-			sportoteka.NewClient(),
+			sportoteka.NewClient(cfg.SportotekaRateLimit),
 			*externalId,
 			int(year.(float64)),
 		), nil
