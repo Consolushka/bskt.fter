@@ -47,19 +47,19 @@ func (a ApiNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([
 	var passedGames []api_nba.GameEntity
 
 	if from.Truncate(24*time.Hour) != to.Truncate(24*time.Hour) {
-		fromResponse, err := a.client.Games(0, from.Format("2006-01-02"), "1", "", "", "")
+		fromResponse, err := a.client.Games(0, from.Format("2006-01-02"), "", "", "", "")
 		if err != nil {
 			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, from.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
 		}
 		passedGames = fromResponse.Response
 
-		toResponse, err := a.client.Games(0, to.Format("2006-01-02"), "1", "", "", "")
+		toResponse, err := a.client.Games(0, to.Format("2006-01-02"), "", "", "", "")
 		if err != nil {
 			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, to.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
 		}
 		passedGames = append(passedGames, toResponse.Response...)
 	} else {
-		response, err := a.client.Games(0, to.Format("2006-01-02"), "1", "", "", "")
+		response, err := a.client.Games(0, to.Format("2006-01-02"), "", "", "", "")
 		if err != nil {
 			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, to.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
 		}
