@@ -2,13 +2,12 @@ package providers
 
 import (
 	"IMP/app/internal/adapters/stats_provider"
+	"IMP/app/internal/infra/config"
 	"strings"
 	"testing"
 )
 
 func TestNewProvider(t *testing.T) {
-	t.Setenv("API_SPORT_API_KEY", "test-token")
-
 	extID := "12345"
 	invalidExtID := "abc"
 	sportotekaTag := "vbl"
@@ -20,6 +19,13 @@ func TestNewProvider(t *testing.T) {
 		"year": float64(2025),
 	}
 	emptyParams := map[string]interface{}{}
+
+	cfg := config.ProvidersConfig{
+		ApiSportApiKey:      "test-token",
+		ApiNbaRateLimit:     10,
+		InfobasketRateLimit: 25,
+		SportotekaRateLimit: 25,
+	}
 
 	tests := []struct {
 		name         string
@@ -110,7 +116,7 @@ func TestNewProvider(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			provider, err := NewProvider(tc.providerName, tc.externalID, tc.params)
+			provider, err := NewProvider(tc.providerName, tc.externalID, tc.params, cfg)
 
 			if tc.wantErr != "" {
 				if err == nil {

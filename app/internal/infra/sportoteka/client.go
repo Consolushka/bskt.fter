@@ -4,8 +4,6 @@ import (
 	"IMP/app/pkg/http"
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -31,13 +29,7 @@ func (c Client) BoxScore(gameId string) (GameBoxScoreResponse, error) {
 	return http.Get[GameBoxScoreResponse](fmt.Sprintf(c.baseUrl+"/api/abc/games/game?id=%s&lang=en", gameId), nil)
 }
 
-func NewClient() ClientInterface {
-	rateLimitStr := os.Getenv("SPORTOTEKA_RATE_LIMIT_PER_MINUTE")
-	rateLimit, err := strconv.Atoi(rateLimitStr)
-	if err != nil || rateLimit <= 0 {
-		rateLimit = 25
-	}
-
+func NewClient(rateLimit int) ClientInterface {
 	return Client{
 		baseUrl: "https://basket.sportoteka.org",
 		limiter: rate.NewLimiter(rate.Every(time.Minute/time.Duration(rateLimit)), 1),

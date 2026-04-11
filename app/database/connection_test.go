@@ -1,7 +1,7 @@
 package database
 
 import (
-	"os"
+	"IMP/app/internal/infra/config"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,7 +35,7 @@ func TestOpenDbConnection_Singleton(t *testing.T) {
 	defer func() { db = oldDb }()
 
 	// Если db уже не nil, функция должна вернуть её сразу, не пытаясь подключиться
-	res := OpenDbConnection()
+	res := OpenDbConnection(config.DatabaseConfig{})
 	assert.Equal(t, mockDB, res)
 }
 
@@ -45,16 +45,10 @@ func TestOpenDbConnection_Panic(t *testing.T) {
 	db = nil
 	defer func() { db = oldDb }()
 
-	// Очищаем переменные окружения, чтобы спровоцировать ошибку или панику
-
-	if err := os.Setenv("DB_HOST", ""); err != nil {
-		t.Error(err)
-	}
-	if err := os.Setenv("DB_USER", ""); err != nil {
-		t.Error(err)
-	}
-
 	assert.Panics(t, func() {
-		OpenDbConnection()
+		OpenDbConnection(config.DatabaseConfig{
+			Host: "",
+			User: "",
+		})
 	})
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"IMP/app/internal/core/tournament_poll_logs"
 	"IMP/app/internal/core/tournaments"
+	"IMP/app/internal/infra/config"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service/providers"
 	"encoding/json"
@@ -21,6 +22,7 @@ type TournamentsOrchestrator struct {
 	playersRepo        ports.PlayersRepo
 	gamesRepo          ports.GamesRepo
 	pollLogRepo        ports.TournamentPollLogsRepo
+	providersCfg       config.ProvidersConfig
 }
 
 func NewTournamentsOrchestrator(
@@ -29,6 +31,7 @@ func NewTournamentsOrchestrator(
 	playersRepo ports.PlayersRepo,
 	gamesRepo ports.GamesRepo,
 	pollLogRepo ports.TournamentPollLogsRepo,
+	providersCfg config.ProvidersConfig,
 ) *TournamentsOrchestrator {
 	return &TournamentsOrchestrator{
 		persistenceService: persistenceService,
@@ -36,6 +39,7 @@ func NewTournamentsOrchestrator(
 		playersRepo:        playersRepo,
 		gamesRepo:          gamesRepo,
 		pollLogRepo:        pollLogRepo,
+		providersCfg:       providersCfg,
 	}
 }
 
@@ -68,7 +72,7 @@ func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.Tourna
 		}
 	}
 
-	statsProvider, err := providers.NewProvider(tournament.Provider.ProviderName, tournament.Provider.ExternalId, params)
+	statsProvider, err := providers.NewProvider(tournament.Provider.ProviderName, tournament.Provider.ExternalId, params, t.providersCfg)
 	if err != nil {
 		return fmt.Errorf("error while creating stats provider for tournament %d: %w", tournament.Id, err)
 	}

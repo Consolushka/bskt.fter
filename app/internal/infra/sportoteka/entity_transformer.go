@@ -4,6 +4,7 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
+	"IMP/app/pkg/statsutil"
 	"fmt"
 	"strconv"
 	"time"
@@ -94,12 +95,7 @@ func (e *EntityTransformer) playerTransform(player TeamBoxScoreStartEntity) (pla
 	}
 
 	playerAttempts := player.Stats.Shot2 + player.Stats.Shot3
-	var percentage float32
-	if playerAttempts == 0 {
-		percentage = 0
-	} else {
-		percentage = float32(player.Stats.Goal2+player.Stats.Goal3) / float32(playerAttempts)
-	}
+	percentage := statsutil.FromRatio(player.Stats.Goal2+player.Stats.Goal3, playerAttempts)
 	return players.PlayerStatisticEntity{
 		PlayerExternalId: strconv.Itoa(*player.PersonId),
 		PlayerModel: players.PlayerModel{
