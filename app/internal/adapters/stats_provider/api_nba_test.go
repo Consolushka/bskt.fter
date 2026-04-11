@@ -97,7 +97,7 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		dateStr := "2024-02-14"
 
 		mockClient.EXPECT().
-			Games(0, dateStr, "1", "", "", "").
+			Games(0, dateStr, "", "", "", "").
 			Return(api_nba.GamesResponse{
 				Response: []api_nba.GameEntity{
 					{
@@ -130,7 +130,7 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		to := time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC)
 
 		mockClient.EXPECT().
-			Games(0, "2024-02-14", "1", "", "", "").
+			Games(0, "2024-02-14", "", "", "", "").
 			Return(api_nba.GamesResponse{
 				Response: []api_nba.GameEntity{
 					{Id: 1001, Status: api_nba.GameStatusEntity{Short: 3}},
@@ -138,7 +138,7 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 			}, nil)
 
 		mockClient.EXPECT().
-			Games(0, "2024-02-15", "1", "", "", "").
+			Games(0, "2024-02-15", "", "", "", "").
 			Return(api_nba.GamesResponse{
 				Response: []api_nba.GameEntity{
 					{Id: 1002, Status: api_nba.GameStatusEntity{Short: 3}},
@@ -156,7 +156,7 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		to := time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC)
 
 		mockClient.EXPECT().
-			Games(0, "2024-02-14", "1", "", "", "").
+			Games(0, "2024-02-14", "", "", "", "").
 			Return(api_nba.GamesResponse{}, errors.New("from call failed"))
 
 		_, err := adapter.GetGamesStatsByPeriod(from, to)
@@ -168,11 +168,11 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		to := time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC)
 
 		mockClient.EXPECT().
-			Games(0, "2024-02-14", "1", "", "", "").
+			Games(0, "2024-02-14", "", "", "", "").
 			Return(api_nba.GamesResponse{}, nil)
 
 		mockClient.EXPECT().
-			Games(0, "2024-02-15", "1", "", "", "").
+			Games(0, "2024-02-15", "", "", "", "").
 			Return(api_nba.GamesResponse{}, errors.New("to call failed"))
 
 		_, err := adapter.GetGamesStatsByPeriod(from, to)
