@@ -1,0 +1,5 @@
+### Get Game BoxScore
+GET https://{{infobasket_host}}.infobasket.su/Widget/GetOnline/123456?format=json&lang=ru
+
+### Get Competition Calendar
+GET https://{{infobasket_host}}.infobasket.su/Comp/GetCalendar/?comps=789&format=json
