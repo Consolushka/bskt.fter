@@ -2,6 +2,7 @@ package providers
 
 import (
 	"IMP/app/internal/adapters/stats_provider"
+	"IMP/app/internal/infra/api_basketball"
 	"IMP/app/internal/infra/api_nba"
 	"IMP/app/internal/infra/config"
 	"IMP/app/internal/infra/infobasket"
@@ -15,14 +16,29 @@ import (
 type Provider string
 
 const (
-	ApiNba     = "API_NBA"
-	CdnNba     = "CDN_NBA"
-	Infobasket = "INFOBASKET"
-	Sportoteka = "SPORTOTEKA"
+	ApiNba        = "API_NBA"
+	ApiBasketball = "API_BASKETBALL"
+	CdnNba        = "CDN_NBA"
+	Infobasket    = "INFOBASKET"
+	Sportoteka    = "SPORTOTEKA"
 )
 
 func NewProvider(providerName string, externalId *string, params *map[string]interface{}, cfg config.ProvidersConfig) (ports.StatsProvider, error) {
 	switch providerName {
+	case ApiBasketball:
+		if externalId == nil {
+			return nil, errors.New("external id (league id) must be set")
+		}
+
+		leagueId, err := strconv.Atoi(*externalId)
+		if err != nil {
+			return nil, fmt.Errorf("atoi %v returned error: %w", *externalId, err)
+		}
+
+		return stats_provider.NewApiBasketballStatsProviderAdapter(
+			api_basketball.NewClient("https://v1.basketball.api-sports.io", cfg.ApiSportApiKey, cfg.ApiBasketballRateLimit),
+			leagueId,
+		), nil
 	case ApiNba:
 		return stats_provider.NewApiNbaStatsProviderAdapter(
 			api_nba.NewClient("https://v2.nba.api-sports.io", cfg.ApiSportApiKey, cfg.ApiNbaRateLimit),
