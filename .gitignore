@@ -28,3 +28,6 @@ go.work.sum
 app.log
 
 _db
+
+# private files
+*.private.env.json
