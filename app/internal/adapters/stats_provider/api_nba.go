@@ -44,39 +44,43 @@ func (a ApiNbaStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEn
 }
 
 func (a ApiNbaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time) ([]games.GameStatEntity, error) {
-	var passedGames []api_nba.GameEntity
+	var rawGames []api_nba.GameEntity
 
-	if from.Truncate(24*time.Hour) != to.Truncate(24*time.Hour) {
-		fromResponse, err := a.client.Games(0, from.Format("2006-01-02"), "", "", "", "")
-		if err != nil {
-			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, from.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
-		}
-		passedGames = fromResponse.Response
+	// Calculate all unique dates to fetch.
+	uniqueDates := make(map[string]struct{})
 
-		toResponse, err := a.client.Games(0, to.Format("2006-01-02"), "", "", "", "")
-		if err != nil {
-			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, to.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
-		}
-		passedGames = append(passedGames, toResponse.Response...)
-	} else {
-		response, err := a.client.Games(0, to.Format("2006-01-02"), "", "", "", "")
-		if err != nil {
-			return nil, fmt.Errorf("games with %v, %v, %v, %v, %v, %v from %s returned error: %w", 0, to.Format("2006-01-02"), "1", "", "", "", reflect.TypeOf(a.client), err)
-		}
+	// Iterate through all dates in the range [from, to]
+	for d := from; !d.After(to); d = d.Add(24 * time.Hour) {
+		uniqueDates[d.Format("2006-01-02")] = struct{}{}
+	}
+	// Explicitly add 'to' date to ensure it's covered even if loop boundary is tricky
+	uniqueDates[to.Format("2006-01-02")] = struct{}{}
 
-		passedGames = response.Response
+	for dateStr := range uniqueDates {
+		response, err := a.client.Games(0, dateStr, "", "", "", "")
+		if err != nil {
+			return nil, fmt.Errorf("games with date %s from %s returned error: %w", dateStr, reflect.TypeOf(a.client), err)
+		}
+		rawGames = append(rawGames, response.Response...)
 	}
 
-	gamesStatsEntities := make([]games.GameStatEntity, 0, len(passedGames))
+	gamesStatsEntities := make([]games.GameStatEntity, 0, len(rawGames))
+	processedGameIds := make(map[int]struct{})
 
-	for _, passedGame := range passedGames {
-		if passedGame.Status.Short != 3 {
+	for _, rawGame := range rawGames {
+		// Deduplicate: same game might be returned for different dates if we overlap
+		if _, ok := processedGameIds[rawGame.Id]; ok {
 			continue
 		}
-		gameStatEntity := a.entityTransformer.TransformWithoutPlayers(passedGame)
-		gameStatEntity.ExternalGameId = strconv.Itoa(passedGame.Id)
-		gameStatEntity.HomeTeamExternalId = passedGame.Teams.Home.Id
-		gameStatEntity.AwayTeamExternalId = passedGame.Teams.Visitors.Id
+		processedGameIds[rawGame.Id] = struct{}{}
+
+		if rawGame.Status.Short != 3 {
+			continue
+		}
+		gameStatEntity := a.entityTransformer.TransformWithoutPlayers(rawGame)
+		gameStatEntity.ExternalGameId = strconv.Itoa(rawGame.Id)
+		gameStatEntity.HomeTeamExternalId = rawGame.Teams.Home.Id
+		gameStatEntity.AwayTeamExternalId = rawGame.Teams.Visitors.Id
 
 		gamesStatsEntities = append(gamesStatsEntities, gameStatEntity)
 	}

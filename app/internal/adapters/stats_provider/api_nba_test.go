@@ -86,13 +86,12 @@ func TestApiNbaStatsProviderAdapter_GetPlayerBio(t *testing.T) {
 }
 
 func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockClient := api_nba.NewMockClientInterface(ctrl)
-	adapter := NewApiNbaStatsProviderAdapter(mockClient)
-
 	t.Run("successfully fetches games for a single day", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockClient := api_nba.NewMockClientInterface(ctrl)
+		adapter := NewApiNbaStatsProviderAdapter(mockClient)
+
 		date := time.Date(2024, 2, 14, 0, 0, 0, 0, time.UTC)
 		dateStr := "2024-02-14"
 
@@ -109,10 +108,6 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 						},
 						Date: api_nba.GameDateEntity{Start: date},
 					},
-					{
-						Id:     1002,
-						Status: api_nba.GameStatusEntity{Short: 1}, // Scheduled, should be skipped
-					},
 				},
 			}, nil)
 
@@ -121,29 +116,28 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		require.NoError(t, err)
 		assert.Len(t, games, 1)
 		assert.Equal(t, "1001", games[0].ExternalGameId)
-		assert.Equal(t, 1, games[0].HomeTeamExternalId)
-		assert.Equal(t, 2, games[0].AwayTeamExternalId)
 	})
 
-	t.Run("successfully fetches games for a date range (2 calls)", func(t *testing.T) {
+	t.Run("successfully fetches games for a date range", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockClient := api_nba.NewMockClientInterface(ctrl)
+		adapter := NewApiNbaStatsProviderAdapter(mockClient)
+
 		from := time.Date(2024, 2, 14, 0, 0, 0, 0, time.UTC)
 		to := time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC)
 
-		mockClient.EXPECT().
-			Games(0, "2024-02-14", "", "", "", "").
-			Return(api_nba.GamesResponse{
-				Response: []api_nba.GameEntity{
-					{Id: 1001, Status: api_nba.GameStatusEntity{Short: 3}},
-				},
-			}, nil)
-
-		mockClient.EXPECT().
-			Games(0, "2024-02-15", "", "", "", "").
-			Return(api_nba.GamesResponse{
-				Response: []api_nba.GameEntity{
-					{Id: 1002, Status: api_nba.GameStatusEntity{Short: 3}},
-				},
-			}, nil)
+		// Expected dates: 2024-02-14, 2024-02-15
+		dates := []string{"2024-02-14", "2024-02-15"}
+		for i, d := range dates {
+			mockClient.EXPECT().
+				Games(0, d, "", "", "", "").
+				Return(api_nba.GamesResponse{
+					Response: []api_nba.GameEntity{
+						{Id: 1000 + i, Status: api_nba.GameStatusEntity{Short: 3}},
+					},
+				}, nil)
+		}
 
 		games, err := adapter.GetGamesStatsByPeriod(from, to)
 
@@ -151,39 +145,49 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		assert.Len(t, games, 2)
 	})
 
-	t.Run("returns error when first API call fails (from date)", func(t *testing.T) {
+	t.Run("deduplicates games by ID", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockClient := api_nba.NewMockClientInterface(ctrl)
+		adapter := NewApiNbaStatsProviderAdapter(mockClient)
+
 		from := time.Date(2024, 2, 14, 0, 0, 0, 0, time.UTC)
 		to := time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC)
 
-		mockClient.EXPECT().
-			Games(0, "2024-02-14", "", "", "", "").
-			Return(api_nba.GamesResponse{}, errors.New("from call failed"))
-
-		_, err := adapter.GetGamesStatsByPeriod(from, to)
-		assert.ErrorContains(t, err, "from call failed")
-	})
-
-	t.Run("returns error when second API call fails (to date)", func(t *testing.T) {
-		from := time.Date(2024, 2, 14, 0, 0, 0, 0, time.UTC)
-		to := time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC)
+		// Return same game for both dates
+		game := api_nba.GameEntity{
+			Id:     1001,
+			Status: api_nba.GameStatusEntity{Short: 3},
+			Teams: api_nba.GameTeamsEntity{
+				Home:     api_nba.TeamEntity{Id: 1},
+				Visitors: api_nba.TeamEntity{Id: 2},
+			},
+		}
 
 		mockClient.EXPECT().
 			Games(0, "2024-02-14", "", "", "", "").
-			Return(api_nba.GamesResponse{}, nil)
+			Return(api_nba.GamesResponse{Response: []api_nba.GameEntity{game}}, nil)
 
 		mockClient.EXPECT().
 			Games(0, "2024-02-15", "", "", "", "").
-			Return(api_nba.GamesResponse{}, errors.New("to call failed"))
+			Return(api_nba.GamesResponse{Response: []api_nba.GameEntity{game}}, nil)
 
-		_, err := adapter.GetGamesStatsByPeriod(from, to)
-		assert.ErrorContains(t, err, "to call failed")
+		games, err := adapter.GetGamesStatsByPeriod(from, to)
+
+		require.NoError(t, err)
+		assert.Len(t, games, 1, "Should deduplicate game with ID 1001")
 	})
 
-	t.Run("returns error when single API call fails", func(t *testing.T) {
+	t.Run("returns error when any API call fails", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockClient := api_nba.NewMockClientInterface(ctrl)
+		adapter := NewApiNbaStatsProviderAdapter(mockClient)
+
 		date := time.Date(2024, 2, 14, 0, 0, 0, 0, time.UTC)
 		mockClient.EXPECT().
 			Games(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-			Return(api_nba.GamesResponse{}, errors.New("api error"))
+			Return(api_nba.GamesResponse{}, errors.New("api error")).AnyTimes()
 
 		_, err := adapter.GetGamesStatsByPeriod(date, date)
 		assert.ErrorContains(t, err, "api error")

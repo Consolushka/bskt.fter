@@ -79,7 +79,9 @@ func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.Tourna
 
 	processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, t.gamesRepo, tournament.Id)
 
-	savedGamesCount, processErr := processor.ProcessByPeriod(from, to)
+	// UNIVERSAL LOOKBACK: Always look back 24 hours to catch late confirmations/transitions
+	searchFrom := from.Add(-24 * time.Hour)
+	savedGamesCount, processErr := processor.ProcessByPeriod(searchFrom, to)
 
 	// LOGGING: Record results to database
 	pollEndAt := time.Now()
