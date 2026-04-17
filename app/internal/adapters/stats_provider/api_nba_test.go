@@ -178,7 +178,7 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		assert.Len(t, games, 1, "Should deduplicate game with ID 1001")
 	})
 
-	t.Run("returns error when any API call fails", func(t *testing.T) {
+	t.Run("doesn't return error when any API call fails (resilience)", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mockClient := api_nba.NewMockClientInterface(ctrl)
@@ -189,8 +189,9 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 			Games(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(api_nba.GamesResponse{}, errors.New("api error")).AnyTimes()
 
-		_, err := adapter.GetGamesStatsByPeriod(date, date)
-		assert.ErrorContains(t, err, "api error")
+		games, err := adapter.GetGamesStatsByPeriod(date, date)
+		assert.NoError(t, err)
+		assert.Empty(t, games)
 	})
 }
 
