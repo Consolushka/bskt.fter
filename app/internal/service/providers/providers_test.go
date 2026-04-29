@@ -21,10 +21,11 @@ func TestNewProvider(t *testing.T) {
 	emptyParams := map[string]interface{}{}
 
 	cfg := config.ProvidersConfig{
-		ApiSportApiKey:      "test-token",
-		ApiNbaRateLimit:     10,
-		InfobasketRateLimit: 25,
-		SportotekaRateLimit: 25,
+		ApiSportApiKey:         "test-token",
+		ApiNbaRateLimit:        10,
+		ApiBasketballRateLimit: 10,
+		InfobasketRateLimit:    25,
+		SportotekaRateLimit:    25,
 	}
 
 	tests := []struct {
@@ -112,6 +113,19 @@ func TestNewProvider(t *testing.T) {
 			params:       &sportotekaParams,
 			expectedType: "sportoteka",
 		},
+		{
+			name:         "returns API_BASKETBALL provider",
+			providerName: ApiBasketball,
+			externalID:   &extID,
+			params:       &emptyParams,
+			expectedType: "api_basketball",
+		},
+		{
+			name:         "returns error for API_BASKETBALL with nil external id",
+			providerName: ApiBasketball,
+			params:       &emptyParams,
+			wantErr:      "external id (league id) must be set",
+		},
 	}
 
 	for _, tc := range tests {
@@ -139,6 +153,10 @@ func TestNewProvider(t *testing.T) {
 			case "api_nba":
 				if _, ok := provider.(stats_provider.ApiNbaStatsProviderAdapter); !ok {
 					t.Fatalf("expected ApiNbaStatsProviderAdapter, got %T", provider)
+				}
+			case "api_basketball":
+				if _, ok := provider.(stats_provider.ApiBasketballStatsProviderAdapter); !ok {
+					t.Fatalf("expected ApiBasketballStatsProviderAdapter, got %T", provider)
 				}
 			case "infobasket":
 				if _, ok := provider.(stats_provider.InfobasketStatsProviderAdapter); !ok {

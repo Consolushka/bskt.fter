@@ -1,0 +1,14 @@
+### Get Games by date
+GET {{api_nba_url}}/games?date=2026-04-13
+x-rapidapi-host: v2.nba.api-sports.io
+x-rapidapi-key: {{api_nba_token}}
+
+### Get Player Statistics for a game
+GET {{api_nba_url}}/players/statistics?game=12543
+x-rapidapi-host: v2.nba.api-sports.io
+x-rapidapi-key: {{api_nba_token}}
+
+### Search Player by ID
+GET {{api_nba_url}}/players?id=237
+x-rapidapi-host: v2.nba.api-sports.io
+x-rapidapi-key: {{api_nba_token}}

@@ -1,0 +1,17 @@
+### Get Games By Date
+GET {{api_basketball_url}}/games?date=2026-04-13
+x-apisports-key: {{api_basketball_token}}
+
+### Get Teams Statistics by gameId
+GET {{api_basketball_url}}/games/statistics/teams?id=454569
+x-apisports-key: {{api_basketball_token}}
+
+### Get Players Statistics by gameId
+GET {{api_basketball_url}}/games/statistics/players?id=454569
+x-apisports-key: {{api_basketball_token}}
+
+### Get PlayerInfo by id
+GET {{api_basketball_url}}/players?id=5150
+x-apisports-key: {{api_basketball_token}}
+
+###

@@ -1,0 +1,5 @@
+### Get Competition Calendar (Season Calendar)
+GET {{sportoteka_url}}/api/abc/comps/calendar?tag=vbl&season=2024&maxResultCount=1000&from=2024-03-21&to=2024-03-22
+
+### Get Game Statistics (BoxScore)
+GET {{sportoteka_url}}/api/abc/games/game?id=987654&lang=en

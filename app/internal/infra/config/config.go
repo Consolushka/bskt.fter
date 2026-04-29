@@ -28,8 +28,9 @@ type SchedulerConfig struct {
 
 type ProvidersConfig struct {
 	ApiSportApiKey      string `env:"API_SPORT_API_KEY" env-required:"true"`
-	ApiNbaRateLimit     int    `env:"API_NBA_RATE_LIMIT_PER_MINUTE" env-default:"10"`
-	InfobasketRateLimit int    `env:"INFOBASKET_RATE_LIMIT_PER_MINUTE" env-default:"25"`
+	ApiNbaRateLimit        int    `env:"API_NBA_RATE_LIMIT_PER_MINUTE" env-default:"10"`
+	ApiBasketballRateLimit int    `env:"API_BASKETBALL_RATE_LIMIT_PER_MINUTE" env-default:"10"`
+	InfobasketRateLimit    int    `env:"INFOBASKET_RATE_LIMIT_PER_MINUTE" env-default:"25"`
 	SportotekaRateLimit int    `env:"SPORTOTEKA_RATE_LIMIT_PER_MINUTE" env-default:"25"`
 }
 
