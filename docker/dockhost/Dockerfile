@@ -13,7 +13,7 @@ COPY docker/dockhost/startup.sh /
 
 RUN chmod +x /startup.sh
 
-RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+RUN go install github.com/pressly/goose/v3/cmd/goose@v3.27.0
 RUN go install github.com/golang/mock/mockgen@v1.6.0
 
 RUN go mod download
