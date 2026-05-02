@@ -68,6 +68,7 @@ func (e *EntityTransformer) transformTeam(team TeamBoxScoreDto, opponentScore in
 		TeamModel: teams.TeamModel{
 			Name:     team.TeamName.CompTeamNameEn,
 			HomeTown: team.TeamName.CompTeamRegionNameEn,
+			Alias:    team.TeamName.CompTeamAbcNameEn,
 		},
 		GameTeamStatModel: teams.GameTeamStatModel{
 			Score:     team.Score,
