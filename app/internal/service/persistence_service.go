@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/ports"
 	"fmt"
 	"reflect"
+	"strings"
 
 	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
@@ -122,7 +123,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 func (s PersistenceService) saveTeamModel(teamStats *teams.TeamStatEntity) error {
 	var err error
 
-	incomingAlias := teamStats.TeamModel.Alias
+	incomingAlias := strings.ToUpper(teamStats.TeamModel.Alias)
 
 	teamStats.TeamModel, err = s.teamsRepo.FirstOrCreate(teamStats.TeamModel)
 	if err != nil {

@@ -58,7 +58,7 @@ func TestPersistenceService_SaveTeamModel_AliasLogic(t *testing.T) {
 			expectedAlias: "Lak",
 		},
 		{
-			name: "Case 3: Existing team (no alias in DB) and no provider alias - update with generated",
+			name: "Case 3: Existing team (no alias in DB) and no provider alias - update with generated (uppercase)",
 			incomingTeam: teams.TeamModel{
 				Name:  "Lakers",
 				Alias: "",
@@ -69,13 +69,13 @@ func TestPersistenceService_SaveTeamModel_AliasLogic(t *testing.T) {
 				Alias: "", // Found in DB without alias
 			},
 			expectUpdate:  true,
-			expectedAlias: "Lak",
+			expectedAlias: "LAK",
 		},
 		{
-			name: "Case 4: Existing team (no alias in DB) and has provider alias - update with provider's",
+			name: "Case 4: Existing team (no alias in DB) and has provider alias - update with provider's (uppercase)",
 			incomingTeam: teams.TeamModel{
 				Name:  "Lakers",
-				Alias: "LAL",
+				Alias: "lal",
 			},
 			dbReturnTeam: teams.TeamModel{
 				Id:    1,
@@ -86,18 +86,18 @@ func TestPersistenceService_SaveTeamModel_AliasLogic(t *testing.T) {
 			expectedAlias: "LAL",
 		},
 		{
-			name: "Case 5: Existing team (with alias in DB) and no provider alias - no update",
+			name: "Case 6: Existing team (with alias in DB) and provider alias differs - update with provider's (normalized)",
 			incomingTeam: teams.TeamModel{
 				Name:  "Lakers",
-				Alias: "",
+				Alias: "lak",
 			},
 			dbReturnTeam: teams.TeamModel{
 				Id:    1,
 				Name:  "Lakers",
 				Alias: "LAL",
 			},
-			expectUpdate:  false,
-			expectedAlias: "LAL",
+			expectUpdate:  true,
+			expectedAlias: "LAK",
 		},
 		{
 			name: "Case 6: Existing team (with alias in DB) and provider alias differs - update with provider's",

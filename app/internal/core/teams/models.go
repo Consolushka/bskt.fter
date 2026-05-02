@@ -1,6 +1,7 @@
 package teams
 
 import (
+	"strings"
 	"time"
 )
 
@@ -22,10 +23,13 @@ func (t *TeamModel) AutoGenerateAlias() string {
 		return ""
 	}
 	runes := []rune(t.Name)
+	var alias string
 	if len(runes) > 3 {
-		return string(runes[:3])
+		alias = string(runes[:3])
+	} else {
+		alias = t.Name
 	}
-	return t.Name
+	return strings.ToUpper(alias)
 }
 
 type GameTeamStatModel struct {

@@ -22,7 +22,7 @@ func TestTeamModel_AutoGenerateAlias(t *testing.T) {
 			input: TeamModel{
 				Name: "Lakers",
 			},
-			expected: "Lak",
+			expected: "LAK",
 		},
 		{
 			name: "short name",
@@ -34,7 +34,7 @@ func TestTeamModel_AutoGenerateAlias(t *testing.T) {
 		{
 			name: "2-char name",
 			input: TeamModel{
-				Name: "CS",
+				Name: "cs",
 			},
 			expected: "CS",
 		},
