@@ -1,17 +1,34 @@
 package teams
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type TeamModel struct {
 	Id        uint      `gorm:"column:id"`
 	Name      string    `gorm:"column:name"`
 	HomeTown  string    `gorm:"column:home_town"`
+	Alias     string    `gorm:"column:alias"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
 }
 
 func (TeamModel) TableName() string {
 	return "teams"
+}
+
+func (g *TeamModel) BeforeSave(tx *gorm.DB) error {
+	if g.Alias == "" && g.Name != "" {
+		runes := []rune(g.Name)
+		if len(runes) > 3 {
+			g.Alias = string(runes[:3])
+		} else {
+			g.Alias = g.Name
+		}
+	}
+	return nil
 }
 
 type GameTeamStatModel struct {
