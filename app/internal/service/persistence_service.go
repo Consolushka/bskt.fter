@@ -122,10 +122,28 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 func (s PersistenceService) saveTeamModel(teamStats *teams.TeamStatEntity) error {
 	var err error
 
+	incomingAlias := teamStats.TeamModel.Alias
+
 	teamStats.TeamModel, err = s.teamsRepo.FirstOrCreate(teamStats.TeamModel)
 	if err != nil {
 		return fmt.Errorf("FirstOrCreate with %v from %s returned error: %w", teamStats.TeamModel, reflect.TypeOf(s.teamsRepo), err)
 	}
+
+	newAlias := ""
+	if incomingAlias != "" && incomingAlias != teamStats.TeamModel.Alias {
+		newAlias = incomingAlias
+	} else if teamStats.TeamModel.Alias == "" && incomingAlias == "" {
+		newAlias = teamStats.TeamModel.AutoGenerateAlias()
+	}
+
+	if newAlias != "" {
+		err = s.teamsRepo.UpdateAlias(teamStats.TeamModel.Id, newAlias)
+		if err != nil {
+			return fmt.Errorf("UpdateAlias for team %d returned error: %w", teamStats.TeamModel.Id, err)
+		}
+		teamStats.TeamModel.Alias = newAlias
+	}
+
 	teamStats.GameTeamStatModel.TeamId = teamStats.TeamModel.Id
 
 	return nil

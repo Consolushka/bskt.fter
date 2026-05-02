@@ -2,8 +2,6 @@ package teams
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type TeamModel struct {
@@ -19,16 +17,15 @@ func (TeamModel) TableName() string {
 	return "teams"
 }
 
-func (g *TeamModel) BeforeSave(tx *gorm.DB) error {
-	if g.Alias == "" && g.Name != "" {
-		runes := []rune(g.Name)
-		if len(runes) > 3 {
-			g.Alias = string(runes[:3])
-		} else {
-			g.Alias = g.Name
-		}
+func (t *TeamModel) AutoGenerateAlias() string {
+	if t.Name == "" {
+		return ""
 	}
-	return nil
+	runes := []rune(t.Name)
+	if len(runes) > 3 {
+		return string(runes[:3])
+	}
+	return t.Name
 }
 
 type GameTeamStatModel struct {

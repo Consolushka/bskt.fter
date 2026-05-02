@@ -63,3 +63,17 @@ func (mr *MockTeamsRepoMockRecorder) FirstOrCreateStats(model interface{}) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreateStats", reflect.TypeOf((*MockTeamsRepo)(nil).FirstOrCreateStats), model)
 }
+
+// UpdateAlias mocks base method.
+func (m *MockTeamsRepo) UpdateAlias(id uint, alias string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAlias", id, alias)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateAlias indicates an expected call of UpdateAlias.
+func (mr *MockTeamsRepoMockRecorder) UpdateAlias(id, alias interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAlias", reflect.TypeOf((*MockTeamsRepo)(nil).UpdateAlias), id, alias)
+}
