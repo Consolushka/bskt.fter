@@ -97,7 +97,7 @@ func main() {
 			return
 		}
 
-		if err = orchestrator.ProcessTournament(tournament, from, to); err != nil {
+		if err = orchestrator.ProcessTournament(tournament, from, to, nil); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
