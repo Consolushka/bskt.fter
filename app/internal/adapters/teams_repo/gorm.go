@@ -11,12 +11,20 @@ type Gorm struct {
 }
 
 func (g Gorm) FirstOrCreate(model teams.TeamModel) (teams.TeamModel, error) {
+	if model.Alias == "" {
+		model.Alias = model.AutoGenerateAlias()
+	}
+
 	tx := g.db.FirstOrCreate(&model, teams.TeamModel{
 		Name:     model.Name,
 		HomeTown: model.HomeTown,
 	})
 
 	return model, tx.Error
+}
+
+func (g Gorm) UpdateAlias(id uint, alias string) error {
+	return g.db.Model(&teams.TeamModel{}).Where("id = ?", id).Update("alias", alias).Error
 }
 
 func (g Gorm) FirstOrCreateStats(model teams.GameTeamStatModel) (teams.GameTeamStatModel, error) {

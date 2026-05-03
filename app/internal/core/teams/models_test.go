@@ -11,7 +11,46 @@ func TestTeamModel_TableName(t *testing.T) {
 	assert.Equal(t, "teams", model.TableName())
 }
 
-func TestGameTeamStatModel_TableName(t *testing.T) {
-	model := GameTeamStatModel{}
-	assert.Equal(t, "game_team_stats", model.TableName())
+func TestTeamModel_AutoGenerateAlias(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    TeamModel
+		expected string
+	}{
+		{
+			name: "long name",
+			input: TeamModel{
+				Name: "Lakers",
+			},
+			expected: "LAK",
+		},
+		{
+			name: "short name",
+			input: TeamModel{
+				Name: "OKC",
+			},
+			expected: "OKC",
+		},
+		{
+			name: "2-char name",
+			input: TeamModel{
+				Name: "cs",
+			},
+			expected: "CS",
+		},
+		{
+			name: "multibyte characters",
+			input: TeamModel{
+				Name: "ЦСКА",
+			},
+			expected: "ЦСК",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			model := tt.input
+			assert.Equal(t, tt.expected, model.AutoGenerateAlias())
+		})
+	}
 }

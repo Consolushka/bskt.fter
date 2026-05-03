@@ -34,6 +34,7 @@ func (e *EntityTransformer) TransformWithoutPlayers(game GameEntity) games.GameS
 			TeamModel: teams.TeamModel{
 				Name:     game.Teams.Home.Nickname,
 				HomeTown: strings.TrimRight(strings.Replace(game.Teams.Home.Name, game.Teams.Home.Nickname, "", 1), " "),
+				Alias:    game.Teams.Home.Code,
 			},
 			GameTeamStatModel: teams.GameTeamStatModel{
 				Score:     game.Scores.Home.Points,
@@ -45,6 +46,7 @@ func (e *EntityTransformer) TransformWithoutPlayers(game GameEntity) games.GameS
 			TeamModel: teams.TeamModel{
 				Name:     game.Teams.Visitors.Nickname,
 				HomeTown: strings.TrimRight(strings.Replace(game.Teams.Visitors.Name, game.Teams.Visitors.Nickname, "", 1), " "),
+				Alias:    game.Teams.Visitors.Code,
 			},
 			GameTeamStatModel: teams.GameTeamStatModel{
 				Score:     game.Scores.Visitors.Points,
