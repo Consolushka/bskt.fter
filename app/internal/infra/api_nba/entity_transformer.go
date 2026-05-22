@@ -86,6 +86,9 @@ func (e *EntityTransformer) MapPlayerStatistics(response PlayerStatisticResponse
 
 func (e *EntityTransformer) mapPlayerStatistic(player PlayerStatisticEntity, playerBusinessEntity *players.PlayerStatisticEntity) error {
 	splittedGameTime := strings.Split(player.Min, ":")
+	if splittedGameTime[0] == "--" {
+		splittedGameTime[0] = "0"
+	}
 	minutesPlayed, err := strconv.Atoi(splittedGameTime[0])
 	if err != nil {
 		return errors.New(err.Error())
