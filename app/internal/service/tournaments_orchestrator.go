@@ -59,7 +59,7 @@ func (t TournamentsOrchestrator) ProcessAll(from, to time.Time) error {
 
 // ProcessTournament
 // Processes a single tournament for a given period and records the result in poll logs
-func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.TournamentModel, from, to time.Time) error {
+func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.TournamentModel, from, to time.Time, nextPollAt *time.Time) error {
 	pollStartAt := time.Now()
 
 	var params *map[string]interface{}
@@ -109,6 +109,7 @@ func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.Tourna
 		SavedGamesCount: savedGamesCount,
 		Status:          status,
 		ErrorMessage:    errMsg,
+		NextPollAt:      nextPollAt,
 	})
 
 	if logErr != nil {
@@ -134,7 +135,7 @@ func (t TournamentsOrchestrator) processTournamentsByPeriod(activeTournaments []
 		go func(tournament tournaments.TournamentModel) {
 			defer tournamentsGroup.Done()
 
-			err := t.ProcessTournament(tournament, from, to)
+			err := t.ProcessTournament(tournament, from, to, nil)
 			if err != nil {
 				compositelogger.Error("Error while processing tournament", map[string]interface{}{
 					"error":      err,

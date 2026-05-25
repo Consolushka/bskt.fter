@@ -181,7 +181,8 @@ func (s *Scheduler) processTournament(tournament tournaments.TournamentModel) {
 	}
 
 	// 2. INGESTION: Run orchestration (it will handle internal poll logging)
-	if err := s.orchestrator.ProcessTournament(tournament, intervalStart, now); err != nil {
+	nextPollAt := now.Add(s.pollInterval)
+	if err := s.orchestrator.ProcessTournament(tournament, intervalStart, now, &nextPollAt); err != nil {
 		composite_logger.Error("Error while processing tournament games", map[string]interface{}{
 			"tournamentId": tournament.Id,
 			"error":        err,

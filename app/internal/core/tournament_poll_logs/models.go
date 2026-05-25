@@ -20,6 +20,7 @@ type TournamentPollLogModel struct {
 	Status          string     `gorm:"column:status"`
 	ErrorMessage    *string    `gorm:"column:error_message"`
 	CreatedAt       time.Time  `gorm:"column:created_at"`
+	NextPollAt      *time.Time `gorm:"column:next_poll_at"`
 }
 
 func (TournamentPollLogModel) TableName() string {
