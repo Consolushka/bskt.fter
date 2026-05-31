@@ -22,6 +22,7 @@ type TournamentsOrchestrator struct {
 	playersRepo        ports.PlayersRepo
 	gamesRepo          ports.GamesRepo
 	pollLogRepo        ports.TournamentPollLogsRepo
+	aggregator         ports.Aggregator
 	providersCfg       config.ProvidersConfig
 }
 
@@ -31,6 +32,7 @@ func NewTournamentsOrchestrator(
 	playersRepo ports.PlayersRepo,
 	gamesRepo ports.GamesRepo,
 	pollLogRepo ports.TournamentPollLogsRepo,
+	aggregator ports.Aggregator,
 	providersCfg config.ProvidersConfig,
 ) *TournamentsOrchestrator {
 	return &TournamentsOrchestrator{
@@ -39,6 +41,7 @@ func NewTournamentsOrchestrator(
 		playersRepo:        playersRepo,
 		gamesRepo:          gamesRepo,
 		pollLogRepo:        pollLogRepo,
+		aggregator:         aggregator,
 		providersCfg:       providersCfg,
 	}
 }
@@ -77,7 +80,7 @@ func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.Tourna
 		return fmt.Errorf("error while creating stats provider for tournament %d: %w", tournament.Id, err)
 	}
 
-	processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, t.gamesRepo, tournament.Id)
+	processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, t.gamesRepo, t.aggregator, tournament.Id)
 
 	// UNIVERSAL LOOKBACK: Always look back 24 hours to catch late confirmations/transitions
 	searchFrom := from.Add(-24 * time.Hour)

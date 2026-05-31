@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/adapters/tournament_poll_logs_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/core/tournaments"
+	"IMP/app/internal/infra/aggregator"
 	"IMP/app/internal/infra/config"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service"
@@ -45,6 +46,7 @@ func NewScheduler(db *gorm.DB, cfg *config.Config) *Scheduler {
 		playersRepo,
 		gamesRepo,
 		pollLogRepo,
+		aggregator.NewApiClient(cfg.Aggregator.Host),
 		cfg.Providers,
 	)
 

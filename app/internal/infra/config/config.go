@@ -7,10 +7,15 @@ import (
 )
 
 type Config struct {
-	Database  DatabaseConfig
-	Scheduler SchedulerConfig
-	Providers ProvidersConfig
-	Logger    LoggerConfig
+	Database   DatabaseConfig
+	Scheduler  SchedulerConfig
+	Providers  ProvidersConfig
+	Aggregator AggregatorConfig
+	Logger     LoggerConfig
+}
+
+type AggregatorConfig struct {
+	Host string `env:"WEBHOOK_AGGREGATOR_HOST"`
 }
 
 type DatabaseConfig struct {
