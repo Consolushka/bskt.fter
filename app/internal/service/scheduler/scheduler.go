@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/adapters/tournament_poll_logs_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/core/tournaments"
+	"IMP/app/internal/infra/aggregator"
 	"IMP/app/internal/infra/config"
 	"IMP/app/internal/ports"
 	"IMP/app/internal/service"
@@ -45,6 +46,7 @@ func NewScheduler(db *gorm.DB, cfg *config.Config) *Scheduler {
 		playersRepo,
 		gamesRepo,
 		pollLogRepo,
+		aggregator.NewApiClient(cfg.Aggregator.Host),
 		cfg.Providers,
 	)
 
@@ -181,7 +183,8 @@ func (s *Scheduler) processTournament(tournament tournaments.TournamentModel) {
 	}
 
 	// 2. INGESTION: Run orchestration (it will handle internal poll logging)
-	if err := s.orchestrator.ProcessTournament(tournament, intervalStart, now); err != nil {
+	nextPollAt := now.Add(s.pollInterval)
+	if err := s.orchestrator.ProcessTournament(tournament, intervalStart, now, &nextPollAt); err != nil {
 		composite_logger.Error("Error while processing tournament games", map[string]interface{}{
 			"tournamentId": tournament.Id,
 			"error":        err,

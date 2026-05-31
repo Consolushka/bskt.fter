@@ -22,15 +22,17 @@ type TournamentProcessor struct {
 	persistenceService PersistenceServiceInterface
 	playersRepo        ports.PlayersRepo
 	gamesRepo          ports.GamesRepo
+	aggregator         ports.Aggregator
 }
 
-func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface, playersRepo ports.PlayersRepo, gamesRepo ports.GamesRepo, tournamentId uint) *TournamentProcessor {
+func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface, playersRepo ports.PlayersRepo, gamesRepo ports.GamesRepo, aggregator ports.Aggregator, tournamentId uint) *TournamentProcessor {
 	return &TournamentProcessor{
 		tournamentId:       tournamentId,
 		statsProvider:      statsProvider,
 		persistenceService: serviceInterface,
 		playersRepo:        playersRepo,
 		gamesRepo:          gamesRepo,
+		aggregator:         aggregator,
 	}
 }
 
@@ -85,6 +87,15 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) (int, error) {
 				"gameEntity": gameEntity,
 			})
 			continue
+		}
+
+		err = t.aggregator.NotifyGameImported(t.tournamentId)
+		if err != nil {
+			// We only log here, not failing the whole process
+			composite_logger.Error("t.aggregator.NotifyGameImported returned error", map[string]interface{}{
+				"error":        err,
+				"tournamentId": t.tournamentId,
+			})
 		}
 
 		savedGames = append(savedGames, formatSavedGameLog(gameEntity))

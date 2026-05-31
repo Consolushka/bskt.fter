@@ -80,7 +80,7 @@ func TestEntityTransformer_MapPlayerStatistics(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Len(t, gameEntity.HomeTeamStat.PlayerStats, 1)
-	require.Len(t, gameEntity.AwayTeamStat.PlayerStats, 0)
+	require.Empty(t, gameEntity.AwayTeamStat.PlayerStats)
 
 	homePlayer := gameEntity.HomeTeamStat.PlayerStats[0]
 	assert.Equal(t, "3534", homePlayer.PlayerExternalId)

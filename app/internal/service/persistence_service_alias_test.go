@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPersistenceService_SaveTeamModel_AliasLogic(t *testing.T) {
@@ -143,7 +144,7 @@ func TestPersistenceService_SaveTeamModel_AliasLogic(t *testing.T) {
 
 			err := service.saveTeamModel(teamStats)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedAlias, teamStats.TeamModel.Alias)
 		})
 	}

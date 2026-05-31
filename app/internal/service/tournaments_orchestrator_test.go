@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/infra/config"
+	"IMP/app/internal/ports"
 	"errors"
 	"testing"
 	"time"
@@ -24,9 +25,10 @@ func TestNewTournamentsOrchestrator(t *testing.T) {
 	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
 	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
 	pollLogRepo := tournament_poll_logs_repo.NewMockTournamentPollLogsRepo(ctrl)
+	mockAggregator := ports.NewMockAggregator(ctrl)
 	providersCfg := config.ProvidersConfig{}
 
-	result := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo, pollLogRepo, providersCfg)
+	result := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo, pollLogRepo, mockAggregator, providersCfg)
 
 	assert.NotNil(t, result)
 	assert.Equal(t, persistence, result.persistenceService)
@@ -34,6 +36,7 @@ func TestNewTournamentsOrchestrator(t *testing.T) {
 	assert.Equal(t, playersRepo, result.playersRepo)
 	assert.Equal(t, gamesRepo, result.gamesRepo)
 	assert.Equal(t, pollLogRepo, result.pollLogRepo)
+	assert.Equal(t, mockAggregator, result.aggregator)
 }
 
 func TestTournamentsOrchestrator_ProcessAll(t *testing.T) {
@@ -45,9 +48,10 @@ func TestTournamentsOrchestrator_ProcessAll(t *testing.T) {
 	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
 	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
 	pollLogRepo := tournament_poll_logs_repo.NewMockTournamentPollLogsRepo(ctrl)
+	mockAggregator := ports.NewMockAggregator(ctrl)
 	providersCfg := config.ProvidersConfig{}
 
-	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo, pollLogRepo, providersCfg)
+	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo, pollLogRepo, mockAggregator, providersCfg)
 	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
 

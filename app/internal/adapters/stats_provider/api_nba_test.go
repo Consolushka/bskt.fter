@@ -190,7 +190,7 @@ func TestApiNbaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 			Return(api_nba.GamesResponse{}, errors.New("api error")).AnyTimes()
 
 		games, err := adapter.GetGamesStatsByPeriod(date, date)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Empty(t, games)
 	})
 }

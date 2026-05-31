@@ -2,14 +2,20 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
-	Database  DatabaseConfig
-	Scheduler SchedulerConfig
-	Providers ProvidersConfig
-	Logger    LoggerConfig
+	Database   DatabaseConfig
+	Scheduler  SchedulerConfig
+	Providers  ProvidersConfig
+	Aggregator AggregatorConfig
+	Logger     LoggerConfig
+}
+
+type AggregatorConfig struct {
+	Host string `env:"WEBHOOK_AGGREGATOR_HOST"`
 }
 
 type DatabaseConfig struct {
@@ -27,11 +33,11 @@ type SchedulerConfig struct {
 }
 
 type ProvidersConfig struct {
-	ApiSportApiKey      string `env:"API_SPORT_API_KEY" env-required:"true"`
+	ApiSportApiKey         string `env:"API_SPORT_API_KEY" env-required:"true"`
 	ApiNbaRateLimit        int    `env:"API_NBA_RATE_LIMIT_PER_MINUTE" env-default:"10"`
 	ApiBasketballRateLimit int    `env:"API_BASKETBALL_RATE_LIMIT_PER_MINUTE" env-default:"10"`
 	InfobasketRateLimit    int    `env:"INFOBASKET_RATE_LIMIT_PER_MINUTE" env-default:"25"`
-	SportotekaRateLimit int    `env:"SPORTOTEKA_RATE_LIMIT_PER_MINUTE" env-default:"25"`
+	SportotekaRateLimit    int    `env:"SPORTOTEKA_RATE_LIMIT_PER_MINUTE" env-default:"25"`
 }
 
 type LoggerConfig struct {

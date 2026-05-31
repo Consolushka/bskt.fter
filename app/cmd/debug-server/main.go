@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournament_poll_logs_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
+	"IMP/app/internal/infra/aggregator"
 	"IMP/app/internal/infra/config"
 	"IMP/app/internal/infra/logger"
 	"IMP/app/internal/service"
@@ -45,6 +46,7 @@ func main() {
 		players_repo.NewGormRepo(db),
 		games_repo.NewGormRepo(db),
 		tournament_poll_logs_repo.NewGormRepo(db),
+		aggregator.NewApiClient(cfg.Aggregator.Host),
 		cfg.Providers,
 	)
 
@@ -97,7 +99,7 @@ func main() {
 			return
 		}
 
-		if err = orchestrator.ProcessTournament(tournament, from, to); err != nil {
+		if err = orchestrator.ProcessTournament(tournament, from, to, nil); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

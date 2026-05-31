@@ -7,6 +7,7 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
+	"IMP/app/internal/ports"
 	"errors"
 	"testing"
 	"time"
@@ -25,7 +26,8 @@ func TestNewTournamentProcessor(t *testing.T) {
 	mockPlayersRepo := players_repo.NewMockPlayersRepo(ctrl)
 	mockGamesRepo := games_repo.NewMockGamesRepo(ctrl)
 
-	processor := NewTournamentProcessor(mockStatsProvider, mockPersistence, mockPlayersRepo, mockGamesRepo, 12)
+	mockAggregator := ports.NewMockAggregator(ctrl)
+	processor := NewTournamentProcessor(mockStatsProvider, mockPersistence, mockPlayersRepo, mockGamesRepo, mockAggregator, 12)
 
 	assert.NotNil(t, processor)
 	assert.Equal(t, uint(12), processor.tournamentId)
@@ -50,7 +52,8 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return(nil, errors.New("stats provider error"))
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 1)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 1)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.ErrorContains(t, err, "stats provider error")
@@ -73,7 +76,8 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return(gameEntities, nil)
 		mockGames.EXPECT().Exists(gomock.Any()).Return(true, nil)
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 99)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 99)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.NoError(t, err)
@@ -95,8 +99,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockGames.EXPECT().Exists(gomock.Any()).Return(false, nil)
 		mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(gameEntity, nil)
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		mockAggregator.EXPECT().NotifyGameImported(uint(77)).Return(nil)
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 77)
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 77)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.NoError(t, err)
@@ -117,7 +123,8 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockStats.EXPECT().GetGamesStatsByPeriod(from, to).Return([]games.GameStatEntity{gameEntity}, nil)
 		mockGames.EXPECT().Exists(gomock.Any()).Return(false, errors.New("db error"))
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 11)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 11)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.ErrorContains(t, err, "db error")
@@ -143,8 +150,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 			mockStats.EXPECT().EnrichGameStats(gomock.Any()).Return(game2, nil),
 		)
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil).Times(1)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		mockAggregator.EXPECT().NotifyGameImported(uint(20)).Return(nil).Times(1)
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 20)
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 20)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.NoError(t, err)
@@ -171,8 +180,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 			mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(errors.New("save error")),
 			mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil),
 		)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		mockAggregator.EXPECT().NotifyGameImported(uint(21)).Return(nil).Times(1)
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 21)
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 21)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.NoError(t, err)
@@ -204,7 +215,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockPersistence.EXPECT().SaveGame(gomock.Any()).Return(nil)
 		mockPlayers.EXPECT().ListByFullName("John Doe").Return(nil, errors.New("players repo error"))
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 22)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		mockAggregator.EXPECT().NotifyGameImported(uint(22)).Return(nil).Times(1)
+
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 22)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.NoError(t, err)
@@ -240,7 +254,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 		mockPlayers.EXPECT().ListByFullName("").Return([]players.PlayerModel{}, nil)
 		mockStats.EXPECT().GetPlayerBio("123").Return(players.PlayerBioEntity{}, errors.New("bio error"))
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 23)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		mockAggregator.EXPECT().NotifyGameImported(uint(23)).Return(nil).Times(1)
+
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 23)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.NoError(t, err)
@@ -279,7 +296,10 @@ func TestTournamentProcessor_ProcessByPeriod(t *testing.T) {
 			BirthDate: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
 		}, nil)
 
-		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, 24)
+		mockAggregator := ports.NewMockAggregator(ctrl)
+		mockAggregator.EXPECT().NotifyGameImported(uint(24)).Return(nil).Times(1)
+
+		processor := NewTournamentProcessor(mockStats, mockPersistence, mockPlayers, mockGames, mockAggregator, 24)
 		count, err := processor.ProcessByPeriod(from, to)
 
 		require.NoError(t, err)
