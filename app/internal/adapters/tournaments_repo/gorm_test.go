@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/pkg/dbtest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
@@ -108,6 +109,38 @@ func (s *TournamentRepoSuite) TestGet() {
 	s.Equal("Target T", res.Name)
 	s.Equal("target", res.League.Alias)
 	s.Equal("api_nba", res.Provider.ProviderName)
+}
+
+func (s *TournamentRepoSuite) TestListActiveSkipsCompleted() {
+	// Seed (внутри транзакции)
+	league := leagues.LeagueModel{Name: "League", Alias: "league"}
+	s.tx.Create(&league)
+
+	now := time.Now().UTC()
+
+	ongoing := tournaments.TournamentModel{
+		Name:     "Ongoing",
+		LeagueId: league.Id,
+		StartAt:  now.Add(-24 * time.Hour),
+		EndAt:    now.Add(24 * time.Hour),
+	}
+	completed := tournaments.TournamentModel{
+		Name:     "Completed",
+		LeagueId: league.Id,
+		StartAt:  now.Add(-48 * time.Hour),
+		EndAt:    now.Add(-24 * time.Hour),
+	}
+	s.tx.Create(&ongoing)
+	s.tx.Create(&completed)
+
+	// Execute
+	results, err := s.repo.ListActive()
+
+	// Assert: завершённый турнир не должен попасть в выборку
+	s.Require().NoError(err)
+	s.Require().Len(results, 1)
+	s.Equal(ongoing.Id, results[0].Id)
+	s.Equal("Ongoing", results[0].Name)
 }
 
 func TestTournamentRepoSuite(t *testing.T) {

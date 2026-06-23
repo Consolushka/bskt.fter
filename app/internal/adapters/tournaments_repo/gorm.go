@@ -2,6 +2,7 @@ package tournaments_repo
 
 import (
 	"IMP/app/internal/core/tournaments"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -39,7 +40,13 @@ func NewGormRepo(db *gorm.DB) Gorm {
 func (g Gorm) ListActive() ([]tournaments.TournamentModel, error) {
 	var models []tournaments.TournamentModel
 
-	err := g.db.Preload("League").Preload("Provider").Find(&models).Error
+	// Турниры, дата окончания которых уже прошла, опрашивать незачем:
+	// новых игр там не будет, а лимиты внешних API расходовать на них не хочется.
+	err := g.db.
+		Preload("League").
+		Preload("Provider").
+		Where("end_at >= ?", time.Now().UTC()).
+		Find(&models).Error
 
 	return models, err
 }
