@@ -37,7 +37,7 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 
 	if err != nil {
 
-		return fmt.Errorf("Exists with %v from %s returned error: %w", game.GameModel, reflect.TypeOf(s.gamesRepo), err)
+		return fmt.Errorf("exists with %v from %s returned error: %w", game.GameModel, reflect.TypeOf(s.gamesRepo), err)
 
 	}
 

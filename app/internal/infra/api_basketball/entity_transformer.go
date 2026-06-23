@@ -64,9 +64,10 @@ func (e *EntityTransformer) MapPlayerStatistics(response PlayerStatsResponse, ho
 			return fmt.Errorf("error mapping player statistic for player %d: %w", playerStat.Player.Id, err)
 		}
 
-		if playerStat.Team.Id == homeTeamId {
+		switch playerStat.Team.Id {
+		case homeTeamId:
 			homeTeamPlayers = append(homeTeamPlayers, playerStatEntity)
-		} else if playerStat.Team.Id == awayTeamId {
+		case awayTeamId:
 			awayTeamPlayers = append(awayTeamPlayers, playerStatEntity)
 		}
 	}

@@ -72,7 +72,7 @@ func main() {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte(fmt.Sprintf("ok all from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		_, err = fmt.Fprintf(w, "ok all from=%s to=%s", from.Format(time.RFC3339), to.Format(time.RFC3339))
 		if err != nil {
 			compositelogger.Warn("Failed to write all response", map[string]interface{}{"error": err})
 			return
@@ -105,7 +105,7 @@ func main() {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		_, err = w.Write([]byte(fmt.Sprintf("ok tournament=%d from=%s to=%s", id, from.Format(time.RFC3339), to.Format(time.RFC3339))))
+		_, err = fmt.Fprintf(w, "ok tournament=%d from=%s to=%s", id, from.Format(time.RFC3339), to.Format(time.RFC3339))
 		if err != nil {
 			compositelogger.Warn("Failed to write tournament response", map[string]interface{}{"error": err})
 		}

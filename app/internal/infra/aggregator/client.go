@@ -2,6 +2,7 @@ package aggregator
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -34,7 +35,15 @@ func (c *ApiClient) NotifyGameImported(tournamentId uint) error {
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(body))
+	// Уведомление агрегатора — самостоятельная операция "отправил и забыл";
+	// её не нужно отменять вместе с обработкой турнира, поэтому отдельный фоновый контекст.
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodPost, url, bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("failed to build request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		composite_logger.Error("Failed to send game-imported webhook", map[string]interface{}{
 			"url":          url,
@@ -43,7 +52,7 @@ func (c *ApiClient) NotifyGameImported(tournamentId uint) error {
 		})
 		return fmt.Errorf("failed to send post request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		composite_logger.Warn("Aggregator returned non-OK status", map[string]interface{}{
