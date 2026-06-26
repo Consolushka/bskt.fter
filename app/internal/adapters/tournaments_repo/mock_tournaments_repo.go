@@ -34,6 +34,21 @@ func (m *MockTournamentsRepo) EXPECT() *MockTournamentsRepoMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockTournamentsRepo) Create(tournament tournaments.TournamentModel, provider tournaments.TournamentProvider) (tournaments.TournamentModel, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", tournament, provider)
+	ret0, _ := ret[0].(tournaments.TournamentModel)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockTournamentsRepoMockRecorder) Create(tournament, provider interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTournamentsRepo)(nil).Create), tournament, provider)
+}
+
 // Get mocks base method.
 func (m *MockTournamentsRepo) Get(id uint) (tournaments.TournamentModel, error) {
 	m.ctrl.T.Helper()

@@ -143,6 +143,46 @@ func (s *TournamentRepoSuite) TestListActiveSkipsCompleted() {
 	s.Equal("Ongoing", results[0].Name)
 }
 
+func (s *TournamentRepoSuite) TestCreate_PersistsTournamentWithProvider() {
+	league := leagues.LeagueModel{Name: "Euroleague", Alias: "euroleague"}
+	s.Require().NoError(s.tx.Create(&league).Error)
+
+	externalId := "120"
+	start := time.Date(2025, 9, 30, 0, 0, 0, 0, time.UTC)
+	end := time.Date(2026, 5, 24, 0, 0, 0, 0, time.UTC)
+
+	created, err := s.repo.Create(
+		tournaments.TournamentModel{
+			LeagueId: league.Id,
+			Name:     "Euroleague 2025-2026",
+			StartAt:  start,
+			EndAt:    end,
+		},
+		tournaments.TournamentProvider{
+			ProviderName: "API_BASKETBALL",
+			ExternalId:   &externalId,
+			Params:       []byte(`{"season":"2025"}`),
+		},
+	)
+
+	s.Require().NoError(err)
+	s.NotZero(created.Id)
+	s.Equal(created.Id, created.Provider.TournamentId)
+
+	// турнир записан
+	var stored tournaments.TournamentModel
+	s.Require().NoError(s.tx.First(&stored, created.Id).Error)
+	s.Equal("Euroleague 2025-2026", stored.Name)
+	s.True(stored.EndAt.Equal(end))
+
+	// provider-маппинг записан и привязан к турниру
+	var provider tournaments.TournamentProvider
+	s.Require().NoError(s.tx.Where("tournament_id = ?", created.Id).First(&provider).Error)
+	s.Equal("API_BASKETBALL", provider.ProviderName)
+	s.Require().NotNil(provider.ExternalId)
+	s.Equal("120", *provider.ExternalId)
+}
+
 func TestTournamentRepoSuite(t *testing.T) {
 	suite.Run(t, new(TournamentRepoSuite))
 }
