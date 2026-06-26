@@ -90,8 +90,10 @@ func TestTournamentRegistrar_Create(t *testing.T) {
 		})
 
 		require.NoError(t, err)
-		assert.Equal(t, start, captured.StartAt)
-		assert.Equal(t, end, captured.EndAt)
+		require.NotNil(t, captured.StartAt)
+		require.NotNil(t, captured.EndAt)
+		assert.Equal(t, start, *captured.StartAt)
+		assert.Equal(t, end, *captured.EndAt)
 	})
 
 	t.Run("uses provider dates when no explicit dates given", func(t *testing.T) {
@@ -111,8 +113,10 @@ func TestTournamentRegistrar_Create(t *testing.T) {
 		})
 
 		require.NoError(t, err)
-		assert.Equal(t, pStart, captured.StartAt)
-		assert.Equal(t, pEnd, captured.EndAt)
+		require.NotNil(t, captured.StartAt)
+		require.NotNil(t, captured.EndAt)
+		assert.Equal(t, pStart, *captured.StartAt)
+		assert.Equal(t, pEnd, *captured.EndAt)
 	})
 
 	t.Run("leaves dates empty when provider can't report period", func(t *testing.T) {
@@ -129,8 +133,8 @@ func TestTournamentRegistrar_Create(t *testing.T) {
 		})
 
 		require.NoError(t, err)
-		assert.True(t, captured.StartAt.IsZero())
-		assert.True(t, captured.EndAt.IsZero())
+		assert.Nil(t, captured.StartAt)
+		assert.Nil(t, captured.EndAt)
 	})
 
 	t.Run("leaves dates empty when provider returns an error", func(t *testing.T) {
@@ -148,8 +152,8 @@ func TestTournamentRegistrar_Create(t *testing.T) {
 		})
 
 		require.NoError(t, err)
-		assert.True(t, captured.StartAt.IsZero())
-		assert.True(t, captured.EndAt.IsZero())
+		assert.Nil(t, captured.StartAt)
+		assert.Nil(t, captured.EndAt)
 	})
 
 	t.Run("returns error and skips persistence when provider config is invalid", func(t *testing.T) {

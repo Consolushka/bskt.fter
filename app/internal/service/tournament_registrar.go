@@ -106,10 +106,13 @@ func (r *TournamentRegistrar) Create(input CreateTournamentInput) (tournaments.T
 // resolvePeriod определяет даты сезона по приоритету:
 //  1. явные даты от пользователя;
 //  2. даты от провайдера, если он умеет их сообщать;
-//  3. иначе — предупреждение, даты остаются пустыми.
-func (r *TournamentRegistrar) resolvePeriod(input CreateTournamentInput, provider ports.StatsProvider) (time.Time, time.Time) {
+//  3. иначе — предупреждение, даты остаются неизвестными (nil → NULL в БД).
+//
+// nil-даты сознательны: турнир с неизвестным окончанием считается активным
+// (см. фильтр в TournamentsRepo.ListActive), а не "уже завершённым".
+func (r *TournamentRegistrar) resolvePeriod(input CreateTournamentInput, provider ports.StatsProvider) (*time.Time, *time.Time) {
 	if input.StartAt != nil && input.EndAt != nil {
-		return *input.StartAt, *input.EndAt
+		return input.StartAt, input.EndAt
 	}
 
 	periodProvider, ok := provider.(ports.TournamentPeriodProvider)
@@ -117,7 +120,7 @@ func (r *TournamentRegistrar) resolvePeriod(input CreateTournamentInput, provide
 		compositelogger.Warn("Provider can't report tournament period and no explicit dates given; dates left empty", map[string]interface{}{
 			"provider": input.ProviderName,
 		})
-		return time.Time{}, time.Time{}
+		return nil, nil
 	}
 
 	start, end, err := periodProvider.GetTournamentPeriod(input.Season)
@@ -127,8 +130,8 @@ func (r *TournamentRegistrar) resolvePeriod(input CreateTournamentInput, provide
 			"season":   input.Season,
 			"error":    err,
 		})
-		return time.Time{}, time.Time{}
+		return nil, nil
 	}
 
-	return start, end
+	return &start, &end
 }

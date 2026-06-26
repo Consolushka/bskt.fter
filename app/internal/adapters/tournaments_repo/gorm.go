@@ -68,12 +68,13 @@ func NewGormRepo(db *gorm.DB) Gorm {
 func (g Gorm) ListActive() ([]tournaments.TournamentModel, error) {
 	var models []tournaments.TournamentModel
 
-	// Турниры, дата окончания которых уже прошла, опрашивать незачем:
-	// новых игр там не будет, а лимиты внешних API расходовать на них не хочется.
+	// Турниры с уже прошедшей датой окончания опрашивать незачем: новых игр там не
+	// будет, а лимиты внешних API тратить на них не хочется. NULL end_at означает, что
+	// даты турнира неизвестны — такой турнир считаем активным и продолжаем опрашивать.
 	err := g.db.
 		Preload("League").
 		Preload("Provider").
-		Where("end_at >= ?", time.Now().UTC()).
+		Where("end_at IS NULL OR end_at >= ?", time.Now().UTC()).
 		Find(&models).Error
 
 	return models, err

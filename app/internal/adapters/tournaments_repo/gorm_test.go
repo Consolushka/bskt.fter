@@ -117,30 +117,32 @@ func (s *TournamentRepoSuite) TestListActiveSkipsCompleted() {
 	s.tx.Create(&league)
 
 	now := time.Now().UTC()
+	ongoingStart := now.Add(-24 * time.Hour)
+	ongoingEnd := now.Add(24 * time.Hour)
+	completedStart := now.Add(-48 * time.Hour)
+	completedEnd := now.Add(-24 * time.Hour)
 
-	ongoing := tournaments.TournamentModel{
-		Name:     "Ongoing",
-		LeagueId: league.Id,
-		StartAt:  now.Add(-24 * time.Hour),
-		EndAt:    now.Add(24 * time.Hour),
-	}
-	completed := tournaments.TournamentModel{
-		Name:     "Completed",
-		LeagueId: league.Id,
-		StartAt:  now.Add(-48 * time.Hour),
-		EndAt:    now.Add(-24 * time.Hour),
-	}
-	s.tx.Create(&ongoing)
-	s.tx.Create(&completed)
+	ongoing := tournaments.TournamentModel{Name: "Ongoing", LeagueId: league.Id, StartAt: &ongoingStart, EndAt: &ongoingEnd}
+	completed := tournaments.TournamentModel{Name: "Completed", LeagueId: league.Id, StartAt: &completedStart, EndAt: &completedEnd}
+	// Без дат (end_at NULL) — считается активным.
+	undated := tournaments.TournamentModel{Name: "Undated", LeagueId: league.Id}
+
+	s.Require().NoError(s.tx.Create(&ongoing).Error)
+	s.Require().NoError(s.tx.Create(&completed).Error)
+	s.Require().NoError(s.tx.Create(&undated).Error)
 
 	// Execute
 	results, err := s.repo.ListActive()
 
-	// Assert: завершённый турнир не должен попасть в выборку
+	// Assert: завершённый отсеян, идущий и недатированный остаются
 	s.Require().NoError(err)
-	s.Require().Len(results, 1)
-	s.Equal(ongoing.Id, results[0].Id)
-	s.Equal("Ongoing", results[0].Name)
+	names := make(map[string]bool, len(results))
+	for _, r := range results {
+		names[r.Name] = true
+	}
+	s.True(names["Ongoing"])
+	s.True(names["Undated"])
+	s.False(names["Completed"])
 }
 
 func (s *TournamentRepoSuite) TestCreate_PersistsTournamentWithProvider() {
@@ -155,8 +157,8 @@ func (s *TournamentRepoSuite) TestCreate_PersistsTournamentWithProvider() {
 		tournaments.TournamentModel{
 			LeagueId: league.Id,
 			Name:     "Euroleague 2025-2026",
-			StartAt:  start,
-			EndAt:    end,
+			StartAt:  &start,
+			EndAt:    &end,
 		},
 		tournaments.TournamentProvider{
 			ProviderName: "API_BASKETBALL",
@@ -173,6 +175,7 @@ func (s *TournamentRepoSuite) TestCreate_PersistsTournamentWithProvider() {
 	var stored tournaments.TournamentModel
 	s.Require().NoError(s.tx.First(&stored, created.Id).Error)
 	s.Equal("Euroleague 2025-2026", stored.Name)
+	s.Require().NotNil(stored.EndAt)
 	s.True(stored.EndAt.Equal(end))
 
 	// provider-маппинг записан и привязан к турниру
