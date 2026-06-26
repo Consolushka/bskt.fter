@@ -42,7 +42,8 @@
 
 Точки входа (`app/cmd`):
 - `scheduler/main.go` — основной фоновый процесс (распределённый опрос турниров);
-- `debug-server/main.go` — HTTP-сервер на `:8080` для ручного триггера обработки.
+- `debug-server/main.go` — HTTP-сервер на `:8080` для ручного триггера обработки;
+- `create-tournament/main.go` — CLI-команда регистрации турнира (лига + привязка к провайдеру + даты).
 
 ## 4. Флоу обработки данных
 
@@ -59,6 +60,11 @@
 - Трансформеры в `infra` — **чистые функции**: только маппинг, никаких сетевых вызовов.
 - Все процентные показатели (FG%, и т.п.) нормализуются к диапазону **`0.0–1.0`** на уровне трансформера, независимо от формата провайдера. На уровне БД диапазон гарантируется `CHECK`-констрейнтами (см. `game_team_player_stats`).
 - Rate limiting встроен в infra-клиенты, настраивается через `*_RATE_LIMIT_PER_MINUTE`.
+- `ListActive` не возвращает завершённые турниры (`end_at < now`), чтобы не тратить лимиты API. `end_at IS NULL` означает «даты неизвестны» — такой турнир считается **активным**.
+
+### Регистрация турнира
+
+Use-case `service.TournamentRegistrar.Create` (CLI `create-tournament`) создаёт турнир: гарантирует лигу (`LeaguesRepo.FirstOrCreate`), определяет даты сезона и атомарно пишет турнир + provider-маппинг (`TournamentsRepo.Create`). Даты по приоритету: **явные (флаги `-start/-end`) → провайдер → предупреждение + `NULL`**. «Провайдер умеет отдавать даты» — это опциональный порт `TournamentPeriodProvider` (его реализует только `API_BASKETBALL` через `/leagues`); проверяется приведением типа, не реализован → warning. `ProviderFactory` инжектируется в use-case (в проде — `providers.NewProvider`), чтобы он был тестируем без HTTP.
 
 ## 5. Запуск и команды (Makefile)
 
@@ -83,6 +89,14 @@ Debug API:
 - `GET /process/all?from=YYYY-MM-DD&to=YYYY-MM-DD`
 - `GET /process/tournament?id=N&from=...&to=...`
 - без `from`/`to` — период с начала текущих UTC-суток.
+
+Регистрация турнира (CLI):
+```bash
+go run ./app/cmd/create-tournament \
+  -name "Euroleague 2025-2026" -league-name Euroleague -league-alias euroleague \
+  -provider API_BASKETBALL -external-id 120 -season 2025
+```
+Обязательны `-name`, `-league-name`, `-league-alias`, `-provider`. Провайдерские params — JSON-флагом `-params` (напр. `'{"leadHost":"reg","year":2024}'`). Явные `-start/-end` (YYYY-MM-DD) перекрывают даты от провайдера.
 
 Деплой: `docker/dockhost/Dockerfile`. `startup.sh` прогоняет `go test ./...` перед стартом бинарника — **падающие тесты блокируют запуск**.
 
@@ -146,6 +160,8 @@ Debug API:
 | Новое поле/таблица | `database/migrations` (+ индексы/`CHECK`) → модель в `core/<domain>` → репозиторий в `adapters/<name>_repo` |
 | Изменение логики опроса | `service/scheduler` + `service` (orchestrator/processor) |
 | Лимиты внешних API | rate limiter в `infra/<provider>` + `*_RATE_LIMIT_PER_MINUTE` в `.env` |
+| Регистрация турнира | `service/tournament_registrar.go` + CLI `app/cmd/create-tournament` + репозитории `leagues_repo`/`tournaments_repo` |
+| Даты турнира от провайдера | порт `ports.TournamentPeriodProvider` + реализация в `adapters/stats_provider/<provider>.go` |
 | Ручной прогон | `app/cmd/debug-server` |
 | Конфиг/env | `infra/config`, `.example.env` |
 | Логирование | `infra/logger` (фабрика над composite_logger) |

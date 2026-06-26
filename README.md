@@ -32,7 +32,8 @@
 Точки входа:
 
 - `app/cmd/scheduler/main.go` - основной процесс планировщика;
-- `app/cmd/debug-server/main.go` - отладочный HTTP-сервер на `:8080`.
+- `app/cmd/debug-server/main.go` - отладочный HTTP-сервер на `:8080`;
+- `app/cmd/create-tournament/main.go` - CLI для регистрации нового турнира.
 
 ## Требования
 
@@ -105,6 +106,20 @@ make run-debug
 - `GET /process/tournament?id=N&from=YYYY-MM-DD&to=YYYY-MM-DD` - запуск обработки конкретного турнира по его ID.
 
 Если параметры `from` и `to` не указаны, обрабатывается период с начала текущих UTC-суток.
+
+## Создание турнира
+
+Турниры регистрируются CLI-командой (а не вручную через SQL):
+
+```bash
+go run ./app/cmd/create-tournament \
+  -name "Euroleague 2025-2026" -league-name Euroleague -league-alias euroleague \
+  -provider API_BASKETBALL -external-id 120 -season 2025
+```
+
+- Обязательные флаги: `-name`, `-league-name`, `-league-alias`, `-provider`.
+- `-external-id` и `-params` (JSON, например `'{"leadHost":"reg","year":2024}'`) задают конфиг провайдера.
+- Даты сезона определяются по приоритету: явные `-start`/`-end` (формат `YYYY-MM-DD`) → данные провайдера (если он их отдаёт, как `API_BASKETBALL`) → иначе турнир создаётся без дат (с предупреждением в логе). Турнир без дат опроса не пропускается: пустая дата окончания трактуется как «активен».
 
 ## Полезные Make-команды
 
