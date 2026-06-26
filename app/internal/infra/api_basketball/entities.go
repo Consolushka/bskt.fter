@@ -1,6 +1,11 @@
 package api_basketball
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+	"time"
+)
 
 type GameEntity struct {
 	Id        int       `json:"id"`
@@ -133,4 +138,33 @@ type PlayerInfoEntity struct {
 
 type BirthInfo struct {
 	Date string `json:"date"`
+}
+
+type LeagueInfoEntity struct {
+	Id      int            `json:"id"`
+	Name    string         `json:"name"`
+	Seasons []SeasonEntity `json:"seasons"`
+}
+
+type SeasonEntity struct {
+	Season SeasonValue `json:"season"`
+	Start  string      `json:"start"`
+	End    string      `json:"end"`
+}
+
+// SeasonValue нормализует поле season из ответа API: для одних лиг оно приходит
+// числом (2025), для других — строкой ("2023-2024"). Храним всегда как строку.
+type SeasonValue string
+
+func (s *SeasonValue) UnmarshalJSON(data []byte) error {
+	if len(data) > 0 && data[0] == '"' {
+		var str string
+		if err := json.Unmarshal(data, &str); err != nil {
+			return fmt.Errorf("unmarshal season string returned error: %w", err)
+		}
+		*s = SeasonValue(str)
+		return nil
+	}
+	*s = SeasonValue(strings.TrimSpace(string(data)))
+	return nil
 }

@@ -15,6 +15,7 @@ type ClientInterface interface {
 	TeamStatistics(gameId int, teamId int) (TeamStatsResponse, error)
 	PlayersStatistics(gameId int, teamId int, playerId int) (PlayerStatsResponse, error)
 	PlayerInfo(playerId int) (PlayerInfoResponse, error)
+	Leagues(leagueId int) (LeaguesResponse, error)
 }
 
 type Client struct {
@@ -111,6 +112,24 @@ func (c *Client) PlayersStatistics(gameId int, teamId int, playerId int) (Player
 	}
 
 	return http.Get[PlayerStatsResponse](c.baseUrl+"/games/statistics/players"+query, &c.baseHeaders)
+}
+
+func (c *Client) Leagues(leagueId int) (LeaguesResponse, error) {
+	if c.limiter != nil {
+		_ = c.limiter.Wait(context.Background())
+	}
+
+	params := url.Values{}
+	if leagueId != 0 {
+		params.Add("id", strconv.Itoa(leagueId))
+	}
+
+	query := ""
+	if len(params) > 0 {
+		query = "?" + params.Encode()
+	}
+
+	return http.Get[LeaguesResponse](c.baseUrl+"/leagues"+query, &c.baseHeaders)
 }
 
 func (c *Client) PlayerInfo(playerId int) (PlayerInfoResponse, error) {
