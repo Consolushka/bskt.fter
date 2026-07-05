@@ -2,7 +2,7 @@
 
 Документ для ИИ-агентов, которые вносят изменения в проект.
 
-> **Этот сервис — часть системы BSKT.IMP** (роль — integrator; соседи: API на Laravel, dashboard на Vue).
+> **Argus** — этот сервис (роль integrator в системе BSKT.IMP; соседи: API на Laravel, dashboard на Vue).
 > Межсервисные контракты и карта — в общем Obsidian-vault **IMP** (MCP `obsidian`): `system-map`, `contracts/db-schema`, `contracts/aggregator-webhook`, `adr/`.
 > Перед изменением того, что пересекает границу сервиса, сверься с vault:
 > - **схема БД** (миграции): API читает ту же PostgreSQL напрямую → смена формы таблиц может сломать API (add-only / согласование; `contracts/db-schema`, `adr/0001`);
