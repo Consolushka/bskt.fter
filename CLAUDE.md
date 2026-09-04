@@ -6,6 +6,13 @@
 > Параллельно существует `AGENTS.md` (рус) и `GEMINI.md` (англ) с теми же правилами.
 > При изменении архитектуры/флоу/контрактов синхронно обновляй и `AGENTS.md` — это жёсткое правило проекта.
 
+> **Argus** — этот сервис (роль integrator в системе BSKT.IMP). Соседи: API на Laravel и dashboard на Vue.
+> Межсервисные контракты и карта живут в Obsidian-vault **IMP** (через MCP `obsidian`, если подключён): `system-map`, `contracts/db-schema`, `contracts/aggregator-webhook`, `adr/`.
+> **Перед изменением того, что пересекает границу сервиса, — сверься с vault:**
+> - меняешь **схему БД** (миграции): API читает ту же PostgreSQL напрямую, смена формы таблиц может молча сломать его → add-only / согласование (см. `contracts/db-schema`, `adr/0001`);
+> - меняешь **webhook `game-imported`** (payload/endpoint): его потребитель — Laravel-API (см. `contracts/aggregator-webhook`).
+> Внутренние изменения, не пересекающие границу сервиса, vault не трогают.
+
 ---
 
 ## 1. Что это
