@@ -3,6 +3,7 @@ package stats_provider
 import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/infra/api_basketball"
+	"errors"
 	"testing"
 	"time"
 
@@ -114,4 +115,43 @@ func TestApiBasketballStatsProviderAdapter_GetPlayerBio(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, "Hoard Jaylen", result.FullName)
+}
+
+func TestApiBasketballStatsProviderAdapter_GetTournamentPeriod(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := api_basketball.NewMockClientInterface(ctrl)
+	adapter := NewApiBasketballStatsProviderAdapter(mockClient, 120)
+
+	t.Run("returns season period from leagues endpoint", func(t *testing.T) {
+		mockClient.EXPECT().
+			Leagues(120).
+			Return(api_basketball.LeaguesResponse{
+				Response: []api_basketball.LeagueInfoEntity{
+					{
+						Id:   120,
+						Name: "Euroleague",
+						Seasons: []api_basketball.SeasonEntity{
+							{Season: "2025", Start: "2025-09-30", End: "2026-05-24"},
+						},
+					},
+				},
+			}, nil)
+
+		start, end, err := adapter.GetTournamentPeriod("2025")
+
+		require.NoError(t, err)
+		assert.Equal(t, time.Date(2025, 9, 30, 0, 0, 0, 0, time.UTC), start)
+		assert.Equal(t, time.Date(2026, 5, 24, 0, 0, 0, 0, time.UTC), end)
+	})
+
+	t.Run("propagates client error", func(t *testing.T) {
+		mockClient.EXPECT().
+			Leagues(120).
+			Return(api_basketball.LeaguesResponse{}, errors.New("api error"))
+
+		_, _, err := adapter.GetTournamentPeriod("2025")
+		require.Error(t, err)
+	})
 }

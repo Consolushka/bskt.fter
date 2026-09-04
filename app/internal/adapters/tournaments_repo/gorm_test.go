@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/pkg/dbtest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
@@ -108,6 +109,81 @@ func (s *TournamentRepoSuite) TestGet() {
 	s.Equal("Target T", res.Name)
 	s.Equal("target", res.League.Alias)
 	s.Equal("api_nba", res.Provider.ProviderName)
+}
+
+func (s *TournamentRepoSuite) TestListActiveSkipsCompleted() {
+	// Seed (внутри транзакции)
+	league := leagues.LeagueModel{Name: "League", Alias: "league"}
+	s.tx.Create(&league)
+
+	now := time.Now().UTC()
+	ongoingStart := now.Add(-24 * time.Hour)
+	ongoingEnd := now.Add(24 * time.Hour)
+	completedStart := now.Add(-48 * time.Hour)
+	completedEnd := now.Add(-24 * time.Hour)
+
+	ongoing := tournaments.TournamentModel{Name: "Ongoing", LeagueId: league.Id, StartAt: &ongoingStart, EndAt: &ongoingEnd}
+	completed := tournaments.TournamentModel{Name: "Completed", LeagueId: league.Id, StartAt: &completedStart, EndAt: &completedEnd}
+	// Без дат (end_at NULL) — считается активным.
+	undated := tournaments.TournamentModel{Name: "Undated", LeagueId: league.Id}
+
+	s.Require().NoError(s.tx.Create(&ongoing).Error)
+	s.Require().NoError(s.tx.Create(&completed).Error)
+	s.Require().NoError(s.tx.Create(&undated).Error)
+
+	// Execute
+	results, err := s.repo.ListActive()
+
+	// Assert: завершённый отсеян, идущий и недатированный остаются
+	s.Require().NoError(err)
+	names := make(map[string]bool, len(results))
+	for _, r := range results {
+		names[r.Name] = true
+	}
+	s.True(names["Ongoing"])
+	s.True(names["Undated"])
+	s.False(names["Completed"])
+}
+
+func (s *TournamentRepoSuite) TestCreate_PersistsTournamentWithProvider() {
+	league := leagues.LeagueModel{Name: "Euroleague", Alias: "euroleague"}
+	s.Require().NoError(s.tx.Create(&league).Error)
+
+	externalId := "120"
+	start := time.Date(2025, 9, 30, 0, 0, 0, 0, time.UTC)
+	end := time.Date(2026, 5, 24, 0, 0, 0, 0, time.UTC)
+
+	created, err := s.repo.Create(
+		tournaments.TournamentModel{
+			LeagueId: league.Id,
+			Name:     "Euroleague 2025-2026",
+			StartAt:  &start,
+			EndAt:    &end,
+		},
+		tournaments.TournamentProvider{
+			ProviderName: "API_BASKETBALL",
+			ExternalId:   &externalId,
+			Params:       []byte(`{"season":"2025"}`),
+		},
+	)
+
+	s.Require().NoError(err)
+	s.NotZero(created.Id)
+	s.Equal(created.Id, created.Provider.TournamentId)
+
+	// турнир записан
+	var stored tournaments.TournamentModel
+	s.Require().NoError(s.tx.First(&stored, created.Id).Error)
+	s.Equal("Euroleague 2025-2026", stored.Name)
+	s.Require().NotNil(stored.EndAt)
+	s.True(stored.EndAt.Equal(end))
+
+	// provider-маппинг записан и привязан к турниру
+	var provider tournaments.TournamentProvider
+	s.Require().NoError(s.tx.Where("tournament_id = ?", created.Id).First(&provider).Error)
+	s.Equal("API_BASKETBALL", provider.ProviderName)
+	s.Require().NotNil(provider.ExternalId)
+	s.Equal("120", *provider.ExternalId)
 }
 
 func TestTournamentRepoSuite(t *testing.T) {

@@ -78,6 +78,21 @@ func (mr *MockClientInterfaceMockRecorder) PlayersStatistics(gameId, teamId, pla
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PlayersStatistics", reflect.TypeOf((*MockClientInterface)(nil).PlayersStatistics), gameId, teamId, playerId)
 }
 
+// Leagues mocks base method.
+func (m *MockClientInterface) Leagues(leagueId int) (LeaguesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Leagues", leagueId)
+	ret0, _ := ret[0].(LeaguesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Leagues indicates an expected call of Leagues.
+func (mr *MockClientInterfaceMockRecorder) Leagues(leagueId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Leagues", reflect.TypeOf((*MockClientInterface)(nil).Leagues), leagueId)
+}
+
 // PlayerInfo mocks base method.
 func (m *MockClientInterface) PlayerInfo(playerId int) (PlayerInfoResponse, error) {
 	m.ctrl.T.Helper()

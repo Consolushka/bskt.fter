@@ -12,8 +12,8 @@ type TournamentModel struct {
 	LeagueId           uint           `gorm:"column:league_id"`
 	Name               string         `gorm:"column:name"`
 	Tier               *int16         `gorm:"column:tier"`
-	StartAt            time.Time      `gorm:"column:start_at"`
-	EndAt              time.Time      `gorm:"column:end_at"`
+	StartAt            *time.Time     `gorm:"column:start_at"`
+	EndAt              *time.Time     `gorm:"column:end_at"`
 	RegulationDuration int            `gorm:"column:regulation_duration"`
 	CreatedAt          time.Time      `gorm:"column:created_at"`
 	UpdatedAt          time.Time      `gorm:"column:updated_at"`

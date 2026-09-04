@@ -5,12 +5,42 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"IMP/app/pkg/statsutil"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type EntityTransformer struct {
+}
+
+// MapLeaguePeriod выбирает из ответа /leagues сезон по его идентификатору и
+// возвращает плановые даты начала и конца. Чистая функция: только разбор и маппинг,
+// никаких сетевых вызовов.
+func (e *EntityTransformer) MapLeaguePeriod(resp LeaguesResponse, season string) (time.Time, time.Time, error) {
+	if len(resp.Response) == 0 {
+		return time.Time{}, time.Time{}, errors.New("empty leagues response")
+	}
+
+	for _, s := range resp.Response[0].Seasons {
+		if string(s.Season) != season {
+			continue
+		}
+
+		start, err := time.Parse("2006-01-02", s.Start)
+		if err != nil {
+			return time.Time{}, time.Time{}, fmt.Errorf("parse start %q returned error: %w", s.Start, err)
+		}
+		end, err := time.Parse("2006-01-02", s.End)
+		if err != nil {
+			return time.Time{}, time.Time{}, fmt.Errorf("parse end %q returned error: %w", s.End, err)
+		}
+
+		return start, end, nil
+	}
+
+	return time.Time{}, time.Time{}, fmt.Errorf("season %q not found in leagues response", season)
 }
 
 func (e *EntityTransformer) TransformWithoutPlayers(game GameEntity) games.GameStatEntity {
@@ -64,9 +94,10 @@ func (e *EntityTransformer) MapPlayerStatistics(response PlayerStatsResponse, ho
 			return fmt.Errorf("error mapping player statistic for player %d: %w", playerStat.Player.Id, err)
 		}
 
-		if playerStat.Team.Id == homeTeamId {
+		switch playerStat.Team.Id {
+		case homeTeamId:
 			homeTeamPlayers = append(homeTeamPlayers, playerStatEntity)
-		} else if playerStat.Team.Id == awayTeamId {
+		case awayTeamId:
 			awayTeamPlayers = append(awayTeamPlayers, playerStatEntity)
 		}
 	}

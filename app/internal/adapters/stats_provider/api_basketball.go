@@ -4,6 +4,7 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/api_basketball"
+	"IMP/app/internal/ports"
 	"errors"
 	"fmt"
 	"reflect"
@@ -11,11 +12,28 @@ import (
 	"time"
 )
 
+// Провайдер умеет отдавать плановые даты сезона напрямую из API-Basketball (/leagues).
+var _ ports.TournamentPeriodProvider = (*ApiBasketballStatsProviderAdapter)(nil)
+
 type ApiBasketballStatsProviderAdapter struct {
 	client api_basketball.ClientInterface
 
 	entityTransformer api_basketball.EntityTransformer
 	leagueId          int
+}
+
+func (a ApiBasketballStatsProviderAdapter) GetTournamentPeriod(season string) (time.Time, time.Time, error) {
+	resp, err := a.client.Leagues(a.leagueId)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("leagues with %d from %s returned error: %w", a.leagueId, reflect.TypeOf(a.client), err)
+	}
+
+	start, end, err := a.entityTransformer.MapLeaguePeriod(resp, season)
+	if err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("MapLeaguePeriod returned error: %w", err)
+	}
+
+	return start, end, nil
 }
 
 func (a ApiBasketballStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {

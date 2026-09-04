@@ -59,7 +59,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) (int, error) {
 				"scheduledAt":  gameEntity.GameModel.ScheduledAt,
 				"error":        err,
 			})
-			return 0, fmt.Errorf("Exists with %v from %s returned error: %w", gameEntity.GameModel, reflect.TypeOf(t.gamesRepo), err)
+			return 0, fmt.Errorf("exists with %v from %s returned error: %w", gameEntity.GameModel, reflect.TypeOf(t.gamesRepo), err)
 		}
 		if isExists {
 			composite_logger.Info("Game already exists. Skip game processing", map[string]interface{}{

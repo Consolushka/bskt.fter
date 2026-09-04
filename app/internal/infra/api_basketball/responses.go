@@ -31,3 +31,11 @@ type PlayerInfoResponse struct {
 	Results    int                `json:"results"`
 	Response   []PlayerInfoEntity `json:"response"`
 }
+
+type LeaguesResponse struct {
+	Get        string             `json:"get"`
+	Parameters interface{}        `json:"parameters"`
+	Errors     []string           `json:"errors"`
+	Results    int                `json:"results"`
+	Response   []LeagueInfoEntity `json:"response"`
+}
