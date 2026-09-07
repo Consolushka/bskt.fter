@@ -15,7 +15,8 @@ type Config struct {
 }
 
 type AggregatorConfig struct {
-	Host string `env:"WEBHOOK_AGGREGATOR_HOST"`
+	Host  string `env:"WEBHOOK_AGGREGATOR_HOST"`
+	Token string `env:"WEBHOOK_AGGREGATOR_TOKEN"`
 }
 
 type DatabaseConfig struct {

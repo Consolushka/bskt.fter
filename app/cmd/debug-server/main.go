@@ -46,7 +46,7 @@ func main() {
 		players_repo.NewGormRepo(db),
 		games_repo.NewGormRepo(db),
 		tournament_poll_logs_repo.NewGormRepo(db),
-		aggregator.NewApiClient(cfg.Aggregator.Host),
+		aggregator.NewApiClient(cfg.Aggregator.Host, cfg.Aggregator.Token),
 		cfg.Providers,
 	)
 

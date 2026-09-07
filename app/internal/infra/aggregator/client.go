@@ -1,6 +1,7 @@
 package aggregator
 
 import (
+	"IMP/app/internal/ports"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -10,13 +11,17 @@ import (
 	composite_logger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
+var _ ports.Aggregator = (*ApiClient)(nil)
+
 type ApiClient struct {
-	host string
+	host  string
+	token string
 }
 
-func NewApiClient(host string) *ApiClient {
+func NewApiClient(host, token string) *ApiClient {
 	return &ApiClient{
-		host: host,
+		host:  host,
+		token: token,
 	}
 }
 
@@ -42,6 +47,9 @@ func (c *ApiClient) NotifyGameImported(tournamentId uint) error {
 		return fmt.Errorf("failed to build request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if c.token != "" {
+		req.Header.Set("X-AGGREGATOR-TOKEN", c.token)
+	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

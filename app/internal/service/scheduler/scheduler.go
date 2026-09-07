@@ -46,7 +46,7 @@ func NewScheduler(db *gorm.DB, cfg *config.Config) *Scheduler {
 		playersRepo,
 		gamesRepo,
 		pollLogRepo,
-		aggregator.NewApiClient(cfg.Aggregator.Host),
+		aggregator.NewApiClient(cfg.Aggregator.Host, cfg.Aggregator.Token),
 		cfg.Providers,
 	)
 
