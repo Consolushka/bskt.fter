@@ -38,6 +38,7 @@ type GameTeamStatModel struct {
 	TeamId    uint      `gorm:"column:team_id"`
 	Score     int       `gorm:"column:score"`
 	FinalDiff int       `gorm:"column:final_differential"`
+	IsHome    bool      `gorm:"column:is_home"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
 }

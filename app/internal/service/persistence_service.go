@@ -56,6 +56,8 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	}
 	game.HomeTeamStat.GameTeamStatModel.GameId = game.GameModel.Id
 	game.AwayTeamStat.GameTeamStatModel.GameId = game.GameModel.Id
+	game.HomeTeamStat.GameTeamStatModel.IsHome = true
+	game.AwayTeamStat.GameTeamStatModel.IsHome = false
 
 	err = s.saveTeamModel(&game.HomeTeamStat)
 	if err != nil {
