@@ -110,6 +110,19 @@ func (s *TeamRepoSuite) TestFirstOrCreateStats_CreateNew() {
 	s.Equal(int64(2), count)
 }
 
+func (s *TeamRepoSuite) TestFirstOrCreateStats_PersistsIsHome() {
+	home, err := s.repo.FirstOrCreateStats(teams.GameTeamStatModel{GameId: 1, TeamId: 10, IsHome: true})
+	s.Require().NoError(err)
+	away, err := s.repo.FirstOrCreateStats(teams.GameTeamStatModel{GameId: 1, TeamId: 20, IsHome: false})
+	s.Require().NoError(err)
+
+	var storedHome, storedAway teams.GameTeamStatModel
+	s.Require().NoError(s.tx.First(&storedHome, home.Id).Error)
+	s.Require().NoError(s.tx.First(&storedAway, away.Id).Error)
+	s.True(storedHome.IsHome)
+	s.False(storedAway.IsHome)
+}
+
 func TestTeamRepoSuite(t *testing.T) {
 	suite.Run(t, new(TeamRepoSuite))
 }
