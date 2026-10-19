@@ -425,6 +425,46 @@ func TestPersistenceService_SaveGame(t *testing.T) {
 	}
 }
 
+// TestPersistenceService_SaveGame_MarksHomeTeam verifies that the home flag is derived
+// from the HomeTeamStat/AwayTeamStat role, overriding whatever the provider put into the model.
+func TestPersistenceService_SaveGame_MarksHomeTeam(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockGamesRepo := games_repo.NewMockGamesRepo(ctrl)
+	mockTeamsRepo := teams_repo.NewMockTeamsRepo(ctrl)
+	mockPlayersRepo := players_repo.NewMockPlayersRepo(ctrl)
+
+	mockGamesRepo.EXPECT().Exists(gomock.Any()).Return(false, nil)
+	mockGamesRepo.EXPECT().FirstOrCreate(gomock.Any()).Return(games.GameModel{Id: 1}, nil)
+	mockTeamsRepo.EXPECT().FirstOrCreate(gomock.Any()).DoAndReturn(func(m teams.TeamModel) (teams.TeamModel, error) {
+		return m, nil
+	}).Times(2)
+
+	savedIsHome := map[uint]bool{}
+	mockTeamsRepo.EXPECT().FirstOrCreateStats(gomock.Any()).DoAndReturn(func(m teams.GameTeamStatModel) (teams.GameTeamStatModel, error) {
+		savedIsHome[m.TeamId] = m.IsHome
+		return m, nil
+	}).Times(2)
+
+	service := PersistenceService{gamesRepo: mockGamesRepo, teamsRepo: mockTeamsRepo, playersRepo: mockPlayersRepo}
+
+	err := service.SaveGame(games.GameStatEntity{
+		GameModel: games.GameModel{Id: 1},
+		HomeTeamStat: teams.TeamStatEntity{
+			TeamModel:         teams.TeamModel{Id: 10, Alias: "HOM"},
+			GameTeamStatModel: teams.GameTeamStatModel{IsHome: false},
+		},
+		AwayTeamStat: teams.TeamStatEntity{
+			TeamModel:         teams.TeamModel{Id: 20, Alias: "AWY"},
+			GameTeamStatModel: teams.GameTeamStatModel{IsHome: true},
+		},
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, map[uint]bool{10: true, 20: false}, savedIsHome)
+}
+
 // TestPersistenceService_saveTeamModel tests the saveTeamModel method
 // Verify successful team model saving and ID assignment
 // Verify error handling when team repository fails
