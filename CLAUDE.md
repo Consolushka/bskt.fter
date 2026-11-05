@@ -21,10 +21,10 @@
 игры, командную статистику, индивидуальную статистику игроков и служебные watermark-метки опроса.
 
 Источники данных:
+- `ESPN_NBA` — полная поддержка (игры, статистика, био игроков); основной источник для NBA, публичный API без ключа;
 - `API_NBA` — полная поддержка (статистика + био игроков);
 - `INFOBASKET` — игры и статистика;
-- `SPORTOTEKA` — игры и статистика;
-- `CDN_NBA` — заглушка в коде, не активен.
+- `SPORTOTEKA` — игры и статистика.
 
 ## 2. Стек
 
@@ -69,6 +69,9 @@
 - `game_team_stats.is_home` выставляет persistence по роли (`HomeTeamStat`/`AwayTeamStat`), не трансформер. Без значения по умолчанию; частичный unique-индекс — не больше одного хозяина в игре. Это контракт с API (`contracts/db-schema`).
 - Rate limiting встроен в infra-клиенты, настраивается через `*_RATE_LIMIT_PER_MINUTE`.
 - `ListActive` не возвращает завершённые турниры (`end_at < now`), чтобы не тратить лимиты API. `end_at IS NULL` означает «даты неизвестны» — такой турнир считается **активным**.
+- Коды команд NBA канонизируются к кодам api-sports (`GS→GSW`, `NO→NOP`, `NY→NYK`, `SA→SAS`, `UTAH→UTA`, `WSH→WAS`) в трансформере ESPN: `games.title` входит в unique-индекс, а `teams.alias` задан первым провайдером.
+- ESPN: трансформер сверяет сумму очков и минут по игрокам с итогом команды; расхождение — ошибка `EnrichGameStats`, игра не сохраняется (лучше отсутствие игры, чем неверная статистика).
+- Дни ESPN — календарные дни US Eastern: адаптер переводит период опроса в `America/New_York` и запрашивает scoreboard по одному дню.
 
 ### Регистрация турнира
 
@@ -88,7 +91,7 @@ make lint           # golangci-lint, lint-fix — с автофиксом
 make create-migration name=add_some_column
 ```
 
-Ключевые env (шаблон — `.example.env`): `DB_*`, `GOOSE_*`, `API_SPORT_API_KEY` (для API_NBA),
+Ключевые env (шаблон — `.example.env`): `DB_*`, `GOOSE_*`, `API_SPORT_API_KEY` (для API_NBA и API_BASKETBALL),
 `SCHEDULER_POLL_INTERVAL` / `SCHEDULER_STAGGER_INTERVAL_MINUTES` / `SCHEDULER_REFRESH_INTERVAL_MINUTES`,
 `*_RATE_LIMIT_PER_MINUTE`, `LOGGER_*`.
 
@@ -164,7 +167,7 @@ go run ./app/cmd/create-tournament \
 
 | Задача | Где трогать |
 |---|---|
-| Новый стат-провайдер | `infra/<provider>` (клиент + чистый трансформер) → `adapters/stats_provider` → интерфейс в `ports` → регистрация в `service/providers` |
+| Новый стат-провайдер | `infra/<provider>` (клиент + чистый трансформер) → `adapters/stats_provider` → интерфейс в `ports` → регистрация в `service/providers` (образец пути «листинг → протокол» и тестов на фикстурах — `infra/espn`) |
 | Новое поле/таблица | `database/migrations` (+ индексы/`CHECK`) → модель в `core/<domain>` → репозиторий в `adapters/<name>_repo` |
 | Изменение логики опроса | `service/scheduler` + `service` (orchestrator/processor) |
 | Лимиты внешних API | rate limiter в `infra/<provider>` + `*_RATE_LIMIT_PER_MINUTE` в `.env` |
