@@ -4,7 +4,7 @@ This project, named **IMP**, is a Go-based service designed to collect basketbal
 
 ## Project Overview
 
-*   **Purpose:** Collects games, team stats, and player stats from providers like `API_NBA`, `INFOBASKET`, and `SPORTOTEKA`.
+*   **Purpose:** Collects games, team stats, and player stats from providers like `ESPN_NBA`, `API_NBA`, `API_BASKETBALL`, `INFOBASKET`, and `SPORTOTEKA`.
 *   **Architecture:** Follows **Hexagonal Architecture (Ports and Adapters)**:
     *   `app/internal/core`: Domain entities and models (e.g., `games`, `players`, `tournament_poll_logs`).
     *   `app/internal/ports`: Interfaces (contracts) for repositories and providers.
