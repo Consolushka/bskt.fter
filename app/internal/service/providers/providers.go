@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/infra/api_basketball"
 	"IMP/app/internal/infra/api_nba"
 	"IMP/app/internal/infra/config"
+	"IMP/app/internal/infra/espn"
 	"IMP/app/internal/infra/infobasket"
 	"IMP/app/internal/infra/sportoteka"
 	"IMP/app/internal/ports"
@@ -16,9 +17,9 @@ import (
 type Provider string
 
 const (
+	EspnNba       = "ESPN_NBA"
 	ApiNba        = "API_NBA"
 	ApiBasketball = "API_BASKETBALL"
-	CdnNba        = "CDN_NBA"
 	Infobasket    = "INFOBASKET"
 	Sportoteka    = "SPORTOTEKA"
 )
@@ -43,8 +44,12 @@ func NewProvider(providerName string, externalId *string, params *map[string]int
 		return stats_provider.NewApiNbaStatsProviderAdapter(
 			api_nba.NewClient("https://v2.nba.api-sports.io", cfg.ApiSportApiKey, cfg.ApiNbaRateLimit),
 		), nil
-	case CdnNba:
-		return nil, errors.New("not implemented")
+	case EspnNba:
+		adapter, err := stats_provider.NewEspnNbaStatsProviderAdapter(espn.NewClient(cfg.EspnRateLimit))
+		if err != nil {
+			return nil, fmt.Errorf("espn adapter: %w", err)
+		}
+		return adapter, nil
 	case Infobasket:
 		if externalId == nil {
 			return nil, errors.New("external id must be set")

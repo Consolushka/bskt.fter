@@ -34,7 +34,7 @@ func main() {
 	name := flag.String("name", "", "tournament name (required)")
 	leagueName := flag.String("league-name", "", "league name (required)")
 	leagueAlias := flag.String("league-alias", "", "league alias (required)")
-	provider := flag.String("provider", "", "provider: API_NBA | API_BASKETBALL | INFOBASKET | SPORTOTEKA (required)")
+	provider := flag.String("provider", "", "provider: ESPN_NBA | API_NBA | API_BASKETBALL | INFOBASKET | SPORTOTEKA (required)")
 	externalID := flag.String("external-id", "", "provider external id (e.g. basketball league id, infobasket comp id)")
 	paramsJSON := flag.String("params", "", `provider params as JSON, e.g. '{"leadHost":"reg","year":2024}'`)
 	season := flag.String("season", "", "season the provider uses to look up dates, e.g. 2025")

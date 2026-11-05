@@ -26,6 +26,7 @@ func TestNewProvider(t *testing.T) {
 		ApiBasketballRateLimit: 10,
 		InfobasketRateLimit:    25,
 		SportotekaRateLimit:    25,
+		EspnRateLimit:          60,
 	}
 
 	tests := []struct {
@@ -43,9 +44,9 @@ func TestNewProvider(t *testing.T) {
 			expectedType: "api_nba",
 		},
 		{
-			name:         "returns error for CDN_NBA provider",
-			providerName: CdnNba,
-			wantErr:      "not implemented",
+			name:         "returns ESPN_NBA provider",
+			providerName: EspnNba,
+			expectedType: "espn_nba",
 		},
 		{
 			name:         "returns error for unknown provider",
@@ -153,6 +154,10 @@ func TestNewProvider(t *testing.T) {
 			case "api_nba":
 				if _, ok := provider.(stats_provider.ApiNbaStatsProviderAdapter); !ok {
 					t.Fatalf("expected ApiNbaStatsProviderAdapter, got %T", provider)
+				}
+			case "espn_nba":
+				if _, ok := provider.(stats_provider.EspnNbaStatsProviderAdapter); !ok {
+					t.Fatalf("expected EspnNbaStatsProviderAdapter, got %T", provider)
 				}
 			case "api_basketball":
 				if _, ok := provider.(stats_provider.ApiBasketballStatsProviderAdapter); !ok {
