@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/core/teams"
 	"IMP/app/pkg/statsutil"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -58,6 +59,10 @@ func NewEntityTransformer() EntityTransformer {
 func (e EntityTransformer) TransformEvent(event EventEntity) (games.GameStatEntity, bool, error) {
 	if !isImportable(event) {
 		return games.GameStatEntity{}, false, nil
+	}
+	// Без id игра прошла бы мимо обогащения и сохранилась бы без игроков — навсегда.
+	if event.Id == "" {
+		return games.GameStatEntity{}, false, errors.New("event without id")
 	}
 	comp := event.Competitions[0]
 
@@ -224,7 +229,10 @@ func mapAthlete(index map[string]int, a AthleteStatsEntity) (players.PlayerStati
 	}
 
 	vals := map[string]int{}
-	for _, label := range []string{"MIN", "PTS", "REB", "AST", "TO", "STL", "BLK", "+/-"} {
+	for _, label := range requiredLabels {
+		if label == "FG" {
+			continue
+		}
 		n, err := num(label)
 		if err != nil {
 			return players.PlayerStatisticEntity{}, err

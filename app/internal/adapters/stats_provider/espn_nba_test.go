@@ -186,6 +186,20 @@ func TestEspnNbaStatsProviderAdapter_EnrichGameStats(t *testing.T) {
 		assert.Equal(t, game.GameModel, result.GameModel)
 	})
 
+	t.Run("returns error when box score does not map", func(t *testing.T) {
+		adapter, client := newAdapter(t)
+		game := newGame(t)
+		summary := boxScore(50, 50)
+		summary.Boxscore.Players[0].Team.Id = "99"
+		client.EXPECT().Summary("1001").Return(summary, nil)
+
+		result, err := adapter.EnrichGameStats(game)
+
+		require.ErrorContains(t, err, "ESPN event 1001")
+		require.ErrorContains(t, err, "transform")
+		assert.Equal(t, game.GameModel, result.GameModel)
+	})
+
 	t.Run("returns error with event id when totals mismatch", func(t *testing.T) {
 		adapter, client := newAdapter(t)
 		game := newGame(t)

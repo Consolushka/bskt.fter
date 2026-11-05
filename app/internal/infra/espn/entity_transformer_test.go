@@ -335,6 +335,40 @@ func TestEntityTransformer_VerifyTotals_ReturnsErrorOnMinutesOutOfTolerance(t *t
 	require.ErrorContains(t, err, "expected 240")
 }
 
+func TestEntityTransformer_VerifyTotals_ReturnsErrorOnMinutesShortfall(t *testing.T) {
+	// Выпавший из протокола игрок без очков заметен только по нехватке минут.
+	game := fixtureGameWithBoxScore(t)
+	game.HomeTeamStat.PlayerStats[0].GameTeamPlayerStatModel.PlayedSeconds -= 20 * 60
+
+	err := NewEntityTransformer().VerifyTotals(game)
+	require.ErrorContains(t, err, "expected 240")
+}
+
+func TestEntityTransformer_VerifyTotals_MinutesToleranceBoundary(t *testing.T) {
+	// Нечётное число игроков различает допуск ⌈n/2⌉ от n/2: при 5 игравших допуск 3.
+	build := func(shortfall int) games.GameStatEntity {
+		game := manualGame()
+		game.GameModel.Duration = 48
+		game.HomeTeamStat.TeamModel.Alias = "MIN"
+		game.AwayTeamStat.TeamModel.Alias = "GSW"
+		for i := 0; i < 5; i++ {
+			minutes := 48
+			if i == 0 {
+				minutes -= shortfall
+			}
+			stat := players.PlayerStatisticEntity{GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{PlayedSeconds: minutes * 60, Points: 20}}
+			game.HomeTeamStat.PlayerStats = append(game.HomeTeamStat.PlayerStats, stat)
+			game.AwayTeamStat.PlayerStats = append(game.AwayTeamStat.PlayerStats, players.PlayerStatisticEntity{GameTeamPlayerStatModel: players.GameTeamPlayerStatModel{PlayedSeconds: 48 * 60, Points: 20}})
+		}
+		game.HomeTeamStat.GameTeamStatModel.Score = 100
+		game.AwayTeamStat.GameTeamStatModel.Score = 100
+		return game
+	}
+
+	require.NoError(t, NewEntityTransformer().VerifyTotals(build(3)))
+	require.ErrorContains(t, NewEntityTransformer().VerifyTotals(build(4)), "expected 240 ± 3")
+}
+
 func TestEntityTransformer_VerifyTotals_ReturnsErrorOnNoPlayers(t *testing.T) {
 	game := fixtureGame(t)
 
@@ -354,6 +388,54 @@ func TestEntityTransformer_MapAthleteBio_Fixture(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "Joan Beringer", bio.FullName)
 	assert.Equal(t, time.Date(2006, 11, 11, 0, 0, 0, 0, time.UTC), bio.BirthDate)
+}
+
+func TestEntityTransformer_MapBoxScore_ErrorBranches(t *testing.T) {
+	labels := []string{"MIN", "PTS", "REB", "AST", "TO", "STL", "BLK", "FG", "+/-"}
+	good := []string{"20", "10", "5", "4", "3", "2", "1", "4-8", "+2"}
+
+	tests := []struct {
+		name    string
+		mutate  func(s *SummaryResponse)
+		wantErr string
+	}{
+		{"non-numeric stat", func(s *SummaryResponse) { s.Boxscore.Players[0].Statistics[0].Athletes[0].Stats[1] = "ten" }, `PTS "ten"`},
+		{"malformed FG", func(s *SummaryResponse) { s.Boxscore.Players[0].Statistics[0].Athletes[0].Stats[7] = "4/8" }, `FG "4/8"`},
+		{"non-numeric team id", func(s *SummaryResponse) { s.Boxscore.Players[0].Team.Id = "x" }, `team id "x"`},
+		{"team without statistics", func(s *SummaryResponse) { s.Boxscore.Players[0].Statistics = nil }, "has no statistics"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			summary := manualSummary(labels, append([]string(nil), good...))
+			tc.mutate(&summary)
+			game := manualGame()
+			require.ErrorContains(t, NewEntityTransformer().MapBoxScore(summary, &game), tc.wantErr)
+		})
+	}
+}
+
+func TestEntityTransformer_MapBoxScore_SkipsDidNotPlayEvenWithStats(t *testing.T) {
+	labels := []string{"MIN", "PTS", "REB", "AST", "TO", "STL", "BLK", "FG", "+/-"}
+	summary := manualSummary(labels, []string{"20", "10", "5", "4", "3", "2", "1", "4-8", "+2"})
+	summary.Boxscore.Players[0].Statistics[0].Athletes[0].DidNotPlay = true
+
+	game := manualGame()
+	require.NoError(t, NewEntityTransformer().MapBoxScore(summary, &game))
+	assert.Empty(t, game.HomeTeamStat.PlayerStats)
+	assert.Len(t, game.AwayTeamStat.PlayerStats, 1)
+}
+
+func TestEntityTransformer_TransformEvent_ReturnsErrorOnEmptyId(t *testing.T) {
+	event := manualEvent(seasonTypeRegular, 4)
+	event.Id = ""
+
+	_, _, err := NewEntityTransformer().TransformEvent(event)
+	require.ErrorContains(t, err, "without id")
+}
+
+func TestEntityTransformer_MapAthleteBio_ReturnsErrorOnEmptyName(t *testing.T) {
+	_, err := NewEntityTransformer().MapAthleteBio(AthleteResponse{Id: "1", DateOfBirth: "2002-09-30T07:00Z"})
+	require.ErrorContains(t, err, "displayName is empty")
 }
 
 func TestEntityTransformer_MapAthleteBio_ReturnsErrorOnEmptyDate(t *testing.T) {

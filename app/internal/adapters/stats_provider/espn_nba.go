@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	// Дни ESPN считаются по US Eastern; зона вшивается в бинарник, чтобы не зависеть от tzdata
-	// и GOROOT образа (сейчас golang:alpine с GOROOT, завтра — scratch).
+	// Дни ESPN считаются по нью-йоркскому времени. Описание этого часового пояса встраиваем
+	// в саму программу, чтобы не зависеть от того, есть ли база часовых поясов на сервере.
 	_ "time/tzdata"
 
 	composite_logger "github.com/Consolushka/golang.composite_logger/pkg"
