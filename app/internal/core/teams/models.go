@@ -3,6 +3,8 @@ package teams
 import (
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 )
 
 type TeamModel struct {
@@ -18,18 +20,56 @@ func (TeamModel) TableName() string {
 	return "teams"
 }
 
+// Слова, которыми клубы начинают название («БК „Тамбов“»): в алиасе они бесполезны,
+// у половины команд алиас начинался бы одинаково.
+var clubPrefixes = map[string]struct{}{"BK": {}, "BC": {}, "БК": {}}
+
+const maxWholeNameAlias = 6
+
 func (t *TeamModel) AutoGenerateAlias() string {
-	if t.Name == "" {
+	unquoted := strings.Map(func(r rune) rune {
+		if unicode.Is(unicode.Quotation_Mark, r) {
+			return -1
+		}
+		return r
+	}, t.Name)
+	words := strings.Fields(unquoted)
+	if len(words) > 1 {
+		if _, ok := clubPrefixes[strings.ToUpper(words[0])]; ok {
+			words = words[1:]
+		}
+	}
+
+	runes := []rune(strings.Join(words, " "))
+	if len(runes) > maxWholeNameAlias {
+		// Только буквы и цифры: иначе «Le Mans» дал бы алиас с пробелом на конце.
+		short := make([]rune, 0, 3)
+		for _, r := range runes {
+			if unicode.IsLetter(r) || unicode.IsDigit(r) {
+				if short = append(short, r); len(short) == 3 {
+					break
+				}
+			}
+		}
+		runes = short
+	}
+
+	return strings.ToUpper(string(runes))
+}
+
+// Infobasket и Sportoteka вместо сокращения отдают первые 6 символов имени: `BK "Ta` для `BK "Tambov"`.
+const providerTruncatedLen = 6
+
+// ProviderAlias отбрасывает сокращение провайдера, если это просто обрезанное имя.
+// Пустой алиас потом сгенерируется из имени. Более короткое начало имени («CSKA» для «CSKA Moscow»)
+// считаем настоящим сокращением.
+func ProviderAlias(abbr, fullName string) string {
+	if utf8.RuneCountInString(abbr) == providerTruncatedLen &&
+		strings.HasPrefix(strings.ToUpper(fullName), strings.ToUpper(abbr)) {
 		return ""
 	}
-	runes := []rune(t.Name)
-	var alias string
-	if len(runes) > 3 {
-		alias = string(runes[:3])
-	} else {
-		alias = t.Name
-	}
-	return strings.ToUpper(alias)
+
+	return strings.ToUpper(abbr)
 }
 
 type GameTeamStatModel struct {

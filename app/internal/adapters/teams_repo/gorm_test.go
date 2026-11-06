@@ -49,6 +49,27 @@ func (s *TeamRepoSuite) TestFirstOrCreate_FindExisting() {
 	s.Equal(int64(2), count, "Total teams count should remain 2")
 }
 
+func (s *TeamRepoSuite) TestFirstOrCreate_ExistingKeepsAlias() {
+	lakers := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAL"}
+	s.tx.Create(&lakers)
+
+	res, err := s.repo.FirstOrCreate(teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAK"})
+
+	s.Require().NoError(err)
+	s.Equal("LAL", res.Alias)
+
+	var stored teams.TeamModel
+	s.tx.First(&stored, lakers.Id)
+	s.Equal("LAL", stored.Alias)
+}
+
+func (s *TeamRepoSuite) TestFirstOrCreate_CreateNewGeneratesAlias() {
+	res, err := s.repo.FirstOrCreate(teams.TeamModel{Name: `BK "Tambov"`, HomeTown: "Tambov"})
+
+	s.Require().NoError(err)
+	s.Equal("TAMBOV", res.Alias)
+}
+
 func (s *TeamRepoSuite) TestFirstOrCreate_CreateNew() {
 	// 1. Seed one team
 	lakers := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles"}
