@@ -2,9 +2,12 @@ package teams_repo
 
 import (
 	"IMP/app/internal/core/teams"
+	"IMP/app/internal/ports"
 
 	"gorm.io/gorm"
 )
+
+var _ ports.TeamsRepo = (*Gorm)(nil)
 
 type Gorm struct {
 	db *gorm.DB

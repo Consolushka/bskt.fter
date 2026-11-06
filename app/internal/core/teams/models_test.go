@@ -26,6 +26,8 @@ func TestTeamModel_AutoGenerateAlias(t *testing.T) {
 		{name: "multibyte short name", input: "МГУ", expected: "МГУ"},
 		{name: "quotes and latin club prefix dropped", input: `BK "Tambov"`, expected: "TAMBOV"},
 		{name: "guillemets and BC prefix dropped", input: "BC «Derzhava»", expected: "DER"},
+		{name: "low-high quotes dropped", input: "БК „Тамбов“", expected: "ТАМБОВ"},
+		{name: "single curly quotes dropped", input: "BC ‘Avtodor’", expected: "AVT"},
 		{name: "cyrillic club prefix dropped", input: "БК Московский", expected: "МОС"},
 		{name: "club prefix alone is kept", input: "БК", expected: "БК"},
 		{name: "prefix glued to word is not dropped", input: "БК10", expected: "БК10"},
@@ -52,6 +54,7 @@ func TestProviderAlias(t *testing.T) {
 		{name: "truncated multibyte name dropped", abbr: "Союз-1", fullName: "Союз-12", expected: ""},
 		{name: "short name prefix kept as real abbreviation", abbr: "CSKA", fullName: "CSKA Moscow", expected: "CSKA"},
 		{name: "abbreviation equal to name kept", abbr: "МГУ", fullName: "МГУ", expected: "МГУ"},
+		{name: "six-char abbreviation equal to name dropped", abbr: "BK Ufa", fullName: "BK Ufa", expected: ""},
 		{name: "abbreviation uppercased", abbr: "Lak", fullName: "Lakers", expected: "LAK"},
 		{name: "empty abbreviation stays empty", abbr: "", fullName: "Lakers", expected: ""},
 	}

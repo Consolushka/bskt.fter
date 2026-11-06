@@ -3,6 +3,7 @@ package teams
 import (
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -26,7 +27,13 @@ var clubPrefixes = map[string]struct{}{"BK": {}, "BC": {}, "БК": {}}
 const maxWholeNameAlias = 6
 
 func (t *TeamModel) AutoGenerateAlias() string {
-	words := strings.Fields(strings.NewReplacer(`"`, "", "«", "", "»", "", "'", "").Replace(t.Name))
+	unquoted := strings.Map(func(r rune) rune {
+		if unicode.Is(unicode.Quotation_Mark, r) {
+			return -1
+		}
+		return r
+	}, t.Name)
+	words := strings.Fields(unquoted)
 	if len(words) > 1 {
 		if _, ok := clubPrefixes[strings.ToUpper(words[0])]; ok {
 			words = words[1:]
@@ -49,7 +56,6 @@ const providerTruncatedLen = 6
 // считаем настоящим сокращением.
 func ProviderAlias(abbr, fullName string) string {
 	if utf8.RuneCountInString(abbr) == providerTruncatedLen &&
-		len(abbr) < len(fullName) &&
 		strings.HasPrefix(strings.ToUpper(fullName), strings.ToUpper(abbr)) {
 		return ""
 	}
