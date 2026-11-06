@@ -39,6 +39,7 @@ type ProvidersConfig struct {
 	ApiBasketballRateLimit int    `env:"API_BASKETBALL_RATE_LIMIT_PER_MINUTE" env-default:"10"`
 	InfobasketRateLimit    int    `env:"INFOBASKET_RATE_LIMIT_PER_MINUTE" env-default:"25"`
 	SportotekaRateLimit    int    `env:"SPORTOTEKA_RATE_LIMIT_PER_MINUTE" env-default:"25"`
+	EspnRateLimit          int    `env:"ESPN_RATE_LIMIT_PER_MINUTE" env-default:"60"`
 }
 
 type LoggerConfig struct {
