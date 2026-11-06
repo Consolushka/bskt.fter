@@ -425,6 +425,32 @@ func TestEntityTransformer_MapBoxScore_SkipsDidNotPlayEvenWithStats(t *testing.T
 	assert.Len(t, game.AwayTeamStat.PlayerStats, 1)
 }
 
+func TestEntityTransformer_MapBoxScore_SkipsBenchedWithDashMinutes(t *testing.T) {
+	labels := []string{"MIN", "PTS", "REB", "AST", "TO", "STL", "BLK", "FG", "+/-"}
+	summary := manualSummary(labels, []string{"--", "0", "0", "0", "0", "0", "0", "0-0", "0"})
+
+	game := manualGame()
+	require.NoError(t, NewEntityTransformer().MapBoxScore(summary, &game))
+	assert.Empty(t, game.HomeTeamStat.PlayerStats)
+	assert.Empty(t, game.AwayTeamStat.PlayerStats)
+}
+
+// BOS - NYK 23.10.2026: Pacome Dadiet (5211983) пришёл с didNotPlay=false и минутами "--".
+func TestEntityTransformer_MapBoxScore_BenchedWithDashMinutesFixture(t *testing.T) {
+	game := games.GameStatEntity{HomeTeamExternalId: 2, AwayTeamExternalId: 18}
+	game.GameModel.Duration = 48
+	game.HomeTeamStat.GameTeamStatModel.Score = 107
+	game.AwayTeamStat.GameTeamStatModel.Score = 103
+	summary := loadFixture[SummaryResponse](t, "summary_401909095.json")
+
+	transformer := NewEntityTransformer()
+	require.NoError(t, transformer.MapBoxScore(summary, &game))
+	require.NoError(t, transformer.VerifyTotals(game))
+
+	_, found := findPlayer(t, game.AwayTeamStat.PlayerStats, "5211983")
+	assert.False(t, found)
+}
+
 func TestEntityTransformer_TransformEvent_ReturnsErrorOnEmptyId(t *testing.T) {
 	event := manualEvent(seasonTypeRegular, 4)
 	event.Id = ""
