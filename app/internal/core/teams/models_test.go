@@ -24,6 +24,8 @@ func TestTeamModel_AutoGenerateAlias(t *testing.T) {
 		{name: "lowercase is uppercased", input: "cs", expected: "CS"},
 		{name: "multibyte long name", input: "Динамо-Москва", expected: "ДИН"},
 		{name: "multibyte short name", input: "МГУ", expected: "МГУ"},
+		{name: "space skipped in short alias", input: "Le Mans Sarthe", expected: "LEM"},
+		{name: "punctuation skipped in short alias", input: "St. Petersburg", expected: "STP"},
 		{name: "quotes and latin club prefix dropped", input: `BK "Tambov"`, expected: "TAMBOV"},
 		{name: "guillemets and BC prefix dropped", input: "BC «Derzhava»", expected: "DER"},
 		{name: "low-high quotes dropped", input: "БК „Тамбов“", expected: "ТАМБОВ"},

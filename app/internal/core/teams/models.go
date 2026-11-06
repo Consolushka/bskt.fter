@@ -42,7 +42,16 @@ func (t *TeamModel) AutoGenerateAlias() string {
 
 	runes := []rune(strings.Join(words, " "))
 	if len(runes) > maxWholeNameAlias {
-		runes = runes[:3]
+		// Только буквы и цифры: иначе «Le Mans» дал бы алиас с пробелом на конце.
+		short := make([]rune, 0, 3)
+		for _, r := range runes {
+			if unicode.IsLetter(r) || unicode.IsDigit(r) {
+				if short = append(short, r); len(short) == 3 {
+					break
+				}
+			}
+		}
+		runes = short
 	}
 
 	return strings.ToUpper(string(runes))
