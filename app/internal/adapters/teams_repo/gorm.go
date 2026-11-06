@@ -23,10 +23,6 @@ func (g Gorm) FirstOrCreate(model teams.TeamModel) (teams.TeamModel, error) {
 	return model, tx.Error
 }
 
-func (g Gorm) UpdateAlias(id uint, alias string) error {
-	return g.db.Model(&teams.TeamModel{}).Where("id = ?", id).Update("alias", alias).Error
-}
-
 func (g Gorm) FirstOrCreateStats(model teams.GameTeamStatModel) (teams.GameTeamStatModel, error) {
 	tx := g.db.FirstOrCreate(&model, teams.GameTeamStatModel{
 		GameId: model.GameId,

@@ -24,7 +24,7 @@ func TestEntityTransformer_Transform(t *testing.T) {
 			RegionName: "Home City",
 		},
 		Team2: TeamInfoEntity{
-			AbcName:    "T2",
+			AbcName:    "Away T",
 			Name:       "Away Team",
 			RegionName: "Away City",
 		},
@@ -89,7 +89,7 @@ func TestEntityTransformer_Transform(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if entity.GameModel.Title != "T1 - T2" {
+	if entity.GameModel.Title != "T1 - Away T" {
 		t.Fatalf("unexpected title: %s", entity.GameModel.Title)
 	}
 	if entity.GameModel.ScheduledAt != scheduledAt {
@@ -102,6 +102,9 @@ func TestEntityTransformer_Transform(t *testing.T) {
 
 	if entity.HomeTeamStat.TeamModel.Name != "Home Team" {
 		t.Fatalf("unexpected home team name: %s", entity.HomeTeamStat.TeamModel.Name)
+	}
+	if entity.HomeTeamStat.TeamModel.Alias != "T1" {
+		t.Fatalf("unexpected home alias: %s", entity.HomeTeamStat.TeamModel.Alias)
 	}
 	if entity.HomeTeamStat.GameTeamStatModel.Score != 95 {
 		t.Fatalf("unexpected home score: %d", entity.HomeTeamStat.GameTeamStatModel.Score)
@@ -119,6 +122,10 @@ func TestEntityTransformer_Transform(t *testing.T) {
 
 	if entity.AwayTeamStat.TeamModel.Name != "Away Team" {
 		t.Fatalf("unexpected away team name: %s", entity.AwayTeamStat.TeamModel.Name)
+	}
+	// Сокращение «Away T» — просто обрезанное имя: алиас не берём, его сгенерирует репозиторий.
+	if entity.AwayTeamStat.TeamModel.Alias != "" {
+		t.Fatalf("expected empty alias for truncated abbreviation, got %s", entity.AwayTeamStat.TeamModel.Alias)
 	}
 	if entity.AwayTeamStat.GameTeamStatModel.Score != 88 {
 		t.Fatalf("unexpected away score: %d", entity.AwayTeamStat.GameTeamStatModel.Score)
