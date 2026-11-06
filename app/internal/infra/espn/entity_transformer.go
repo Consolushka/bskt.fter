@@ -200,6 +200,11 @@ func (e EntityTransformer) MapBoxScore(resp SummaryResponse, game *games.GameSta
 			if len(a.Stats) != len(stats.Labels) {
 				return fmt.Errorf("athlete %s: stats length %d != labels %d", a.Athlete.Id, len(a.Stats), len(stats.Labels))
 			}
+			// ESPN иногда отдаёт игрока со скамейки без пометки «не играл», но с минутами "--".
+			// Если у него всё же есть очки, это поймает сверка итогов команды.
+			if a.Stats[index["MIN"]] == "--" {
+				continue
+			}
 			p, err := mapAthlete(index, a)
 			if err != nil {
 				return err

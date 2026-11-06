@@ -79,7 +79,7 @@ func (e *EntityTransformer) teamTransform(teamInfo TeamInfoEntity, teamBoxScore 
 		TeamModel: teams.TeamModel{
 			Name:     teamInfo.Name,
 			HomeTown: teamInfo.RegionName,
-			Alias:    teamInfo.AbcName,
+			Alias:    teams.ProviderAlias(teamInfo.AbcName, teamInfo.Name),
 		},
 		GameTeamStatModel: teams.GameTeamStatModel{
 			Score:     teamBoxScore.Total.Points,

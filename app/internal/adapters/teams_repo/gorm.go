@@ -2,9 +2,12 @@ package teams_repo
 
 import (
 	"IMP/app/internal/core/teams"
+	"IMP/app/internal/ports"
 
 	"gorm.io/gorm"
 )
+
+var _ ports.TeamsRepo = (*Gorm)(nil)
 
 type Gorm struct {
 	db *gorm.DB
@@ -21,10 +24,6 @@ func (g Gorm) FirstOrCreate(model teams.TeamModel) (teams.TeamModel, error) {
 	})
 
 	return model, tx.Error
-}
-
-func (g Gorm) UpdateAlias(id uint, alias string) error {
-	return g.db.Model(&teams.TeamModel{}).Where("id = ?", id).Update("alias", alias).Error
 }
 
 func (g Gorm) FirstOrCreateStats(model teams.GameTeamStatModel) (teams.GameTeamStatModel, error) {
