@@ -172,16 +172,7 @@ func (s *Scheduler) runTournamentWorker(ctx context.Context, tournament tourname
 func (s *Scheduler) processTournament(tournament tournaments.TournamentModel) {
 	now := time.Now().UTC()
 
-	// Воркер живёт долго, а даты турнира владелец может поправить в любой момент.
-	// Перечитываем турнир перед опросом, чтобы не сверять игры с устаревшими датами.
-	if fresh, err := s.tournamentsRepo.Get(tournament.Id); err != nil {
-		composite_logger.Warn("Couldn't reload tournament before poll; using the copy loaded at worker start", map[string]interface{}{
-			"tournamentId": tournament.Id,
-			"error":        err,
-		})
-	} else {
-		tournament = fresh
-	}
+	tournament = reloadTournament(s.tournamentsRepo, tournament)
 
 	// 1. DISCOVERY: Get latest successful poll interval end
 	latestLog, err := s.pollLogRepo.GetLatestSuccess(tournament.Id)
@@ -207,6 +198,22 @@ func (s *Scheduler) processTournament(tournament tournaments.TournamentModel) {
 		"from":         intervalStart,
 		"to":           now,
 	})
+}
+
+// Воркер живёт долго, а даты турнира владелец может поправить в любой момент.
+// Перечитываем турнир перед опросом, чтобы не сверять игры с устаревшими датами;
+// если прочитать не удалось, один опрос на прежней копии лучше, чем пропуск опроса.
+func reloadTournament(repo ports.TournamentsRepo, loaded tournaments.TournamentModel) tournaments.TournamentModel {
+	fresh, err := repo.Get(loaded.Id)
+	if err != nil {
+		composite_logger.Warn("Couldn't reload tournament before poll; using the copy loaded at worker start", map[string]interface{}{
+			"tournamentId": loaded.Id,
+			"error":        err,
+		})
+		return loaded
+	}
+
+	return fresh
 }
 
 // nextPollAt — время следующего обновления, которое увидят читатели лога опроса.

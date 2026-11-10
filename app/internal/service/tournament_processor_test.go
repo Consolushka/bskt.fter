@@ -10,6 +10,7 @@ import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -315,8 +316,12 @@ type warningsRecorder struct {
 
 func (r *warningsRecorder) InitLogger() composite_logger.Logger { return r }
 func (r *warningsRecorder) Info(string, map[string]interface{}) {}
-func (r *warningsRecorder) Warn(_ string, ctx map[string]interface{}) {
-	r.warnings = append(r.warnings, ctx)
+
+// Считаем только предупреждение о датах: чужой warning не должен выдавать себя за него.
+func (r *warningsRecorder) Warn(msg string, ctx map[string]interface{}) {
+	if strings.Contains(msg, "Imported game is scheduled outside tournament dates") {
+		r.warnings = append(r.warnings, ctx)
+	}
 }
 func (r *warningsRecorder) Error(string, map[string]interface{}) {}
 func (r *warningsRecorder) Fatal(string, map[string]interface{}) {}
