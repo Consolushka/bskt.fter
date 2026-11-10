@@ -31,6 +31,11 @@ func (TournamentModel) TableName() string {
 	return "tournaments"
 }
 
+// HasEnded сообщает, прошла ли дата окончания турнира. Неизвестная дата (NULL) — не закончился.
+func (t TournamentModel) HasEnded(now time.Time) bool {
+	return t.EndAt != nil && now.After(*t.EndAt)
+}
+
 // IsWithinPeriod сверяет момент с датами турнира. Неизвестная дата (NULL) не проверяется.
 func (t TournamentModel) IsWithinPeriod(at time.Time) bool {
 	if t.StartAt != nil && at.Before(*t.StartAt) {

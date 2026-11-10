@@ -84,6 +84,15 @@ func TestTournamentModel_IsWithinPeriod(t *testing.T) {
 	}
 }
 
+func TestTournamentModel_HasEnded(t *testing.T) {
+	end := time.Date(2026, 6, 15, 0, 0, 0, 0, time.UTC)
+
+	assert.False(t, TournamentModel{EndAt: &end}.HasEnded(end.Add(-time.Minute)))
+	assert.False(t, TournamentModel{EndAt: &end}.HasEnded(end))
+	assert.True(t, TournamentModel{EndAt: &end}.HasEnded(end.Add(time.Minute)))
+	assert.False(t, TournamentModel{}.HasEnded(end.AddDate(5, 0, 0)), "unknown end date means the tournament is still running")
+}
+
 func TestTournamentProvider_TableName(t *testing.T) {
 	model := TournamentProvider{}
 	assert.Equal(t, "tournament_providers", model.TableName())

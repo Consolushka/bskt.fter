@@ -172,6 +172,17 @@ func (s *Scheduler) runTournamentWorker(ctx context.Context, tournament tourname
 func (s *Scheduler) processTournament(tournament tournaments.TournamentModel) {
 	now := time.Now().UTC()
 
+	// Воркер живёт долго, а даты турнира владелец может поправить в любой момент.
+	// Перечитываем турнир перед опросом, чтобы не сверять игры с устаревшими датами.
+	if fresh, err := s.tournamentsRepo.Get(tournament.Id); err != nil {
+		composite_logger.Warn("Couldn't reload tournament before poll; using the copy loaded at worker start", map[string]interface{}{
+			"tournamentId": tournament.Id,
+			"error":        err,
+		})
+	} else {
+		tournament = fresh
+	}
+
 	// 1. DISCOVERY: Get latest successful poll interval end
 	latestLog, err := s.pollLogRepo.GetLatestSuccess(tournament.Id)
 	var intervalStart time.Time
@@ -183,8 +194,7 @@ func (s *Scheduler) processTournament(tournament tournaments.TournamentModel) {
 	}
 
 	// 2. INGESTION: Run orchestration (it will handle internal poll logging)
-	nextPollAt := now.Add(s.pollInterval)
-	if err := s.orchestrator.ProcessTournament(tournament, intervalStart, now, &nextPollAt); err != nil {
+	if err := s.orchestrator.ProcessTournament(tournament, intervalStart, now, nextPollAt(tournament, now, s.pollInterval)); err != nil {
 		composite_logger.Error("Error while processing tournament games", map[string]interface{}{
 			"tournamentId": tournament.Id,
 			"error":        err,
@@ -197,6 +207,18 @@ func (s *Scheduler) processTournament(tournament tournaments.TournamentModel) {
 		"from":         intervalStart,
 		"to":           now,
 	})
+}
+
+// nextPollAt — время следующего обновления, которое увидят читатели лога опроса.
+// После окончания турнира опрос идёт только ради опоздавших игр, поэтому
+// следующее обновление никому не обещаем.
+func nextPollAt(tournament tournaments.TournamentModel, now time.Time, pollInterval time.Duration) *time.Time {
+	if tournament.HasEnded(now) {
+		return nil
+	}
+
+	next := now.Add(pollInterval)
+	return &next
 }
 
 func toStartOfUTCDay(value time.Time) time.Time {
