@@ -157,14 +157,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) (int, error) {
 func (t TournamentProcessor) resolveTeam(externalId int, candidate teams.TeamModel) (teams.TeamModel, error) {
 	team, err := t.lookupTeam(externalId, candidate)
 	if err != nil {
-		composite_logger.Error("Failed to resolve team", map[string]interface{}{
-			"tournamentId": t.tournament.Id,
-			"scope":        t.teamIdScope,
-			"externalId":   externalId,
-			"name":         candidate.Name,
-			"homeTown":     candidate.HomeTown,
-			"error":        err,
-		})
+		// Ошибку пишут в лог оркестратор и планировщик; здесь только добавляем, какую команду искали.
 		return teams.TeamModel{}, fmt.Errorf("resolve team %q (scope %s, external id %d) returned error: %w", candidate.Name, t.teamIdScope, externalId, err)
 	}
 	return team, nil

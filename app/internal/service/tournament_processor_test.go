@@ -11,6 +11,7 @@ import (
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -717,21 +718,12 @@ func TestTournamentProcessor_ProcessByPeriod_ReturnsErrorWhenTeamLookupFails(t *
 
 			require.ErrorContains(t, err, "resolve team")
 			assert.Equal(t, 0, count)
-			require.Len(t, recorder.byMessage["Failed to resolve team"], 1)
+			assert.Empty(t, recorder.byMessage["Failed to resolve team"])
 			if !tc.checkLogged {
 				return
 			}
 			require.ErrorIs(t, err, repoErr)
-			logged := recorder.byMessage["Failed to resolve team"][0]
-			// К записи об ошибке логгер сам добавляет стек вызовов, поэтому сверяем только наши поля.
-			assert.Equal(t, teamsTournament.Id, logged["tournamentId"])
-			assert.Equal(t, teamsScope, logged["scope"])
-			assert.Equal(t, homeExternalId, logged["externalId"])
-			assert.Equal(t, "UNICS", logged["name"])
-			assert.Equal(t, "Kazan", logged["homeTown"])
-			loggedErr, ok := logged["error"].(error)
-			require.True(t, ok)
-			require.ErrorIs(t, loggedErr, repoErr)
+			require.ErrorContains(t, err, fmt.Sprintf("resolve team %q (scope %s, external id %d)", "UNICS", teamsScope, homeExternalId))
 		})
 	}
 }

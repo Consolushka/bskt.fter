@@ -29,6 +29,42 @@ func (s *TeamRepoSuite) TearDownTest() {
 	s.tx.Rollback()
 }
 
+func (s *TeamRepoSuite) TestFirstOrCreate_DuplicateInsertIsRejected() {
+	s.Require().NoError(s.tx.Create(&teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAL"}).Error)
+
+	err := s.tx.Create(&teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAK"}).Error
+
+	s.Require().Error(err)
+}
+
+func (s *TeamRepoSuite) TestFirstOrCreate_ConcurrentCreateReturnsExistingTeam() {
+	// Эмулируем другой воркер: чужая строка появляется после поиска, но до нашей вставки.
+	const hook = "test:insert_conflicting_team"
+	inserted := false
+	err := s.db.Callback().Create().Before("gorm:create").Register(hook, func(tx *gorm.DB) {
+		if inserted || tx.Statement.Table != "teams" {
+			return
+		}
+		inserted = true
+		tx.Session(&gorm.Session{NewDB: true}).Exec(
+			"INSERT INTO teams (name, home_town, alias, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+			"Lakers", "Los Angeles", "LAL")
+	})
+	s.Require().NoError(err)
+	defer func() { s.Require().NoError(s.db.Callback().Create().Remove(hook)) }()
+
+	got, created, err := s.repo.FirstOrCreate(teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAK"})
+
+	s.Require().NoError(err)
+	s.True(inserted)
+	s.False(created)
+	s.Equal("LAL", got.Alias)
+	s.NotZero(got.Id)
+	var count int64
+	s.Require().NoError(s.tx.Model(&teams.TeamModel{}).Count(&count).Error)
+	s.Equal(int64(1), count)
+}
+
 func (s *TeamRepoSuite) TestFirstOrCreate_FindExisting() {
 	// 1. Seed two teams
 	lakers := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles"}

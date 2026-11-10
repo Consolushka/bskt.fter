@@ -9,8 +9,8 @@ import (
 
 type TeamModel struct {
 	Id        uint      `gorm:"column:id"`
-	Name      string    `gorm:"column:name"`
-	HomeTown  string    `gorm:"column:home_town"`
+	Name      string    `gorm:"column:name;uniqueIndex:teams_name_home_town_unique_idx"`
+	HomeTown  string    `gorm:"column:home_town;uniqueIndex:teams_name_home_town_unique_idx"`
 	Alias     string    `gorm:"column:alias"`
 	CreatedAt time.Time `gorm:"column:created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at"`
