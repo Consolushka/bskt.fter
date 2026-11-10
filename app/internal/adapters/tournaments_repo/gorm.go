@@ -11,6 +11,11 @@ import (
 
 var _ ports.TournamentsRepo = (*Gorm)(nil)
 
+// Игры нередко идут и после заявленного окончания турнира (плей-офф, переносы). Опрашиваем
+// турнир ещё две недели: такие игры сохранятся, а владелец успеет заметить предупреждение
+// и продлить даты.
+const pollGraceAfterEnd = 14 * 24 * time.Hour
+
 type Gorm struct {
 	db *gorm.DB
 }
@@ -68,13 +73,13 @@ func NewGormRepo(db *gorm.DB) Gorm {
 func (g Gorm) ListActive() ([]tournaments.TournamentModel, error) {
 	var models []tournaments.TournamentModel
 
-	// Турниры с уже прошедшей датой окончания опрашивать незачем: новых игр там не
-	// будет, а лимиты внешних API тратить на них не хочется. NULL end_at означает, что
-	// даты турнира неизвестны — такой турнир считаем активным и продолжаем опрашивать.
+	// Давно закончившиеся турниры опрашивать незачем: новых игр там не будет, а лимиты
+	// внешних API тратить на них не хочется. NULL end_at означает, что даты турнира
+	// неизвестны — такой турнир считаем активным и продолжаем опрашивать.
 	err := g.db.
 		Preload("League").
 		Preload("Provider").
-		Where("end_at IS NULL OR end_at >= ?", time.Now().UTC()).
+		Where("end_at IS NULL OR end_at >= ?", time.Now().UTC().Add(-pollGraceAfterEnd)).
 		Find(&models).Error
 
 	return models, err

@@ -88,8 +88,6 @@ func TestEntityTransformer_TransformEvent_Fixture(t *testing.T) {
 			target = game
 		}
 	}
-
-	assert.Equal(t, "MIN - GSW", target.GameModel.Title)
 	assert.Equal(t, time.Date(2026, 10, 29, 0, 0, 0, 0, time.UTC), target.GameModel.ScheduledAt)
 	assert.Equal(t, 48, target.GameModel.Duration)
 	assert.Equal(t, fixtureEventId, target.ExternalGameId)

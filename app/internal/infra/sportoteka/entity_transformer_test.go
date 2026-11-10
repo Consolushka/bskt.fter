@@ -89,9 +89,6 @@ func TestEntityTransformer_Transform(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if entity.GameModel.Title != "T1 - Away T" {
-		t.Fatalf("unexpected title: %s", entity.GameModel.Title)
-	}
 	if entity.GameModel.ScheduledAt != scheduledAt {
 		t.Fatalf("unexpected scheduledAt: %v", entity.GameModel.ScheduledAt)
 	}

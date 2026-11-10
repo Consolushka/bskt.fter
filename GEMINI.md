@@ -68,6 +68,12 @@ The project uses a `Makefile` for common tasks:
 *   **Mocking:** Use `gomock` for testing. Mocks should be updated whenever an interface in `ports` changes.
 *   **Documentation:** Always update `AGENTS.md` when architectural or significant logic changes are made.
 *   **Environment:** Use `.env` for configuration. Mandatory variables include `DB_*` settings, provider API keys, rate limits, and logger settings.
+*   **Team matching and game title:**
+    *   `games.title` = `<home teams.alias> - <away teams.alias>`. It is built by the processor (`GameStatEntity.AssignTeams`) from aliases stored in the DB before the "game already exists" check; transformers do not fill it.
+    *   A team is looked up by `(scope, external_id)` in `team_external_ids`, with `(name, home_town)` as the fallback (by name only when the provider gives no home town), after which the link is saved. `scope` is the provider name (Infobasket: `INFOBASKET:<leadHost>`). Only the processor creates teams. Before registering a tournament of a new Sportoteka league, run the check query from `AGENTS.md`; on a mismatch do not register the tournament until the Sportoteka adapter gets its own `scope`.
+    *   Every new `teams` row logs a `New team created` warning so the owner can verify the alias.
+    *   A manual `teams.alias` edit must be one transaction together with `UPDATE games.title` for that team's games (the title is part of the game key). Do it between polls of that team's tournaments and check afterwards that no game was saved twice under the old title.
+    *   A wrong team-to-provider-id link is reset with a delete from `team_external_ids`; teams reached by two ids within one `scope` are found with a grouping query. Both queries are listed in `AGENTS.md`.
 
 ## Directory Structure Highlights
 
