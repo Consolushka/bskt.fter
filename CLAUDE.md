@@ -58,10 +58,11 @@
 2. **Distributed workers**: на каждый турнир — своя горутина. Старты разнесены во времени на `SCHEDULER_STAGGER_INTERVAL_MINUTES` ("шахматный старт"), чтобы размазать нагрузку на API и БД. Каждый воркер опрашивает свой турнир раз в `SCHEDULER_POLL_INTERVAL` минут.
 3. Интервал следующего опроса берётся из `interval_end` последней успешной записи в `tournament_poll_logs` (watermark по `tournament_id`).
 4. **Orchestrator / processor** тянут и обогащают данные через `StatsProvider`. Контракт намеренно разделён: лёгкий листинг (`GetGamesStatsByPeriod`) и тяжёлое обогащение (`EnrichGameStats`) — ради лимитов API.
-5. **Обработка игроков в две фазы**:
+5. **Команды и название игры**: до проверки существования игры процессор находит обе команды в базе (по id провайдера, запасной путь — по имени) и собирает `games.title` из их алиасов.
+6. **Обработка игроков в две фазы**:
    - *Discovery* — есть ли игрок в локальной БД;
    - *Ingestion* — если нет/данные неполные, запросить био у провайдера (`GetPlayerBio`).
-6. **Persistence** сохраняет данные; результат опроса (статус, время, число игр, ошибки) пишется в `tournament_poll_logs`.
+7. **Persistence** сохраняет данные; результат опроса (статус, время, число игр, ошибки) пишется в `tournament_poll_logs`.
 
 Инварианты данных:
 - Трансформеры в `infra` — **чистые функции**: только маппинг, никаких сетевых вызовов.
@@ -70,10 +71,48 @@
 - Rate limiting встроен в infra-клиенты, настраивается через `*_RATE_LIMIT_PER_MINUTE`.
 - `ListActive` не возвращает турниры, закончившиеся больше 14 дней назад (`end_at < now − 14 дней`), чтобы не тратить лимиты API. Первые 14 дней после `end_at` опрос продолжается: игры плей-офф и переносы сохраняются и дают warning, но в лог опроса пишется `next_poll_at = NULL` — завершённому турниру следующее обновление не обещаем. `end_at IS NULL` означает «даты неизвестны» — такой турнир считается **активным**.
 - Даты турнира Argus сам не меняет. Сохранённая игра раньше `start_at` или позже `end_at` (с запасом 36 часов на часовые пояса) даёт warning, один на опрос турнира; решение продлевать даты — за владельцем. Воркер перечитывает турнир перед каждым опросом, поэтому ручная правка дат подхватывается без рестарта.
-- Коды команд NBA канонизируются к кодам api-sports (`GS→GSW`, `NO→NOP`, `NY→NYK`, `SA→SAS`, `UTAH→UTA`, `WSH→WAS`) в трансформере ESPN: `games.title` входит в unique-индекс, а `teams.alias` задан первым провайдером.
+- Коды команд NBA канонизируются к кодам api-sports (`GS→GSW`, `NO→NOP`, `NY→NYK`, `SA→SAS`, `UTAH→UTA`, `WSH→WAS`) в трансформере ESPN: алиас берётся из кода при создании команды, `teams.alias` задан первым провайдером, и ESPN не должен заводить команду с другим кодом.
 - `teams.alias` пишется только при создании команды и дальше не перезаписывается (ручные правки не откатываются). Сокращение INFOBASKET/SPORTOTEKA из 6 символов, совпадающее с началом имени, — это обрезанное имя: `teams.ProviderAlias` его отбрасывает, и алиас генерирует `TeamModel.AutoGenerateAlias` (без кавычек и префикса `BK`/`BC`/`БК`; имя до 6 символов целиком, иначе 3 буквы).
 - ESPN: трансформер сверяет сумму очков и минут по игрокам с итогом команды; расхождение — ошибка `EnrichGameStats`, игра не сохраняется (лучше отсутствие игры, чем неверная статистика).
 - Дни ESPN — календарные дни US Eastern: адаптер переводит период опроса в `America/New_York` и запрашивает scoreboard по одному дню.
+- **Название игры**: `games.title` = `<teams.alias хозяев> - <teams.alias гостей>`. Собирает процессор (`GameStatEntity.AssignTeams`) из алиасов в базе до проверки существования игры; трансформеры его не заполняют.
+- **Сопоставление команд**: команда ищется по `(scope, external_id)` в `team_external_ids`, запасной путь — `(name, home_town)`, после него связь записывается. `scope` — имя провайдера, у Infobasket — `INFOBASKET:<leadHost>`. Команды создаёт только процессор. Перед регистрацией турнира новой лиги Sportoteka — сверка запросом ниже: у каждой возвращённой строки имя и город должны соответствовать команде с этим id в календаре новой лиги; при расхождении турнир не регистрировать, пока адаптер Sportoteka не получит собственный `scope`.
+
+  ```sql
+  SELECT e.external_id, t.id AS team_id, t.name, t.home_town, t.alias
+  FROM team_external_ids e
+  JOIN teams t ON t.id = e.team_id
+  WHERE e.scope = 'SPORTOTEKA' AND e.external_id IN (/* teamId из календаря новой лиги */);
+  ```
+- **Новая команда**: о каждой новой строке `teams` пишется warning `New team created` — владелец проверяет алиас.
+- **Ручная правка `teams.alias`**: только одной транзакцией с `UPDATE games.title` игр этой команды: название входит в ключ игры, и без пересчёта игры команды из окна повторного опроса запишутся второй раз.
+
+  ```sql
+  BEGIN;
+  UPDATE teams SET alias = :new_alias WHERE id = :team_id;
+  UPDATE games g
+  SET title = h.alias || ' - ' || a.alias
+  FROM game_team_stats hs
+  JOIN teams h             ON h.id = hs.team_id
+  JOIN game_team_stats aws ON aws.game_id = hs.game_id AND NOT aws.is_home
+  JOIN teams a             ON a.id = aws.team_id
+  WHERE hs.game_id = g.id AND hs.is_home
+    AND :team_id IN (hs.team_id, aws.team_id);
+  COMMIT;
+  ```
+- **Ошибочная связь команды с id провайдера**: сбрасывается запросом ниже; следующий опрос свяжет id заново. Команды, на которые в одном `scope` ведут два id (слияние двух команд провайдера в одну), ищутся вторым запросом.
+
+  ```sql
+  DELETE FROM team_external_ids WHERE scope = :scope AND external_id = :external_id;
+  ```
+
+  ```sql
+  SELECT e.scope, e.team_id, t.name, t.home_town, array_agg(e.external_id ORDER BY e.external_id) AS external_ids
+  FROM team_external_ids e
+  JOIN teams t ON t.id = e.team_id
+  GROUP BY e.scope, e.team_id, t.name, t.home_town
+  HAVING count(*) > 1;
+  ```
 
 ### Регистрация турнира
 
@@ -177,4 +216,5 @@ go run ./app/cmd/create-tournament \
 | Даты турнира от провайдера | порт `ports.TournamentPeriodProvider` + реализация в `adapters/stats_provider/<provider>.go` |
 | Ручной прогон | `app/cmd/debug-server` |
 | Конфиг/env | `infra/config`, `.example.env` |
+| Сопоставление команд и название игры | `service/tournament_processor.go` (`resolveTeam`) + `core/games/entities.go` (`AssignTeams`) + `adapters/teams_repo` + порт `ports.TeamIdScopeProvider` |
 | Логирование | `infra/logger` (фабрика над composite_logger) |
