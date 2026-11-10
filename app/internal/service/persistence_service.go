@@ -126,7 +126,7 @@ func (s PersistenceService) saveTeamModel(teamStats *teams.TeamStatEntity) error
 
 	// Алиас задаётся только при создании команды: иначе провайдеры с разными сокращениями
 	// переписывали бы его друг за другом, а ручные исправления откатывались бы.
-	teamStats.TeamModel, err = s.teamsRepo.FirstOrCreate(teamStats.TeamModel)
+	teamStats.TeamModel, _, err = s.teamsRepo.FirstOrCreate(teamStats.TeamModel)
 	if err != nil {
 		return fmt.Errorf("FirstOrCreate with %v from %s returned error: %w", teamStats.TeamModel, reflect.TypeOf(s.teamsRepo), err)
 	}

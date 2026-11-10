@@ -17,7 +17,7 @@ type TeamRepoSuite struct {
 }
 
 func (s *TeamRepoSuite) SetupSuite() {
-	s.db = dbtest.Setup(s.T(), &teams.TeamModel{}, &teams.GameTeamStatModel{})
+	s.db = dbtest.Setup(s.T(), &teams.TeamModel{}, &teams.GameTeamStatModel{}, &teams.TeamExternalIdModel{})
 }
 
 func (s *TeamRepoSuite) SetupTest() {
@@ -38,10 +38,11 @@ func (s *TeamRepoSuite) TestFirstOrCreate_FindExisting() {
 
 	// 2. Try to find Lakers
 	input := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles"}
-	res, err := s.repo.FirstOrCreate(input)
+	res, created, err := s.repo.FirstOrCreate(input)
 
 	// 3. Assert
 	s.Require().NoError(err)
+	s.False(created)
 	s.Equal(lakers.Id, res.Id, "Should find the existing Lakers team")
 
 	var count int64
@@ -53,9 +54,10 @@ func (s *TeamRepoSuite) TestFirstOrCreate_ExistingKeepsAlias() {
 	lakers := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAL"}
 	s.tx.Create(&lakers)
 
-	res, err := s.repo.FirstOrCreate(teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAK"})
+	res, created, err := s.repo.FirstOrCreate(teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAK"})
 
 	s.Require().NoError(err)
+	s.False(created)
 	s.Equal("LAL", res.Alias)
 
 	var stored teams.TeamModel
@@ -64,9 +66,10 @@ func (s *TeamRepoSuite) TestFirstOrCreate_ExistingKeepsAlias() {
 }
 
 func (s *TeamRepoSuite) TestFirstOrCreate_CreateNewGeneratesAlias() {
-	res, err := s.repo.FirstOrCreate(teams.TeamModel{Name: `BK "Tambov"`, HomeTown: "Tambov"})
+	res, created, err := s.repo.FirstOrCreate(teams.TeamModel{Name: `BK "Tambov"`, HomeTown: "Tambov"})
 
 	s.Require().NoError(err)
+	s.True(created)
 	s.Equal("TAMBOV", res.Alias)
 }
 
@@ -77,10 +80,11 @@ func (s *TeamRepoSuite) TestFirstOrCreate_CreateNew() {
 
 	// 2. Try to find/create Bulls
 	input := teams.TeamModel{Name: "Bulls", HomeTown: "Chicago"}
-	res, err := s.repo.FirstOrCreate(input)
+	res, created, err := s.repo.FirstOrCreate(input)
 
 	// 3. Assert
 	s.Require().NoError(err)
+	s.True(created)
 	s.NotZero(res.Id)
 	s.NotEqual(lakers.Id, res.Id)
 	s.Equal("Bulls", res.Name)
@@ -146,4 +150,91 @@ func (s *TeamRepoSuite) TestFirstOrCreateStats_PersistsIsHome() {
 
 func TestTeamRepoSuite(t *testing.T) {
 	suite.Run(t, new(TeamRepoSuite))
+}
+
+func (s *TeamRepoSuite) TestFirstOrCreate_EmptyHomeTownMatchesByName() {
+	existing := teams.TeamModel{Name: "Real Madrid", HomeTown: "Madrid", Alias: "RMA"}
+	s.tx.Create(&existing)
+
+	res, created, err := s.repo.FirstOrCreate(teams.TeamModel{Name: "Real Madrid"})
+
+	s.Require().NoError(err)
+	s.False(created)
+	s.Equal(existing.Id, res.Id)
+	s.Equal("RMA", res.Alias)
+
+	var count int64
+	s.tx.Model(&teams.TeamModel{}).Count(&count)
+	s.Equal(int64(1), count)
+}
+
+func (s *TeamRepoSuite) TestFirstOrCreate_TooLongAliasIsRegenerated() {
+	res, created, err := s.repo.FirstOrCreate(teams.TeamModel{Name: "Warriors", HomeTown: "Golden State", Alias: "ABCDEFGHIJK"})
+
+	s.Require().NoError(err)
+	s.True(created)
+	s.Equal("WAR", res.Alias)
+}
+
+func (s *TeamRepoSuite) TestFindByExternalId_Found() {
+	team := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAL"}
+	s.tx.Create(&team)
+	s.tx.Create(&teams.TeamExternalIdModel{Scope: "ESPN_NBA", ExternalId: 9, TeamId: team.Id})
+
+	res, found, err := s.repo.FindByExternalId("ESPN_NBA", 9)
+
+	s.Require().NoError(err)
+	s.True(found)
+	s.Equal(team.Id, res.Id)
+	s.Equal("Lakers", res.Name)
+	s.Equal("LAL", res.Alias)
+}
+
+func (s *TeamRepoSuite) TestFindByExternalId_NotFound() {
+	_, found, err := s.repo.FindByExternalId("ESPN_NBA", 9)
+
+	s.Require().NoError(err)
+	s.False(found)
+}
+
+func (s *TeamRepoSuite) TestFindByExternalId_ScopeIsPartOfKey() {
+	team := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAL"}
+	s.tx.Create(&team)
+	s.tx.Create(&teams.TeamExternalIdModel{Scope: "INFOBASKET:org", ExternalId: 9, TeamId: team.Id})
+
+	_, found, err := s.repo.FindByExternalId("INFOBASKET:reg", 9)
+
+	s.Require().NoError(err)
+	s.False(found)
+}
+
+func (s *TeamRepoSuite) TestLinkExternalId_Creates() {
+	team := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAL"}
+	s.tx.Create(&team)
+
+	s.Require().NoError(s.repo.LinkExternalId("ESPN_NBA", 9, team.Id))
+
+	res, found, err := s.repo.FindByExternalId("ESPN_NBA", 9)
+	s.Require().NoError(err)
+	s.True(found)
+	s.Equal(team.Id, res.Id)
+}
+
+func (s *TeamRepoSuite) TestLinkExternalId_ExistingLinkIsKept() {
+	first := teams.TeamModel{Name: "Lakers", HomeTown: "Los Angeles", Alias: "LAL"}
+	second := teams.TeamModel{Name: "Bulls", HomeTown: "Chicago", Alias: "CHI"}
+	s.tx.Create(&first)
+	s.tx.Create(&second)
+
+	s.Require().NoError(s.repo.LinkExternalId("ESPN_NBA", 9, first.Id))
+	s.Require().NoError(s.repo.LinkExternalId("ESPN_NBA", 9, second.Id))
+
+	res, found, err := s.repo.FindByExternalId("ESPN_NBA", 9)
+	s.Require().NoError(err)
+	s.True(found)
+	s.Equal(first.Id, res.Id)
+
+	var count int64
+	s.tx.Model(&teams.TeamExternalIdModel{}).Count(&count)
+	s.Equal(int64(1), count)
 }

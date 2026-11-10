@@ -86,3 +86,18 @@ type GameTeamStatModel struct {
 func (GameTeamStatModel) TableName() string {
 	return "game_team_stats"
 }
+
+// TeamExternalIdModel связывает id команды у провайдера с командой в нашей базе.
+// Scope — чьи это id: одна база id у провайдера (у Infobasket она своя на каждом хосте).
+type TeamExternalIdModel struct {
+	Id         uint      `gorm:"column:id"`
+	Scope      string    `gorm:"column:scope;uniqueIndex:team_external_ids_scope_external_id_unique_idx"`
+	ExternalId int       `gorm:"column:external_id;uniqueIndex:team_external_ids_scope_external_id_unique_idx"`
+	TeamId     uint      `gorm:"column:team_id"`
+	CreatedAt  time.Time `gorm:"column:created_at"`
+	UpdatedAt  time.Time `gorm:"column:updated_at"`
+}
+
+func (TeamExternalIdModel) TableName() string {
+	return "team_external_ids"
+}

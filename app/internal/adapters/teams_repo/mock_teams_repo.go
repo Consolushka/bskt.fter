@@ -34,13 +34,30 @@ func (m *MockTeamsRepo) EXPECT() *MockTeamsRepoMockRecorder {
 	return m.recorder
 }
 
+// FindByExternalId mocks base method.
+func (m *MockTeamsRepo) FindByExternalId(scope string, externalId int) (teams.TeamModel, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByExternalId", scope, externalId)
+	ret0, _ := ret[0].(teams.TeamModel)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// FindByExternalId indicates an expected call of FindByExternalId.
+func (mr *MockTeamsRepoMockRecorder) FindByExternalId(scope, externalId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByExternalId", reflect.TypeOf((*MockTeamsRepo)(nil).FindByExternalId), scope, externalId)
+}
+
 // FirstOrCreate mocks base method.
-func (m *MockTeamsRepo) FirstOrCreate(model teams.TeamModel) (teams.TeamModel, error) {
+func (m *MockTeamsRepo) FirstOrCreate(model teams.TeamModel) (teams.TeamModel, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FirstOrCreate", model)
 	ret0, _ := ret[0].(teams.TeamModel)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // FirstOrCreate indicates an expected call of FirstOrCreate.
@@ -62,4 +79,18 @@ func (m *MockTeamsRepo) FirstOrCreateStats(model teams.GameTeamStatModel) (teams
 func (mr *MockTeamsRepoMockRecorder) FirstOrCreateStats(model interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FirstOrCreateStats", reflect.TypeOf((*MockTeamsRepo)(nil).FirstOrCreateStats), model)
+}
+
+// LinkExternalId mocks base method.
+func (m *MockTeamsRepo) LinkExternalId(scope string, externalId int, teamId uint) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LinkExternalId", scope, externalId, teamId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LinkExternalId indicates an expected call of LinkExternalId.
+func (mr *MockTeamsRepoMockRecorder) LinkExternalId(scope, externalId, teamId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkExternalId", reflect.TypeOf((*MockTeamsRepo)(nil).LinkExternalId), scope, externalId, teamId)
 }

@@ -67,3 +67,8 @@ func TestProviderAlias(t *testing.T) {
 		})
 	}
 }
+
+func TestTeamExternalIdModel_TableName(t *testing.T) {
+	model := TeamExternalIdModel{}
+	assert.Equal(t, "team_external_ids", model.TableName())
+}
