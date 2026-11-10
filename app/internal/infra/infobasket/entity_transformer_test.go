@@ -19,7 +19,8 @@ func TestEntityTransformer_Transform(t *testing.T) {
 					CompTeamNameEn:       "Home Team",
 					CompTeamRegionNameEn: "Home City",
 				},
-				Score: 100,
+				TeamID: 2650,
+				Score:  100,
 				Players: []PlayerBoxScoreDto{
 					{
 						PersonID:     10,
@@ -44,7 +45,8 @@ func TestEntityTransformer_Transform(t *testing.T) {
 					CompTeamNameEn:       "Away Team",
 					CompTeamRegionNameEn: "Away City",
 				},
-				Score: 94,
+				TeamID: 1390,
+				Score:  94,
 				Players: []PlayerBoxScoreDto{
 					{
 						PersonID:     20,
@@ -63,8 +65,8 @@ func TestEntityTransformer_Transform(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	if entity.GameModel.Title != "HOME - Away T" {
-		t.Fatalf("unexpected title: %s", entity.GameModel.Title)
+	if entity.HomeTeamExternalId != 2650 || entity.AwayTeamExternalId != 1390 {
+		t.Fatalf("unexpected team ids: %d, %d", entity.HomeTeamExternalId, entity.AwayTeamExternalId)
 	}
 	// 5 periods * 10 + 1 overtime * 5
 	if entity.GameModel.Duration != 55 {

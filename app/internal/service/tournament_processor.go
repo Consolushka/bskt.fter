@@ -3,6 +3,7 @@ package service
 import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
+	"IMP/app/internal/core/teams"
 	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"fmt"
@@ -22,18 +23,28 @@ type TournamentProcessor struct {
 	statsProvider      ports.StatsProvider
 	persistenceService PersistenceServiceInterface
 	playersRepo        ports.PlayersRepo
+	teamsRepo          ports.TeamsRepo
 	gamesRepo          ports.GamesRepo
 	aggregator         ports.Aggregator
+	teamIdScope        string
 }
 
-func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface, playersRepo ports.PlayersRepo, gamesRepo ports.GamesRepo, aggregator ports.Aggregator, tournament tournaments.TournamentModel) *TournamentProcessor {
+func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface, playersRepo ports.PlayersRepo, teamsRepo ports.TeamsRepo, gamesRepo ports.GamesRepo, aggregator ports.Aggregator, tournament tournaments.TournamentModel) *TournamentProcessor {
+	// Обычно id команд уникальны в пределах провайдера; провайдер с несколькими базами сообщает свою сам.
+	teamIdScope := tournament.Provider.ProviderName
+	if scoped, ok := statsProvider.(ports.TeamIdScopeProvider); ok {
+		teamIdScope = scoped.TeamIdScope()
+	}
+
 	return &TournamentProcessor{
 		tournament:         tournament,
 		statsProvider:      statsProvider,
 		persistenceService: serviceInterface,
 		playersRepo:        playersRepo,
+		teamsRepo:          teamsRepo,
 		gamesRepo:          gamesRepo,
 		aggregator:         aggregator,
+		teamIdScope:        teamIdScope,
 	}
 }
 
@@ -53,6 +64,19 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) (int, error) {
 
 	for _, gameEntity := range gameEntities {
 		gameEntity.GameModel.TournamentId = t.tournament.Id
+
+		// Команды ищем до проверки существования игры: название игры — часть её ключа
+		// и собирается из алиасов команд, лежащих в базе.
+		home, err := t.resolveTeam(gameEntity.HomeTeamExternalId, gameEntity.HomeTeamStat.TeamModel)
+		if err != nil {
+			return 0, err
+		}
+		away, err := t.resolveTeam(gameEntity.AwayTeamExternalId, gameEntity.AwayTeamStat.TeamModel)
+		if err != nil {
+			return 0, err
+		}
+		gameEntity.AssignTeams(home, away)
+
 		isExists, err := t.gamesRepo.Exists(gameEntity.GameModel)
 		if err != nil {
 			composite_logger.Error("Failed to check whether game exists", map[string]interface{}{
@@ -126,6 +150,73 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) (int, error) {
 	}
 
 	return len(savedGames), nil
+}
+
+// resolveTeam находит команду в базе: сначала по id провайдера, затем по имени.
+// Найденную по имени команду связывает с id, чтобы следующее переименование у провайдера её не раздвоило.
+func (t TournamentProcessor) resolveTeam(externalId int, candidate teams.TeamModel) (teams.TeamModel, error) {
+	team, err := t.lookupTeam(externalId, candidate)
+	if err != nil {
+		// Ошибку пишут в лог оркестратор и планировщик; здесь только добавляем, какую команду искали.
+		return teams.TeamModel{}, fmt.Errorf("resolve team %q (scope %s, external id %d) returned error: %w", candidate.Name, t.teamIdScope, externalId, err)
+	}
+	return team, nil
+}
+
+func (t TournamentProcessor) lookupTeam(externalId int, candidate teams.TeamModel) (teams.TeamModel, error) {
+	if externalId != 0 {
+		team, found, err := t.teamsRepo.FindByExternalId(t.teamIdScope, externalId)
+		if err != nil {
+			return teams.TeamModel{}, fmt.Errorf("FindByExternalId returned error: %w", err)
+		}
+		if found {
+			return team, nil
+		}
+	}
+
+	team, created, err := t.teamsRepo.FirstOrCreate(candidate)
+	if err != nil {
+		return teams.TeamModel{}, fmt.Errorf("FirstOrCreate returned error: %w", err)
+	}
+	if created {
+		composite_logger.Warn("New team created", map[string]interface{}{
+			"teamId":       team.Id,
+			"name":         team.Name,
+			"homeTown":     team.HomeTown,
+			"alias":        team.Alias,
+			"scope":        t.teamIdScope,
+			"externalId":   externalId,
+			"tournamentId": t.tournament.Id,
+		})
+	}
+
+	// Провайдер не дал id — связывать нечего.
+	if externalId == 0 {
+		return team, nil
+	}
+
+	err = t.teamsRepo.LinkExternalId(t.teamIdScope, externalId, team.Id)
+	if err != nil {
+		return teams.TeamModel{}, fmt.Errorf("LinkExternalId with team %d returned error: %w", team.Id, err)
+	}
+
+	// Перечитываем: связь мог первым записать другой воркер, и источник истины — то, что лежит в базе.
+	linked, found, err := t.teamsRepo.FindByExternalId(t.teamIdScope, externalId)
+	if err != nil {
+		return teams.TeamModel{}, fmt.Errorf("FindByExternalId after link returned error: %w", err)
+	}
+	if !found {
+		return teams.TeamModel{}, fmt.Errorf("team link (scope %s, external id %d) not found after insert", t.teamIdScope, externalId)
+	}
+	if !created {
+		composite_logger.Info("Team linked to provider id", map[string]interface{}{
+			"teamId":     linked.Id,
+			"scope":      t.teamIdScope,
+			"externalId": externalId,
+		})
+	}
+
+	return linked, nil
 }
 
 func (t TournamentProcessor) discoverAndIngestPlayers(gameEntity *games.GameStatEntity) {

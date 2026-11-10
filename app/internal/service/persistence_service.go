@@ -30,7 +30,13 @@ func NewPersistenceService(gamesRepo ports.GamesRepo, teamsRepo ports.TeamsRepo,
 }
 
 func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
-	var err error
+	// Команды находит процессор ещё до сохранения. Проверяем до создания игры:
+	// иначе игра осталась бы без статистики, и следующий опрос счёл бы её записанной.
+	for _, team := range []teams.TeamModel{game.HomeTeamStat.TeamModel, game.AwayTeamStat.TeamModel} {
+		if team.Id == 0 {
+			return fmt.Errorf("team %q is not resolved before saving the game", team.Name)
+		}
+	}
 
 	isExists, err := s.gamesRepo.Exists(game.GameModel)
 
@@ -57,16 +63,8 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 	game.AwayTeamStat.GameTeamStatModel.GameId = game.GameModel.Id
 	game.HomeTeamStat.GameTeamStatModel.IsHome = true
 	game.AwayTeamStat.GameTeamStatModel.IsHome = false
-
-	err = s.saveTeamModel(&game.HomeTeamStat)
-	if err != nil {
-		return err
-	}
-
-	err = s.saveTeamModel(&game.AwayTeamStat)
-	if err != nil {
-		return err
-	}
+	game.HomeTeamStat.GameTeamStatModel.TeamId = game.HomeTeamStat.TeamModel.Id
+	game.AwayTeamStat.GameTeamStatModel.TeamId = game.AwayTeamStat.TeamModel.Id
 
 	err = s.saveTeamStatModel(&game.HomeTeamStat)
 	if err != nil {
@@ -117,21 +115,6 @@ func (s PersistenceService) SaveGame(game games.GameStatEntity) error {
 			continue
 		}
 	}
-
-	return nil
-}
-
-func (s PersistenceService) saveTeamModel(teamStats *teams.TeamStatEntity) error {
-	var err error
-
-	// Алиас задаётся только при создании команды: иначе провайдеры с разными сокращениями
-	// переписывали бы его друг за другом, а ручные исправления откатывались бы.
-	teamStats.TeamModel, err = s.teamsRepo.FirstOrCreate(teamStats.TeamModel)
-	if err != nil {
-		return fmt.Errorf("FirstOrCreate with %v from %s returned error: %w", teamStats.TeamModel, reflect.TypeOf(s.teamsRepo), err)
-	}
-
-	teamStats.GameTeamStatModel.TeamId = teamStats.TeamModel.Id
 
 	return nil
 }

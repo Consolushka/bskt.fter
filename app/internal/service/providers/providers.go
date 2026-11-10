@@ -71,6 +71,7 @@ func NewProvider(providerName string, externalId *string, params *map[string]int
 		return stats_provider.NewInfobasketStatsProviderAdapter(
 			infobasket.NewInfobasketClient(leadHost.(string), cfg.InfobasketRateLimit),
 			intExternalId,
+			leadHost.(string),
 		), nil
 	case Sportoteka:
 		if externalId == nil {

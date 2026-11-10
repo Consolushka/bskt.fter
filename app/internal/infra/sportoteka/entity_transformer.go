@@ -48,7 +48,6 @@ func (e *EntityTransformer) Transform(game GameBoxScoreEntity) (games.GameStatEn
 		GameModel: games.GameModel{
 			Duration:    duration,
 			ScheduledAt: game.Game.ScheduledTime,
-			Title:       game.Team1.AbcName + " - " + game.Team2.AbcName,
 		},
 		HomeTeamStat: e.teamTransform(game.Team1, homeTeamStats, awayTeamStats.Total.Points),
 		AwayTeamStat: e.teamTransform(game.Team2, awayTeamStats, homeTeamStats.Total.Points),

@@ -3,6 +3,7 @@ package stats_provider
 import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/infra/infobasket"
+	"IMP/app/internal/ports"
 	"errors"
 	"os"
 	"testing"
@@ -32,7 +33,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := infobasket.NewMockClientInterface(ctrl)
-		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId)
+		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId, "reg")
 
 		schedule := []infobasket.GameScheduleDto{
 			{GameID: 1, GameDate: "10.02.2026", GameTime: "18:00", GameTimeMsk: "18:00"}, // In period
@@ -47,14 +48,16 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 			GameTimeMsk: "18.00",
 			GameTeams: []infobasket.TeamBoxScoreDto{
 				{
-					Score: 80,
+					TeamID: 2650,
+					Score:  80,
 					TeamName: infobasket.TeamNameBoxScoreDto{
 						CompTeamAbcNameEn: "LAL",
 						CompTeamNameEn:    "Lakers",
 					},
 				},
 				{
-					Score: 75,
+					TeamID: 1390,
+					Score:  75,
 					TeamName: infobasket.TeamNameBoxScoreDto{
 						CompTeamAbcNameEn: "BOS",
 						CompTeamNameEn:    "Celtics",
@@ -67,7 +70,8 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, games, 1)
-		assert.Equal(t, "LAL - BOS", games[0].GameModel.Title)
+		assert.Equal(t, 2650, games[0].HomeTeamExternalId)
+		assert.Equal(t, 1390, games[0].AwayTeamExternalId)
 	})
 
 	t.Run("returns error when schedule loading fails", func(t *testing.T) {
@@ -76,7 +80,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := infobasket.NewMockClientInterface(ctrl)
-		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId)
+		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId, "reg")
 
 		mockClient.EXPECT().ScheduledGames(compId).Return(nil, errors.New("network error"))
 
@@ -92,7 +96,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := infobasket.NewMockClientInterface(ctrl)
-		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId)
+		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId, "reg")
 
 		schedule := []infobasket.GameScheduleDto{
 			{GameID: 1, GameDate: "10.02.2026", GameTime: "18:00", GameTimeMsk: "18:00"},
@@ -113,7 +117,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := infobasket.NewMockClientInterface(ctrl)
-		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId)
+		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId, "reg")
 
 		schedule := []infobasket.GameScheduleDto{
 			{GameID: 1, GameDate: "10.02.2026", GameTime: "18:00", GameTimeMsk: "18:00"},
@@ -136,7 +140,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := infobasket.NewMockClientInterface(ctrl)
-		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId)
+		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId, "reg")
 
 		schedule := []infobasket.GameScheduleDto{
 			{GameID: 1, GameDate: "invalid-date", GameTime: "18:00"},
@@ -156,7 +160,7 @@ func TestInfobasketStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockClient := infobasket.NewMockClientInterface(ctrl)
-		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId)
+		adapter := NewInfobasketStatsProviderAdapter(mockClient, compId, "reg")
 
 		schedule := []infobasket.GameScheduleDto{
 			{GameID: 1, GameDate: "10.02.2026", GameTime: "18:00", GameTimeMsk: "18:00"},
@@ -186,4 +190,17 @@ func TestInfobasketStatsProviderAdapter_EnrichGameStats(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, game, enriched)
+}
+
+func TestInfobasketStatsProviderAdapter_TeamIdScope(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := infobasket.NewMockClientInterface(ctrl)
+
+	assert.Equal(t, "INFOBASKET:reg", NewInfobasketStatsProviderAdapter(mockClient, 1, "reg").TeamIdScope())
+
+	var provider ports.StatsProvider = NewInfobasketStatsProviderAdapter(mockClient, 1, "reg")
+	scoped, ok := provider.(ports.TeamIdScopeProvider)
+	require.True(t, ok)
+	assert.Equal(t, "INFOBASKET:reg", scoped.TeamIdScope())
 }

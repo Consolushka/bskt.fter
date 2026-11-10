@@ -5,6 +5,7 @@ import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
 	"IMP/app/internal/infra/infobasket"
+	"IMP/app/internal/ports"
 	"IMP/app/internal/service/remote_cache_loader"
 	"strconv"
 	"time"
@@ -12,11 +13,18 @@ import (
 	compositelogger "github.com/Consolushka/golang.composite_logger/pkg"
 )
 
+// Начало обязано совпадать с именем провайдера INFOBASKET в tournament_providers.provider_name.
+// Константу из service/providers взять нельзя: тот пакет сам импортирует этот, получился бы цикл.
+const teamIdScopePrefix = "INFOBASKET:"
+
+var _ ports.TeamIdScopeProvider = (*InfobasketStatsProviderAdapter)(nil)
+
 type InfobasketStatsProviderAdapter struct {
 	client infobasket.ClientInterface
 
 	transformer infobasket.EntityTransformer
 	compId      int
+	leadHost    string
 }
 
 func (i InfobasketStatsProviderAdapter) GetPlayerBio(id string) (players.PlayerBioEntity, error) {
@@ -81,10 +89,17 @@ func (i InfobasketStatsProviderAdapter) EnrichGameStats(game games.GameStatEntit
 	return game, nil
 }
 
-func NewInfobasketStatsProviderAdapter(client infobasket.ClientInterface, compId int) InfobasketStatsProviderAdapter {
+func NewInfobasketStatsProviderAdapter(client infobasket.ClientInterface, compId int, leadHost string) InfobasketStatsProviderAdapter {
 	return InfobasketStatsProviderAdapter{
 		client:      client,
 		transformer: infobasket.NewEntityTransformer(),
 		compId:      compId,
+		leadHost:    leadHost,
 	}
+}
+
+// TeamIdScope сообщает, чьи id команд отдаёт адаптер. У Infobasket своя база на каждом хосте,
+// и один и тот же id на двух хостах может означать разные команды.
+func (i InfobasketStatsProviderAdapter) TeamIdScope() string {
+	return teamIdScopePrefix + i.leadHost
 }

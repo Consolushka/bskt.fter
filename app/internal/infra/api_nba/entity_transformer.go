@@ -28,7 +28,6 @@ func (e *EntityTransformer) TransformWithoutPlayers(game GameEntity) games.GameS
 		GameModel: games.GameModel{
 			ScheduledAt: game.Date.Start,
 			Duration:    duration,
-			Title:       game.Teams.Home.Code + " - " + game.Teams.Visitors.Code,
 		},
 		HomeTeamStat: teams.TeamStatEntity{
 			TeamModel: teams.TeamModel{
