@@ -3,6 +3,7 @@ package service
 import (
 	"IMP/app/internal/core/games"
 	"IMP/app/internal/core/players"
+	"IMP/app/internal/core/tournaments"
 	"IMP/app/internal/ports"
 	"fmt"
 	"reflect"
@@ -17,7 +18,7 @@ type TournamentProcessorInterface interface {
 }
 
 type TournamentProcessor struct {
-	tournamentId       uint
+	tournament         tournaments.TournamentModel
 	statsProvider      ports.StatsProvider
 	persistenceService PersistenceServiceInterface
 	playersRepo        ports.PlayersRepo
@@ -25,9 +26,9 @@ type TournamentProcessor struct {
 	aggregator         ports.Aggregator
 }
 
-func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface, playersRepo ports.PlayersRepo, gamesRepo ports.GamesRepo, aggregator ports.Aggregator, tournamentId uint) *TournamentProcessor {
+func NewTournamentProcessor(statsProvider ports.StatsProvider, serviceInterface PersistenceServiceInterface, playersRepo ports.PlayersRepo, gamesRepo ports.GamesRepo, aggregator ports.Aggregator, tournament tournaments.TournamentModel) *TournamentProcessor {
 	return &TournamentProcessor{
-		tournamentId:       tournamentId,
+		tournament:         tournament,
 		statsProvider:      statsProvider,
 		persistenceService: serviceInterface,
 		playersRepo:        playersRepo,
@@ -42,15 +43,16 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) (int, error) {
 		return 0, fmt.Errorf("GetGamesStatsByPeriod with %v, %v from %s returned error: %w", from, to, reflect.TypeOf(t.statsProvider), err)
 	}
 	savedGames := make([]string, 0, len(gameEntities))
+	outOfPeriodReported := false
 
 	if len(gameEntities) > 0 {
 		composite_logger.Info("Start processing tournament games", map[string]interface{}{
-			"tournamentId": t.tournamentId,
+			"tournamentId": t.tournament.Id,
 		})
 	}
 
 	for _, gameEntity := range gameEntities {
-		gameEntity.GameModel.TournamentId = t.tournamentId
+		gameEntity.GameModel.TournamentId = t.tournament.Id
 		isExists, err := t.gamesRepo.Exists(gameEntity.GameModel)
 		if err != nil {
 			composite_logger.Error("Failed to check whether game exists", map[string]interface{}{
@@ -89,12 +91,26 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) (int, error) {
 			continue
 		}
 
-		err = t.aggregator.NotifyGameImported(t.tournamentId)
+		// Проверяем только что сохранённые игры: опрос каждый раз пересматривает прошлые сутки,
+		// и проверка уже известных игр повторяла бы одно и то же предупреждение.
+		if !outOfPeriodReported && !t.tournament.IsWithinPeriod(gameEntity.GameModel.ScheduledAt) {
+			composite_logger.Warn("Imported game is scheduled outside tournament dates", map[string]interface{}{
+				"tournamentId":   t.tournament.Id,
+				"tournamentName": t.tournament.Name,
+				"startAt":        t.tournament.StartAt,
+				"endAt":          t.tournament.EndAt,
+				"title":          gameEntity.GameModel.Title,
+				"scheduledAt":    gameEntity.GameModel.ScheduledAt,
+			})
+			outOfPeriodReported = true
+		}
+
+		err = t.aggregator.NotifyGameImported(t.tournament.Id)
 		if err != nil {
 			// We only log here, not failing the whole process
 			composite_logger.Error("t.aggregator.NotifyGameImported returned error", map[string]interface{}{
 				"error":        err,
-				"tournamentId": t.tournamentId,
+				"tournamentId": t.tournament.Id,
 			})
 		}
 
@@ -103,7 +119,7 @@ func (t TournamentProcessor) ProcessByPeriod(from, to time.Time) (int, error) {
 
 	if len(gameEntities) > 0 {
 		composite_logger.Info("Finished processing tournament games", map[string]interface{}{
-			"tournamentId": t.tournamentId,
+			"tournamentId": t.tournament.Id,
 			"savedCount":   len(savedGames),
 			"savedGames":   savedGames,
 		})

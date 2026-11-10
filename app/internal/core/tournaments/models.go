@@ -7,6 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// end_at обычно задан датой без времени (полночь UTC), а вечерняя игра последнего дня
+// в UTC уже приходится на следующие сутки — запас нужен, чтобы не считать её выходом за даты.
+const endDateTolerance = 36 * time.Hour
+
 type TournamentModel struct {
 	Id                 uint           `gorm:"column:id"`
 	LeagueId           uint           `gorm:"column:league_id"`
@@ -25,6 +29,17 @@ type TournamentModel struct {
 
 func (TournamentModel) TableName() string {
 	return "tournaments"
+}
+
+// IsWithinPeriod сверяет момент с датами турнира. Неизвестная дата (NULL) не проверяется.
+func (t TournamentModel) IsWithinPeriod(at time.Time) bool {
+	if t.StartAt != nil && at.Before(*t.StartAt) {
+		return false
+	}
+	if t.EndAt != nil && at.After(t.EndAt.Add(endDateTolerance)) {
+		return false
+	}
+	return true
 }
 
 type TournamentProvider struct {

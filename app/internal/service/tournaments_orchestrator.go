@@ -80,7 +80,7 @@ func (t TournamentsOrchestrator) ProcessTournament(tournament tournaments.Tourna
 		return fmt.Errorf("error while creating stats provider for tournament %d: %w", tournament.Id, err)
 	}
 
-	processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, t.gamesRepo, t.aggregator, tournament.Id)
+	processor := NewTournamentProcessor(statsProvider, t.persistenceService, t.playersRepo, t.gamesRepo, t.aggregator, tournament)
 
 	// UNIVERSAL LOOKBACK: Always look back 24 hours to catch late confirmations/transitions
 	searchFrom := from.Add(-24 * time.Hour)
