@@ -106,7 +106,6 @@ func (e EntityTransformer) TransformEvent(event EventEntity) (games.GameStatEnti
 	return games.GameStatEntity{
 		GameModel: games.GameModel{
 			ScheduledAt: scheduledAt,
-			Title:       teamCode(home.Team.Abbreviation) + " - " + teamCode(away.Team.Abbreviation),
 			Duration:    regulationPeriods*regulationPeriodMinutes + overtimes*overtimePeriodMinutes,
 		},
 		ExternalGameId:     event.Id,
