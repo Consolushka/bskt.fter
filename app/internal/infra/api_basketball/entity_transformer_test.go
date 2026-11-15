@@ -40,7 +40,6 @@ func TestEntityTransformer_TransformWithoutPlayers(t *testing.T) {
 	result := transformer.TransformWithoutPlayers(inputGame)
 
 	assert.Equal(t, time.Date(2026, 4, 12, 19, 15, 0, 0, time.UTC), result.GameModel.ScheduledAt)
-	assert.Equal(t, "Maccabi Tel Aviv - Hapoel Tel-Aviv", result.GameModel.Title)
 	assert.Equal(t, 48, result.GameModel.Duration)
 	assert.Equal(t, "Maccabi Tel Aviv", result.HomeTeamStat.TeamModel.Name)
 	assert.Equal(t, 88, result.HomeTeamStat.GameTeamStatModel.Score)

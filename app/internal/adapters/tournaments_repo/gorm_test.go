@@ -119,22 +119,26 @@ func (s *TournamentRepoSuite) TestListActiveSkipsCompleted() {
 	now := time.Now().UTC()
 	ongoingStart := now.Add(-24 * time.Hour)
 	ongoingEnd := now.Add(24 * time.Hour)
-	completedStart := now.Add(-48 * time.Hour)
-	completedEnd := now.Add(-24 * time.Hour)
+	// Опрос продолжается ещё 14 дней после end_at.
+	recentlyEndedEnd := now.AddDate(0, 0, -13)
+	completedStart := now.AddDate(0, 0, -30)
+	completedEnd := now.AddDate(0, 0, -15)
 
 	ongoing := tournaments.TournamentModel{Name: "Ongoing", LeagueId: league.Id, StartAt: &ongoingStart, EndAt: &ongoingEnd}
+	recentlyEnded := tournaments.TournamentModel{Name: "RecentlyEnded", LeagueId: league.Id, StartAt: &completedStart, EndAt: &recentlyEndedEnd}
 	completed := tournaments.TournamentModel{Name: "Completed", LeagueId: league.Id, StartAt: &completedStart, EndAt: &completedEnd}
 	// Без дат (end_at NULL) — считается активным.
 	undated := tournaments.TournamentModel{Name: "Undated", LeagueId: league.Id}
 
 	s.Require().NoError(s.tx.Create(&ongoing).Error)
+	s.Require().NoError(s.tx.Create(&recentlyEnded).Error)
 	s.Require().NoError(s.tx.Create(&completed).Error)
 	s.Require().NoError(s.tx.Create(&undated).Error)
 
 	// Execute
 	results, err := s.repo.ListActive()
 
-	// Assert: завершённый отсеян, идущий и недатированный остаются
+	// Assert: давно завершённый отсеян; идущий, недатированный и недавно завершённый остаются
 	s.Require().NoError(err)
 	names := make(map[string]bool, len(results))
 	for _, r := range results {
@@ -142,6 +146,7 @@ func (s *TournamentRepoSuite) TestListActiveSkipsCompleted() {
 	}
 	s.True(names["Ongoing"])
 	s.True(names["Undated"])
+	s.True(names["RecentlyEnded"])
 	s.False(names["Completed"])
 }
 

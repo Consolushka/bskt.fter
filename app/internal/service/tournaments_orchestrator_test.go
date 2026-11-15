@@ -3,6 +3,7 @@ package service
 import (
 	"IMP/app/internal/adapters/games_repo"
 	"IMP/app/internal/adapters/players_repo"
+	"IMP/app/internal/adapters/teams_repo"
 	"IMP/app/internal/adapters/tournament_poll_logs_repo"
 	"IMP/app/internal/adapters/tournaments_repo"
 	"IMP/app/internal/core/tournaments"
@@ -23,17 +24,19 @@ func TestNewTournamentsOrchestrator(t *testing.T) {
 	persistence := NewMockPersistenceServiceInterface(ctrl)
 	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
 	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
+	teamsRepo := teams_repo.NewMockTeamsRepo(ctrl)
 	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
 	pollLogRepo := tournament_poll_logs_repo.NewMockTournamentPollLogsRepo(ctrl)
 	mockAggregator := ports.NewMockAggregator(ctrl)
 	providersCfg := config.ProvidersConfig{}
 
-	result := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo, pollLogRepo, mockAggregator, providersCfg)
+	result := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, teamsRepo, gamesRepo, pollLogRepo, mockAggregator, providersCfg)
 
 	assert.NotNil(t, result)
 	assert.Equal(t, persistence, result.persistenceService)
 	assert.Equal(t, tournamentsRepo, result.tournamentsRepo)
 	assert.Equal(t, playersRepo, result.playersRepo)
+	assert.Equal(t, teamsRepo, result.teamsRepo)
 	assert.Equal(t, gamesRepo, result.gamesRepo)
 	assert.Equal(t, pollLogRepo, result.pollLogRepo)
 	assert.Equal(t, mockAggregator, result.aggregator)
@@ -46,12 +49,13 @@ func TestTournamentsOrchestrator_ProcessAll(t *testing.T) {
 	persistence := NewMockPersistenceServiceInterface(ctrl)
 	tournamentsRepo := tournaments_repo.NewMockTournamentsRepo(ctrl)
 	playersRepo := players_repo.NewMockPlayersRepo(ctrl)
+	teamsRepo := teams_repo.NewMockTeamsRepo(ctrl)
 	gamesRepo := games_repo.NewMockGamesRepo(ctrl)
 	pollLogRepo := tournament_poll_logs_repo.NewMockTournamentPollLogsRepo(ctrl)
 	mockAggregator := ports.NewMockAggregator(ctrl)
 	providersCfg := config.ProvidersConfig{}
 
-	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, gamesRepo, pollLogRepo, mockAggregator, providersCfg)
+	orchestrator := NewTournamentsOrchestrator(persistence, tournamentsRepo, playersRepo, teamsRepo, gamesRepo, pollLogRepo, mockAggregator, providersCfg)
 	from := time.Date(2026, 2, 14, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2026, 2, 14, 23, 59, 59, 0, time.UTC)
 

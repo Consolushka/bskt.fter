@@ -38,8 +38,8 @@ func TestSportotekaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 			Items: []sportoteka.CalendarGameEntity{
 				{
 					Game:  sportoteka.GameInfoEntity{Id: 1, GameStatus: "Result"},
-					Team1: sportoteka.TeamInfoEntity{Name: "Lakers", AbcName: "LAL"},
-					Team2: sportoteka.TeamInfoEntity{Name: "Celtics", AbcName: "BOS"},
+					Team1: sportoteka.TeamInfoEntity{Name: "Lakers", AbcName: "LAL", TeamId: 26307},
+					Team2: sportoteka.TeamInfoEntity{Name: "Celtics", AbcName: "BOS", TeamId: 27187},
 				},
 			},
 		}
@@ -61,7 +61,8 @@ func TestSportotekaStatsProviderAdapter_GetGamesStatsByPeriod(t *testing.T) {
 
 		require.NoError(t, err)
 		assert.Len(t, games, 1)
-		assert.Equal(t, "LAL - BOS", games[0].GameModel.Title)
+		assert.Equal(t, 26307, games[0].HomeTeamExternalId)
+		assert.Equal(t, 27187, games[0].AwayTeamExternalId)
 	})
 
 	t.Run("returns empty list when calendar fails", func(t *testing.T) {

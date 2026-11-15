@@ -57,9 +57,11 @@ func (s SportotekaStatsProviderAdapter) GetGamesStatsByPeriod(from, to time.Time
 			continue
 		}
 
-		entity.GameModel.Title = calendarGame.Team1.AbcName + " - " + calendarGame.Team2.AbcName
 		entity.HomeTeamStat.TeamModel.Name = calendarGame.Team1.Name
 		entity.AwayTeamStat.TeamModel.Name = calendarGame.Team2.Name
+		// Берём teamId, а не id: id у команды свой в каждом соревновании, teamId — один на все сезоны.
+		entity.HomeTeamExternalId = calendarGame.Team1.TeamId
+		entity.AwayTeamExternalId = calendarGame.Team2.TeamId
 
 		gamesEntities = append(gamesEntities, entity)
 	}

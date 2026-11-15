@@ -3,6 +3,7 @@ package providers
 import (
 	"IMP/app/internal/adapters/stats_provider"
 	"IMP/app/internal/infra/config"
+	"IMP/app/internal/ports"
 	"strings"
 	"testing"
 )
@@ -166,6 +167,13 @@ func TestNewProvider(t *testing.T) {
 			case "infobasket":
 				if _, ok := provider.(stats_provider.InfobasketStatsProviderAdapter); !ok {
 					t.Fatalf("expected InfobasketStatsProviderAdapter, got %T", provider)
+				}
+				scoped, ok := provider.(ports.TeamIdScopeProvider)
+				if !ok {
+					t.Fatalf("expected infobasket provider to report its team id scope")
+				}
+				if scoped.TeamIdScope() != "INFOBASKET:tambov" {
+					t.Fatalf("unexpected team id scope: %s", scoped.TeamIdScope())
 				}
 			case "sportoteka":
 				if _, ok := provider.(stats_provider.SportotekaStatsProviderAdapter); !ok {

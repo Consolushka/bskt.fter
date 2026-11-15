@@ -41,10 +41,11 @@ func (e *EntityTransformer) Transform(game GameBoxScoreResponse) (games.GameStat
 		GameModel: games.GameModel{
 			ScheduledAt: parse,
 			Duration:    duration,
-			Title:       game.GameTeams[0].TeamName.CompTeamAbcNameEn + " - " + game.GameTeams[1].TeamName.CompTeamAbcNameEn,
 		},
-		HomeTeamStat: e.transformTeam(game.GameTeams[0], game.GameTeams[1].Score),
-		AwayTeamStat: e.transformTeam(game.GameTeams[1], game.GameTeams[0].Score),
+		HomeTeamStat:       e.transformTeam(game.GameTeams[0], game.GameTeams[1].Score),
+		AwayTeamStat:       e.transformTeam(game.GameTeams[1], game.GameTeams[0].Score),
+		HomeTeamExternalId: game.GameTeams[0].TeamID,
+		AwayTeamExternalId: game.GameTeams[1].TeamID,
 	}, nil
 }
 
